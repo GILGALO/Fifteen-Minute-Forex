@@ -137,7 +137,7 @@ export async function sendToTelegram(
     // Core Signal Info with enhanced visuals
     message += `📊 <b>PAIR:</b> ${signal.pair}\n`;
     message += `${signal.type === "CALL" ? "🟢" : "🔴"} <b>DIRECTION:</b> ${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}\n`;
-    message += `⏱ <b>TIMEFRAME:</b> M5 (5-Minute) ✅\n\n`;
+    message += `⏱ <b>TIMEFRAME:</b> M15 (15-Minute) ✅\n\n`;
 
     // Kenya Time with day info - startTime and endTime are already formatted strings
     const kenyaStart = getKenyaTime();
@@ -288,9 +288,9 @@ export async function sendToTelegram(
     message += `━━━━━━━━━━━━━━━━━━━━━\n`;
     message += `✅ <b>Smart Rescan</b> - Auto-rescan until high confidence\n`;
     message += `✅ <b>Fixed Stakes Only</b> - NO Martingale\n`;
-    message += `✅ <b>M5 Timeframe</b> - Strictly 5-minute trades\n`;
+    message += `✅ <b>M15 Timeframe</b> - Strictly 15-minute trades\n`;
     message += `✅ <b>Kenya Time</b> - All times in EAT (UTC+3)\n`;
-    message += `✅ <b>HTF Alignment</b> - M15 & H1 must match M5\n`;
+    message += `✅ <b>HTF Alignment</b> - H1 & H4 must match M15\n`;
     message += `✅ <b>Candle Confirmation</b> - 2-3 strong consecutive candles\n`;
     message += `✅ <b>Extreme Zone Filter</b> - RSI/Stoch above 97 or below 3 blocked\n`;
     message += `✅ <b>Volatility Filter</b> - Spike detection active\n`;

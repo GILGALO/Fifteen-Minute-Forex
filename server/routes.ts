@@ -47,7 +47,7 @@ export async function registerRoutes(
   app.get("/api/forex/candles/:pair", async (req, res) => {
     try {
       const pair = decodeURIComponent(req.params.pair);
-      const interval = (req.query.interval as string) || "5min";
+      const interval = (req.query.interval as string) || "15min";
       const candles = await getForexCandles(pair, interval, apiKey);
       res.json(candles);
     } catch (error: any) {
@@ -58,7 +58,7 @@ export async function registerRoutes(
   app.get("/api/forex/analysis/:pair", async (req, res) => {
     try {
       const pair = decodeURIComponent(req.params.pair);
-      const interval = (req.query.interval as string) || "5min";
+      const interval = (req.query.interval as string) || "15min";
       const candles = await getForexCandles(pair, interval, apiKey);
       const technicals = analyzeTechnicals(candles);
       res.json({
@@ -87,7 +87,7 @@ export async function registerRoutes(
   app.post("/api/forex/scan", async (req, res) => {
     try {
       const { timeframe, maxRescans = 5, minConfidenceThreshold = 70 } = req.body;
-      const tf = timeframe || "M5";
+      const tf = timeframe || "M15";
       
       log(`[SCAN] Starting smart rescan for ${FOREX_PAIRS.length} pairs (maxRescans: ${maxRescans}, minThreshold: ${minConfidenceThreshold}%)`, "scan");
       
@@ -230,13 +230,104 @@ export async function registerRoutes(
     }
   });
 
+  // AUTO-SCANNER: Run every 5-7 minutes for M15 candle monitoring
+  const AUTO_SCAN_INTERVAL_MS = 6 * 60 * 1000; // 6 minutes (between 5-7 minutes)
+  let autoScanEnabled = true;
+  let lastAutoScanTime = 0;
+
+  async function runAutoScan() {
+    if (!autoScanEnabled) return;
+    
+    const now = Date.now();
+    if (now - lastAutoScanTime < AUTO_SCAN_INTERVAL_MS) return;
+    
+    lastAutoScanTime = now;
+    log(`[AUTO-SCAN M15] Starting automatic scan for high-probability signals...`, "auto-scan");
+    
+    try {
+      const signals = await Promise.all(
+        FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M15", apiKey, 5, 75))
+      );
+      
+      const validSignals = signals.filter(s => s.confidence >= 75);
+      const highProbSignals = signals.filter(s => s.confidence >= 85);
+      
+      log(`[AUTO-SCAN M15] Complete - ${validSignals.length} valid signals, ${highProbSignals.length} high-probability (85%+)`, "auto-scan");
+      
+      // Send high-probability signals to Telegram
+      for (const signal of highProbSignals) {
+        const now = new Date();
+        const kenyaOffset = 3 * 60 * 60 * 1000;
+        const kenyaTime = new Date(now.getTime() + kenyaOffset);
+        const startTime = kenyaTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const endTime = new Date(kenyaTime.getTime() + 15 * 60 * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        
+        const signalData = {
+          id: `auto-${Date.now()}-${signal.pair.replace('/', '')}`,
+          pair: signal.pair,
+          timeframe: "M15",
+          type: signal.signalType,
+          entry: signal.entry,
+          stopLoss: signal.stopLoss,
+          takeProfit: signal.takeProfit,
+          confidence: signal.confidence,
+          timestamp: Date.now(),
+          startTime,
+          endTime,
+          status: "active" as const
+        };
+        
+        log(`[AUTO-SCAN M15] Sending high-prob signal: ${signal.pair} ${signal.signalType} (${signal.confidence}%)`, "auto-scan");
+        await sendToTelegram(signalData, signal, true);
+      }
+      
+      // Log all signals for review
+      signals.forEach(s => {
+        const status = s.confidence >= 85 ? "HIGH-PROB ✅" : s.confidence >= 75 ? "VALID" : s.confidence > 0 ? "LOW" : "BLOCKED";
+        log(`[M15 SIGNAL] ${s.pair}: ${s.signalType} | Confidence: ${s.confidence}% | Status: ${status}`, "signal-log");
+      });
+      
+    } catch (error: any) {
+      log(`[AUTO-SCAN ERROR] ${error.message}`, "auto-scan");
+    }
+  }
+
+  // Start auto-scanner
+  log(`[AUTO-SCAN M15] Initialized - scanning every ${AUTO_SCAN_INTERVAL_MS / 60000} minutes`, "auto-scan");
+  setInterval(runAutoScan, AUTO_SCAN_INTERVAL_MS);
+  // Run first scan after 30 seconds to allow system startup
+  setTimeout(runAutoScan, 30000);
+
+  // API endpoint to control auto-scanner
+  app.get("/api/autoscan/status", (req, res) => {
+    res.json({
+      enabled: autoScanEnabled,
+      intervalMinutes: AUTO_SCAN_INTERVAL_MS / 60000,
+      lastScanTime: lastAutoScanTime ? new Date(lastAutoScanTime).toISOString() : null,
+      timeframe: "M15"
+    });
+  });
+
+  app.post("/api/autoscan/toggle", (req, res) => {
+    autoScanEnabled = !autoScanEnabled;
+    log(`[AUTO-SCAN M15] ${autoScanEnabled ? "ENABLED" : "DISABLED"}`, "auto-scan");
+    res.json({ enabled: autoScanEnabled });
+  });
+
+  app.post("/api/autoscan/run", async (req, res) => {
+    log(`[AUTO-SCAN M15] Manual scan triggered`, "auto-scan");
+    lastAutoScanTime = 0; // Reset to allow immediate scan
+    await runAutoScan();
+    res.json({ success: true, message: "Manual scan completed" });
+  });
+
   app.post("/api/telegram/test", async (req, res) => {
     try {
       // Create a test signal with realistic data
       const testSignal = {
         id: "test-" + Date.now(),
         pair: "EUR/USD",
-        timeframe: "M5",
+        timeframe: "M15",
         type: "CALL" as const,
         entry: 1.09500,
         stopLoss: 1.09300,

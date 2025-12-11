@@ -120,7 +120,7 @@ const HIGH_ACCURACY_PAIRS = ["GBP/USD", "EUR/JPY", "USD/JPY", "USD/CAD", "GBP/JP
 const MEDIUM_ACCURACY_PAIRS = ["EUR/USD", "AUD/USD", "EUR/AUD", "EUR/GBP"];
 const LOW_ACCURACY_PAIRS = ["USD/CHF", "AUD/JPY", "NZD/USD"];
 
-const TIMEFRAME = "5min"; // Strictly M5 (5-minute) trades only
+const TIMEFRAME = "15min"; // Strictly M15 (15-minute) trades only
 const KENYA_UTC_OFFSET = 3; // Kenya is UTC+3 (EAT)
 
 function getPairAccuracy(pair: string): PairAccuracy {
@@ -241,7 +241,7 @@ export async function getForexQuote(pair: string, apiKey?: string): Promise<Fore
 
 export async function getForexCandles(
   pair: string,
-  interval: string = "5min",
+  interval: string = "15min",
   apiKey?: string
 ): Promise<CandleData[]> {
   const cacheKey = `${pair}-${interval}`;
@@ -255,8 +255,8 @@ export async function getForexCandles(
     throw new Error(`Unknown pair: ${pair}`);
   }
 
-  // Enforce M5 timeframe only
-  const enforcedInterval = "5min";
+  // Enforce M15 timeframe only
+  const enforcedInterval = "15min";
   const enforcedCacheKey = `${pair}_${enforcedInterval}`;
 
   if (apiKey) {
@@ -330,7 +330,7 @@ function generateRealisticCandles(pair: string, count: number): CandleData[] {
   let basePrice = getBasePriceForPair(pair);
   const volatility = pair.includes("JPY") ? 0.001 : 0.0001;
   const now = Date.now();
-  const interval = 5 * 60 * 1000;
+  const interval = 15 * 60 * 1000;
 
   for (let i = count - 1; i >= 0; i--) {
     const timestamp = now - i * interval;
@@ -741,7 +741,7 @@ export async function generateSignalAnalysis(
     "H4": "60min",
   };
 
-  const interval = intervalMap[timeframe] || "5min";
+  const interval = intervalMap[timeframe] || "15min";
   
   // Smart RESCAN System - attempt multiple times if confidence is too low
   let rescanAttempt = 0;
@@ -1321,8 +1321,33 @@ export async function generateSignalAnalysis(
     return bestSignal;
   }
 
-  // Fallback (should never reach here, but safety)
-  return currentSignal;
+  // Fallback - create a neutral signal if no signal was generated
+  const fallbackSignal: SignalAnalysis = {
+    pair,
+    currentPrice: 0,
+    signalType: "CALL",
+    confidence: 0,
+    entry: 0,
+    stopLoss: 0,
+    takeProfit: 0,
+    technicals: {
+      rsi: 50,
+      macd: { macdLine: 0, signalLine: 0, histogram: 0 },
+      sma20: 0, sma50: 0, sma200: 0,
+      ema12: 0, ema26: 0,
+      bollingerBands: { upper: 0, middle: 0, lower: 0, percentB: 0.5, breakout: false },
+      stochastic: { k: 50, d: 50 },
+      atr: 0,
+      adx: 0,
+      supertrend: { direction: "NEUTRAL" as "BULLISH" | "BEARISH", value: 0 },
+      candlePattern: null,
+      trend: "NEUTRAL",
+      momentum: "WEAK",
+      volatility: "LOW"
+    },
+    reasoning: ["No signal generated - fallback used"]
+  };
+  return bestSignal || fallbackSignal;
 }
 
 function calculateATR(candles: CandleData[], period: number = 14): number {
