@@ -138,7 +138,7 @@ export async function registerRoutes(
 
       // Check for blocking indicators in analysis reasoning
       if (analysis?.reasoning) {
-        const hasBlockingReason = analysis.reasoning.some(r => 
+        const hasBlockingReason = analysis.reasoning.some((r: string) => 
           r.includes("BLOCKED") || r.includes("SKIP:") || r.includes("🚫") || r.includes("TRADE BLOCKED")
         );
         if (hasBlockingReason) {
@@ -147,7 +147,7 @@ export async function registerRoutes(
             success: false, 
             message: "Signal blocked by analysis filters",
             blocked: true,
-            reason: analysis.reasoning.find(r => r.includes("BLOCKED") || r.includes("SKIP"))
+            reason: analysis.reasoning.find((r: string) => r.includes("BLOCKED") || r.includes("SKIP"))
           });
         }
       }
@@ -360,14 +360,11 @@ export async function registerRoutes(
           adx: 28.5,
           atr: 0.00025,
           supertrend: { value: 1.09300, direction: "BULLISH" as const },
-          ichimoku: { tenkan: 1.09500, kijun: 1.09450, senkouA: 1.09400, senkouB: 1.09350 },
-          pivotPoints: { pivot: 1.09500, r1: 1.09650, r2: 1.09800, s1: 1.09350, s2: 1.09200 },
-          fibonacciLevels: { level236: 1.09350, level382: 1.09400, level500: 1.09500, level618: 1.09600, level786: 1.09700 },
           candlePattern: "bullish_engulfing" as const,
           trend: "BULLISH" as const,
-          momentum: "BULLISH" as const,
-          volatility: "MODERATE" as const,
-          volumeProfile: "HIGH" as const
+          momentum: "STRONG" as const,
+          volatility: "MEDIUM" as const,
+          marketRegime: "TRENDING" as const
         },
         reasoning: [
           "HTF Alignment: ✅ M15 BULLISH | ✅ H1 BULLISH | Candle Strength: 3",
@@ -376,7 +373,15 @@ export async function registerRoutes(
           "Supertrend: BULLISH direction confirmed",
           "Final Confluence: 85% | Score diff: 15 | R/R: 1:2",
           "🧪 TEST SIGNAL - Verifying Telegram channel integration"
-        ]
+        ],
+        ruleChecklist: {
+          htfAlignment: true,
+          candleConfirmation: true,
+          momentumSafety: true,
+          volatilityFilter: true,
+          sessionFilter: true,
+          marketRegime: true
+        }
       };
 
       const sent = await sendToTelegram(testSignal, testAnalysis, false);
