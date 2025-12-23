@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorBoundary from "@/components/error-boundary";
+import AnalyticsDashboard from "@/components/analytics-dashboard";
 
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
@@ -141,72 +142,60 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 mt-6">
-            <Card className="glass-panel border-emerald-500/30 overflow-hidden" data-testid="card-active-signals">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2 gap-2">
-                  <Target className="w-5 h-5 text-emerald-400" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase">Active</span>
+          {/* Premium Stats Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 mt-6">
+            <Card className="glass-panel border-emerald-500/40 overflow-hidden relative group" data-testid="card-active-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardContent className="p-5 relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <Target className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Active</span>
                 </div>
-                <div className="text-2xl font-black text-emerald-400" data-testid="text-active-count">{activeSignals}</div>
-                <div className="text-xs text-muted-foreground mt-1">Running now</div>
+                <div className="text-3xl font-black text-emerald-400" data-testid="text-active-count">{activeSignals}</div>
+                <div className="text-xs text-emerald-400/60 mt-2">Running now</div>
               </CardContent>
             </Card>
 
-            <Card className="glass-panel border-emerald-500/30 overflow-hidden" data-testid="card-won-signals">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2 gap-2">
-                  <TrendingUp className="w-5 h-5 text-emerald-400" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase">Won</span>
+            <Card className="glass-panel border-emerald-500/40 overflow-hidden relative group" data-testid="card-won-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardContent className="p-5 relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <TrendingUp className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Won</span>
                 </div>
-                <div className="text-2xl font-black text-emerald-400" data-testid="text-won-count">{wonSignals}</div>
-                <div className="text-xs text-muted-foreground mt-1">Successful</div>
+                <div className="text-3xl font-black text-emerald-400" data-testid="text-won-count">{wonSignals}</div>
+                <div className="text-xs text-emerald-400/60 mt-2">Successful trades</div>
               </CardContent>
             </Card>
 
-            <Card className="glass-panel border-rose-500/30 overflow-hidden" data-testid="card-lost-signals">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2 gap-2">
-                  <TrendingDown className="w-5 h-5 text-rose-400" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase">Lost</span>
+            <Card className="glass-panel border-rose-500/40 overflow-hidden relative group" data-testid="card-lost-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardContent className="p-5 relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <TrendingDown className="w-5 h-5 text-rose-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Lost</span>
                 </div>
-                <div className="text-2xl font-black text-rose-400" data-testid="text-lost-count">{lostSignals}</div>
-                <div className="text-xs text-muted-foreground mt-1">Unsuccessful</div>
+                <div className="text-3xl font-black text-rose-400" data-testid="text-lost-count">{lostSignals}</div>
+                <div className="text-xs text-rose-400/60 mt-2">Failed trades</div>
               </CardContent>
             </Card>
 
-            <Card className="glass-panel border-cyan-500/30 overflow-hidden" data-testid="card-win-rate">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2 gap-2">
-                  <Award className="w-5 h-5 text-cyan-400" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase">Win Rate</span>
+            <Card className="glass-panel border-primary/40 overflow-hidden relative group" data-testid="card-total-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <CardContent className="p-5 relative z-10">
+                <div className="flex items-center justify-between mb-3">
+                  <BarChart3 className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Total</span>
                 </div>
-                <div className="text-2xl font-black text-cyan-400" data-testid="text-win-rate">{winRate}%</div>
-                <div className="text-xs text-muted-foreground mt-1">Success ratio</div>
+                <div className="text-3xl font-black text-primary" data-testid="text-total-count">{totalSignals}</div>
+                <div className="text-xs text-primary/60 mt-2">All signals generated</div>
               </CardContent>
             </Card>
+          </div>
 
-            <Card className="glass-panel border-blue-500/30 overflow-hidden" data-testid="card-avg-confidence">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2 gap-2">
-                  <Zap className="w-5 h-5 text-blue-400" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase">Avg. Conf.</span>
-                </div>
-                <div className="text-2xl font-black text-blue-400" data-testid="text-avg-confidence">{avgConfidence}%</div>
-                <div className="text-xs text-muted-foreground mt-1">Average</div>
-              </CardContent>
-            </Card>
-
-            <Card className="glass-panel border-primary/30 overflow-hidden" data-testid="card-total-signals">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-2 gap-2">
-                  <BarChart3 className="w-5 h-5 text-primary" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase">Total</span>
-                </div>
-                <div className="text-2xl font-black text-primary" data-testid="text-total-count">{totalSignals}</div>
-                <div className="text-xs text-muted-foreground mt-1">All signals</div>
-              </CardContent>
-            </Card>
+          {/* Analytics Dashboard */}
+          <div className="mb-8">
+            <AnalyticsDashboard signals={signals} />
           </div>
 
           <div className="flex flex-wrap gap-3 mt-6">
