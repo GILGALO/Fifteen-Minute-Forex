@@ -1,7 +1,7 @@
-# Forex M15 Trading Bot
+# 5 minutes forex ver.11
 
 ## Overview
-A real-time Forex trading signal bot that analyzes 15-minute (M15) candles using multiple technical indicators. The bot scans for high-probability trade signals every 6 minutes and sends alerts via Telegram.
+A professional rule-based Forex trading signal system for 5-minute trades with M15 confirmation. Analyzes multiple timeframes using advanced technical indicators with strict session-aware filtering. The bot scans for high-probability trade signals every 6 minutes and sends alerts via Telegram.
 
 ## Key Features
 - **M15 Timeframe**: Analyzes 15-minute candles for more reliable signals
