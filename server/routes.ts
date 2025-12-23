@@ -230,19 +230,55 @@ export async function registerRoutes(
     }
   });
 
-  // AUTO-SCANNER: Run every 5-7 minutes for M15 candle monitoring
-  const AUTO_SCAN_INTERVAL_MS = 6 * 60 * 1000; // 6 minutes (between 5-7 minutes)
+  // ═══════════════════════════════════════════════════════════════════
+  // STRICT M5 CANDLE TIMING VALIDATION
+  // ═══════════════════════════════════════════════════════════════════
+  
+  /**
+   * Check if current time is at M5 candle open (0-1 seconds of a :00, :05, :10, etc. minute)
+   * BLOCKS signals during minutes 1-4 (mid-candle)
+   */
+  function isValidM5CandleOpenTime(): boolean {
+    const now = new Date();
+    const minute = now.getMinutes();
+    const second = now.getSeconds();
+    
+    // Valid M5 opens: minute % 5 === 0 AND within first 1 second
+    const isM5Open = minute % 5 === 0;
+    const isFirstSecond = second <= 1;
+    
+    if (!isM5Open) {
+      return false; // Mid-candle (minutes 1-4 are BLOCKED)
+    }
+    
+    if (!isFirstSecond) {
+      return false; // Too late in the candle open
+    }
+    
+    return true;
+  }
+
+  /**
+   * Get M5 candle open time for display in Kenya Time
+   */
+  function getM5CandleOpenTimeEAT(): string {
+    const now = new Date();
+    const kenyaOffset = 3 * 60 * 60 * 1000;
+    const kenyaTime = new Date(now.getTime() + kenyaOffset);
+    const minute = kenyaTime.getMinutes();
+    const roundedMinute = Math.floor(minute / 5) * 5;
+    kenyaTime.setMinutes(roundedMinute, 0, 0);
+    return kenyaTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' EAT';
+  }
+
+  // AUTO-SCANNER: Run frequently, but ONLY dispatch signals at M5 candle opens
+  const AUTO_SCAN_INTERVAL_MS = 30 * 1000; // Check every 30 seconds for candle opens
   let autoScanEnabled = true;
-  let lastAutoScanTime = 0;
+  let lastSignalDispatchTime = 0;
+  const MIN_DISPATCH_INTERVAL = 5 * 60 * 1000; // Prevent duplicate signals within 5 minutes
 
   async function runAutoScan() {
     if (!autoScanEnabled) return;
-    
-    const now = Date.now();
-    if (now - lastAutoScanTime < AUTO_SCAN_INTERVAL_MS) return;
-    
-    lastAutoScanTime = now;
-    log(`[AUTO-SCAN M15] Starting automatic scan for high-probability signals...`, "auto-scan");
     
     try {
       const signals = await Promise.all(
@@ -250,22 +286,40 @@ export async function registerRoutes(
       );
       
       const validSignals = signals.filter(s => s.confidence >= 75);
-      const highProbSignals = signals.filter(s => s.confidence >= 85);
+      const highProbSignals = signals.filter(s => s.confidence >= 85 && s.signalGrade !== "SKIPPED");
       
-      log(`[AUTO-SCAN M15] Complete - ${validSignals.length} valid signals, ${highProbSignals.length} high-probability (85%+)`, "auto-scan");
+      log(`[AUTO-SCAN M15] Scan complete - ${validSignals.length} valid, ${highProbSignals.length} high-prob | Signals queued for dispatch`, "auto-scan");
       
-      // Send high-probability signals to Telegram
+      // ══════════════════════════════════════════════════════════════════════
+      // HARD TIMING GATE: Only dispatch at M5 candle opens
+      // ══════════════════════════════════════════════════════════════════════
+      const now = Date.now();
+      const timeSinceLastDispatch = now - lastSignalDispatchTime;
+      
+      if (!isValidM5CandleOpenTime()) {
+        log(`[TIMING GATE] ❌ NOT at M5 candle open - signals BLOCKED (next valid: ${getM5CandleOpenTimeEAT()})`, "timing-gate");
+        return; // Do NOT send signals
+      }
+      
+      if (timeSinceLastDispatch < MIN_DISPATCH_INTERVAL) {
+        log(`[TIMING GATE] ⚠️ Last dispatch ${Math.floor(timeSinceLastDispatch / 1000)}s ago - prevent duplicates`, "timing-gate");
+        return; // Prevent duplicate signals
+      }
+      
+      // Dispatch signals
+      log(`[TIMING GATE] ✅ M5 CANDLE OPEN CONFIRMED (${getM5CandleOpenTimeEAT()}) - DISPATCHING SIGNALS`, "timing-gate");
+      lastSignalDispatchTime = now;
+      
       for (const signal of highProbSignals) {
-        const now = new Date();
         const kenyaOffset = 3 * 60 * 60 * 1000;
-        const kenyaTime = new Date(now.getTime() + kenyaOffset);
+        const kenyaTime = new Date(now + kenyaOffset);
         const startTime = kenyaTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        const endTime = new Date(kenyaTime.getTime() + 15 * 60 * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const endTime = new Date(kenyaTime.getTime() + 5 * 60 * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         
         const signalData = {
           id: `auto-${Date.now()}-${signal.pair.replace('/', '')}`,
           pair: signal.pair,
-          timeframe: "M15",
+          timeframe: "M5",
           type: signal.signalType,
           entry: signal.entry,
           stopLoss: signal.stopLoss,
@@ -277,14 +331,16 @@ export async function registerRoutes(
           status: "active" as const
         };
         
-        log(`[AUTO-SCAN M15] Sending high-prob signal: ${signal.pair} ${signal.signalType} (${signal.confidence}%)`, "auto-scan");
+        log(`[DISPATCH] ${signal.pair} ${signal.signalType} | Grade ${signal.signalGrade} | Entry: ${signal.entry}`, "dispatch");
         await sendToTelegram(signalData, signal, true);
       }
       
       // Log all signals for review
       signals.forEach(s => {
-        const status = s.confidence >= 85 ? "HIGH-PROB ✅" : s.confidence >= 75 ? "VALID" : s.confidence > 0 ? "LOW" : "BLOCKED";
-        log(`[M15 SIGNAL] ${s.pair}: ${s.signalType} | Confidence: ${s.confidence}% | Status: ${status}`, "signal-log");
+        if (s.confidence > 0) {
+          const status = s.confidence >= 85 && s.signalGrade !== "SKIPPED" ? "HIGH-PROB ✅" : s.confidence >= 75 ? "VALID" : "LOW";
+          log(`[M5 SIGNAL] ${s.pair}: ${s.signalType} | Grade: ${s.signalGrade} | Conf: ${s.confidence}% | ${status}`, "signal-log");
+        }
       });
       
     } catch (error: any) {
@@ -292,19 +348,18 @@ export async function registerRoutes(
     }
   }
 
-  // Start auto-scanner
-  log(`[AUTO-SCAN M15] Initialized - scanning every ${AUTO_SCAN_INTERVAL_MS / 60000} minutes`, "auto-scan");
+  // Start auto-scanner with fast checking (30s interval for timing precision)
+  log(`[AUTO-SCAN M15] Initialized - checking every ${AUTO_SCAN_INTERVAL_MS / 1000}s for M5 candle opens`, "auto-scan");
   setInterval(runAutoScan, AUTO_SCAN_INTERVAL_MS);
-  // Run first scan after 30 seconds to allow system startup
-  setTimeout(runAutoScan, 30000);
 
   // API endpoint to control auto-scanner
   app.get("/api/autoscan/status", (req, res) => {
     res.json({
       enabled: autoScanEnabled,
-      intervalMinutes: AUTO_SCAN_INTERVAL_MS / 60000,
-      lastScanTime: lastAutoScanTime ? new Date(lastAutoScanTime).toISOString() : null,
-      timeframe: "M15"
+      checkIntervalSeconds: AUTO_SCAN_INTERVAL_MS / 1000,
+      lastDispatchTime: lastSignalDispatchTime ? new Date(lastSignalDispatchTime).toISOString() : null,
+      timeframe: "M5",
+      timingGate: "M5 candle opens only (0-1 seconds of :00, :05, :10, etc.)"
     });
   });
 
@@ -316,7 +371,6 @@ export async function registerRoutes(
 
   app.post("/api/autoscan/run", async (req, res) => {
     log(`[AUTO-SCAN M15] Manual scan triggered`, "auto-scan");
-    lastAutoScanTime = 0; // Reset to allow immediate scan
     await runAutoScan();
     res.json({ success: true, message: "Manual scan completed" });
   });
