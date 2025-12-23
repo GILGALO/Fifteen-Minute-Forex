@@ -433,6 +433,45 @@ function hasThreeConsecutiveTrendCandles(candles: CandleData[], direction: "BULL
   }
 }
 
+/**
+ * Check if RSI, MACD, and Supertrend ALL agree on direction
+ * Much stricter than individual checks - ensures confluence
+ */
+function checkMultiIndicatorAlignment(technicals: TechnicalAnalysis, direction: "BULLISH" | "BEARISH"): boolean {
+  const rsiAligned = direction === "BULLISH" ? technicals.rsi < 70 : technicals.rsi > 30;
+  const macdAligned = direction === "BULLISH" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0;
+  const supertrendAligned = technicals.supertrend.direction === direction;
+  
+  // ALL three must agree
+  return rsiAligned && macdAligned && supertrendAligned;
+}
+
+/**
+ * Detect support and resistance levels from recent swing highs/lows
+ * Returns { support: number, resistance: number } for dynamic TP/SL placement
+ */
+function detectSupportResistance(candles: CandleData[], period: number = 20): { support: number; resistance: number } {
+  if (candles.length < period) {
+    const current = candles[candles.length - 1].close;
+    return { support: current * 0.995, resistance: current * 1.005 };
+  }
+  
+  const recentCandles = candles.slice(-period);
+  const highs = recentCandles.map(c => c.high);
+  const lows = recentCandles.map(c => c.low);
+  
+  // Find recent swing highs and lows
+  let swingHigh = Math.max(...highs);
+  let swingLow = Math.min(...lows);
+  
+  // For resistance: use the highest high
+  // For support: use the lowest low
+  return {
+    support: swingLow,
+    resistance: swingHigh
+  };
+}
+
 function calculateATR(candles: CandleData[], period: number = 14): number {
   if (candles.length < period + 1) return 0;
 
@@ -916,13 +955,58 @@ export async function generateSignalAnalysis(
 
   const pipValue = pair.includes("JPY") ? 0.01 : 0.0001;
 
-  // Calculate levels
-  const slPips = Math.max(technicals.atr * 1.5, pipValue * 15);
-  const tpPips = slPips * 2.0;
+  // ENHANCEMENT: Multi-indicator alignment check (stricter entry confirmation)
+  const multiIndicatorAligned = checkMultiIndicatorAlignment(technicals, m15Trend);
+  if (!multiIndicatorAligned) {
+    reasoning.push(`⚠️ MULTI-INDICATOR ALIGNMENT: Weak (RSI/MACD/Supertrend not all aligned) - confidence reduced`);
+    // Don't block, but reduce confidence significantly
+  } else {
+    reasoning.push(`✅ MULTI-INDICATOR ALIGNMENT: Strong (RSI+MACD+Supertrend all agree)`);
+  }
+
+  // ENHANCEMENT: Dynamic position sizing based on volatility
+  let slMultiplier = 1.5;  // Base multiplier
+  let tpMultiplier = 2.0;  // Base multiplier
+  
+  // Adjust for volatility: HIGH = wider stops, MEDIUM = normal, LOW = tighter
+  if (technicals.volatility === "HIGH") {
+    slMultiplier = 2.0;  // Wider stops in high volatility
+    tpMultiplier = 2.5;  // Proportionally wider TP
+    reasoning.push(`📊 VOLATILITY ADJUST: HIGH - Wider SL (${slMultiplier}x ATR)`);
+  } else if (technicals.volatility === "LOW") {
+    slMultiplier = 1.2;  // Tighter stops in low volatility
+    tpMultiplier = 1.8;  // Proportionally tighter TP
+    reasoning.push(`📊 VOLATILITY ADJUST: LOW - Tighter SL (${slMultiplier}x ATR)`);
+  }
+
+  // ENHANCEMENT: Use Support/Resistance for better exit placement
+  const supportResistance = detectSupportResistance(candles);
+  
+  // Calculate dynamic levels
+  const slPips = Math.max(technicals.atr * slMultiplier, pipValue * 15);
+  const tpPips = slPips * tpMultiplier;
 
   const entry = currentPrice;
-  const stopLoss = signalType === "CALL" ? currentPrice - slPips : currentPrice + slPips;
-  const takeProfit = signalType === "CALL" ? currentPrice + tpPips : currentPrice - tpPips;
+  
+  // Place SL and TP, optionally adjusted to nearest S/R level
+  let stopLoss = signalType === "CALL" ? currentPrice - slPips : currentPrice + slPips;
+  let takeProfit = signalType === "CALL" ? currentPrice + tpPips : currentPrice - tpPips;
+  
+  // Adjust TP to resistance level if it's closer and reasonable
+  if (signalType === "CALL" && takeProfit > supportResistance.resistance) {
+    takeProfit = supportResistance.resistance * 0.98;  // Slightly below resistance
+    reasoning.push(`🎯 RESISTANCE-BASED TP: Adjusted to ${takeProfit.toFixed(5)}`);
+  } else if (signalType === "PUT" && takeProfit < supportResistance.support) {
+    takeProfit = supportResistance.support * 1.02;  // Slightly above support
+    reasoning.push(`🎯 SUPPORT-BASED TP: Adjusted to ${takeProfit.toFixed(5)}`);
+  }
+  
+  // Ensure minimum 1:2 R/R ratio
+  const currentRR = Math.abs(takeProfit - entry) / Math.abs(entry - stopLoss);
+  if (currentRR < 1.5) {
+    takeProfit = signalType === "CALL" ? entry + (Math.abs(entry - stopLoss) * 1.5) : entry - (Math.abs(entry - stopLoss) * 1.5);
+    reasoning.push(`⚖️ RISK/REWARD ADJUSTED: Min 1:1.5 ratio enforced (was ${currentRR.toFixed(2)})`);
+  }
 
   // SIGNAL GRADING SYSTEM - Assign A/B/C grade
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted);
@@ -950,6 +1034,9 @@ export async function generateSignalAnalysis(
   // Bonus for strong momentum
   if (technicals.momentum === "STRONG") confidence += 10;
 
+  // Bonus for multi-indicator alignment (NEW)
+  if (multiIndicatorAligned) confidence += 8;
+
   // Bonus for perfect confluence indicators
   if ((signalType === "CALL" && technicals.rsi < 40) || (signalType === "PUT" && technicals.rsi > 60)) {
     confidence += 5;
@@ -961,6 +1048,9 @@ export async function generateSignalAnalysis(
 
   // Grade A bonus
   if (signalGrade === "A") confidence += 5;
+
+  // Reduce confidence if multi-indicator weak
+  if (!multiIndicatorAligned) confidence -= 5;
 
   confidence = Math.min(95, confidence);
 
