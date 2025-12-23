@@ -344,6 +344,7 @@ export async function registerRoutes(
         currentPrice: 1.09500,
         signalType: "CALL" as const,
         confidence: 85,
+        signalGrade: "A" as const,
         entry: 1.09500,
         stopLoss: 1.09300,
         takeProfit: 1.09900,
@@ -371,7 +372,7 @@ export async function registerRoutes(
           "RSI: 45.5 (Neutral - healthy level)",
           "MACD: Bullish histogram positive",
           "Supertrend: BULLISH direction confirmed",
-          "Final Confluence: 85% | Score diff: 15 | R/R: 1:2",
+          "Grade A | Confidence: 85% | R/R: 1:2",
           "🧪 TEST SIGNAL - Verifying Telegram channel integration"
         ],
         ruleChecklist: {
@@ -380,7 +381,8 @@ export async function registerRoutes(
           momentumSafety: true,
           volatilityFilter: true,
           sessionFilter: true,
-          marketRegime: true
+          marketRegime: true,
+          trendExhaustion: true
         }
       };
 

@@ -125,6 +125,7 @@ export interface SignalAnalysis {
   currentPrice: number;
   signalType: "CALL" | "PUT";
   confidence: number;
+  signalGrade: "A" | "B" | "C" | "SKIPPED";
   entry: number;
   stopLoss: number;
   takeProfit: number;
@@ -140,6 +141,7 @@ interface RuleChecklist {
   volatilityFilter: boolean;
   sessionFilter: boolean;
   marketRegime: boolean;
+  trendExhaustion: boolean;
 }
 
 const FOREX_PAIR_MAP: Record<string, { from: string; to: string }> = {
@@ -586,6 +588,26 @@ function detectCandlePattern(candles: CandleData[]): string | null {
   return null;
 }
 
+// TREND EXHAUSTION DETECTION - Check if trend is exhausted (extreme RSI + weak ADX)
+function detectTrendExhaustion(adx: number, rsi: number, signalType: "CALL" | "PUT"): boolean {
+  // EXHAUSTION RULE: Block if extreme RSI + weak/flat ADX
+  const buyExhaustion = signalType === "CALL" && rsi > 85 && adx < 28;
+  const sellExhaustion = signalType === "PUT" && rsi < 15 && adx < 28;
+
+  return buyExhaustion || sellExhaustion;
+}
+
+// SIGNAL GRADING SYSTEM - Assign A/B/C grade based on confluence
+function gradeSignal(adx: number, volatility: string, exhausted: boolean): "A" | "B" | "C" {
+  if (exhausted) return "C";
+  
+  if (adx > 30 && volatility === "MEDIUM") return "A";
+  if (adx > 30 && volatility === "HIGH") return "A";
+  if (adx >= 25 && adx <= 30 && volatility !== "LOW") return "B";
+  
+  return "C";
+}
+
 // MARKET REGIME DETECTION
 function detectMarketRegime(candles: CandleData[], adx: number, atr: number, bbMiddle: number): "TRENDING" | "RANGING" | "LOW_LIQUIDITY" {
   if (candles.length < 20) return "RANGING";
@@ -725,6 +747,7 @@ export async function generateSignalAnalysis(
     volatilityFilter: false,
     sessionFilter: sessionForPair !== null,
     marketRegime: false,
+    trendExhaustion: true,
   };
 
   const reasoning: string[] = [];
@@ -738,6 +761,7 @@ export async function generateSignalAnalysis(
       currentPrice: 0,
       signalType: "CALL",
       confidence: 0,
+      signalGrade: "SKIPPED",
       entry: 0,
       stopLoss: 0,
       takeProfit: 0,
@@ -768,6 +792,7 @@ export async function generateSignalAnalysis(
       currentPrice,
       signalType: "CALL",
       confidence: 0,
+      signalGrade: "SKIPPED",
       entry: currentPrice,
       stopLoss: currentPrice,
       takeProfit: currentPrice,
@@ -788,6 +813,7 @@ export async function generateSignalAnalysis(
       currentPrice,
       signalType: "CALL",
       confidence: 0,
+      signalGrade: "SKIPPED",
       entry: currentPrice,
       stopLoss: currentPrice,
       takeProfit: currentPrice,
@@ -808,6 +834,7 @@ export async function generateSignalAnalysis(
       currentPrice,
       signalType: "CALL",
       confidence: 0,
+      signalGrade: "SKIPPED",
       entry: currentPrice,
       stopLoss: currentPrice,
       takeProfit: currentPrice,
@@ -829,6 +856,7 @@ export async function generateSignalAnalysis(
       currentPrice,
       signalType: "CALL",
       confidence: 0,
+      signalGrade: "SKIPPED",
       entry: currentPrice,
       stopLoss: currentPrice,
       takeProfit: currentPrice,
@@ -850,6 +878,7 @@ export async function generateSignalAnalysis(
       currentPrice,
       signalType: "CALL",
       confidence: 0,
+      signalGrade: "SKIPPED",
       entry: currentPrice,
       stopLoss: currentPrice,
       takeProfit: currentPrice,
@@ -860,10 +889,31 @@ export async function generateSignalAnalysis(
   }
   reasoning.push(`✅ VOLATILITY FILTER: ATR=${technicals.atr.toFixed(6)} (healthy)`);
 
-  // ALL RULES PASSED - Generate signal
+  // ALL RULES PASSED - Check Trend Exhaustion (MANDATORY FILTER)
   reasoning.push("🎯 ALL CORE RULES PASSED");
 
   const signalType: "CALL" | "PUT" = m15Trend === "BULLISH" ? "CALL" : "PUT";
+  const exhausted = detectTrendExhaustion(technicals.adx, technicals.rsi, signalType);
+  ruleChecklist.trendExhaustion = !exhausted;
+
+  if (exhausted) {
+    reasoning.push(`❌ TREND EXHAUSTION DETECTED: RSI extreme + weak ADX (ADX=${technicals.adx.toFixed(1)})`);
+    return {
+      pair,
+      currentPrice,
+      signalType,
+      confidence: 0,
+      signalGrade: "SKIPPED",
+      entry: currentPrice,
+      stopLoss: currentPrice,
+      takeProfit: currentPrice,
+      technicals,
+      reasoning,
+      ruleChecklist,
+    };
+  }
+  reasoning.push(`✅ TREND EXHAUSTION CHECK: PASSED (ADX=${technicals.adx.toFixed(1)}, RSI=${technicals.rsi.toFixed(1)})`);
+
   const pipValue = pair.includes("JPY") ? 0.01 : 0.0001;
 
   // Calculate levels
@@ -873,6 +923,26 @@ export async function generateSignalAnalysis(
   const entry = currentPrice;
   const stopLoss = signalType === "CALL" ? currentPrice - slPips : currentPrice + slPips;
   const takeProfit = signalType === "CALL" ? currentPrice + tpPips : currentPrice - tpPips;
+
+  // SIGNAL GRADING SYSTEM - Assign A/B/C grade
+  const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted);
+  
+  if (signalGrade === "C") {
+    reasoning.push(`⚠️ GRADE C SIGNAL: Execution SKIPPED (Minor weakness detected)`);
+    return {
+      pair,
+      currentPrice,
+      signalType,
+      confidence: 0,
+      signalGrade: "SKIPPED",
+      entry,
+      stopLoss,
+      takeProfit,
+      technicals,
+      reasoning,
+      ruleChecklist,
+    };
+  }
 
   // Base confidence from rule passing
   let confidence = 75;
@@ -889,15 +959,19 @@ export async function generateSignalAnalysis(
   if (technicals.candlePattern === "bullish_engulfing" && signalType === "CALL") confidence += 5;
   if (technicals.candlePattern === "bearish_engulfing" && signalType === "PUT") confidence += 5;
 
+  // Grade A bonus
+  if (signalGrade === "A") confidence += 5;
+
   confidence = Math.min(95, confidence);
 
-  reasoning.push(`Final Confidence: ${confidence}% | RR: 1:2`);
+  reasoning.push(`Grade ${signalGrade} | Confidence: ${confidence}% | RR: 1:2`);
 
   return {
     pair,
     currentPrice,
     signalType,
     confidence,
+    signalGrade,
     entry,
     stopLoss,
     takeProfit,
