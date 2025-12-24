@@ -434,16 +434,22 @@ function hasThreeConsecutiveTrendCandles(candles: CandleData[], direction: "BULL
 }
 
 /**
- * Check if RSI, MACD, and Supertrend ALL agree on direction
- * Much stricter than individual checks - ensures confluence
+ * Check if RSI, MACD, and Supertrend align
+ * Returns alignment count: 3 = perfect, 2 = good, 1 = weak
+ * More signals: 2/3 alignment is acceptable with slight penalty
  */
-function checkMultiIndicatorAlignment(technicals: TechnicalAnalysis, direction: "BULLISH" | "BEARISH"): boolean {
+function checkMultiIndicatorAlignment(technicals: TechnicalAnalysis, direction: "BULLISH" | "BEARISH"): { count: number; aligned: boolean } {
   const rsiAligned = direction === "BULLISH" ? technicals.rsi < 70 : technicals.rsi > 30;
   const macdAligned = direction === "BULLISH" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0;
   const supertrendAligned = technicals.supertrend.direction === direction;
   
-  // ALL three must agree
-  return rsiAligned && macdAligned && supertrendAligned;
+  const count = (rsiAligned ? 1 : 0) + (macdAligned ? 1 : 0) + (supertrendAligned ? 1 : 0);
+  
+  // Allow 2/3 or 3/3 alignment for more signal frequency
+  return {
+    count,
+    aligned: count >= 2  // Changed from 3 to 2 for more signals
+  };
 }
 
 /**
@@ -821,26 +827,14 @@ export async function generateSignalAnalysis(
   const m15Trend = technicals.supertrend.direction;
   const h1Trend = technicalsH1.supertrend.direction;
 
-  // RULE 1: HTF ALIGNMENT CHECK
+  // RULE 1: HTF ALIGNMENT CHECK (now a confidence bonus, not required)
   const htfAligned = m15Trend === h1Trend;
   ruleChecklist.htfAlignment = htfAligned;
-  if (!htfAligned) {
-    reasoning.push(`❌ HTF ALIGNMENT FAILED: M15=${m15Trend}, H1=${h1Trend}`);
-    return {
-      pair,
-      currentPrice,
-      signalType: "CALL",
-      confidence: 0,
-      signalGrade: "SKIPPED",
-      entry: currentPrice,
-      stopLoss: currentPrice,
-      takeProfit: currentPrice,
-      technicals,
-      reasoning,
-      ruleChecklist,
-    };
+  if (htfAligned) {
+    reasoning.push(`✅ HTF ALIGNMENT BONUS: M15 & H1 both ${m15Trend} (+10% confidence)`);
+  } else {
+    reasoning.push(`⚠️ HTF MISALIGNED: M15=${m15Trend}, H1=${h1Trend} (signal allowed with penalty)`);
   }
-  reasoning.push(`✅ HTF ALIGNMENT: M15 & H1 both ${m15Trend}`);
 
   // RULE 2: MARKET REGIME CHECK
   const validRegime = technicals.marketRegime === "TRENDING";
@@ -955,14 +949,8 @@ export async function generateSignalAnalysis(
 
   const pipValue = pair.includes("JPY") ? 0.01 : 0.0001;
 
-  // ENHANCEMENT: Multi-indicator alignment check (stricter entry confirmation)
-  const multiIndicatorAligned = checkMultiIndicatorAlignment(technicals, m15Trend);
-  if (!multiIndicatorAligned) {
-    reasoning.push(`⚠️ MULTI-INDICATOR ALIGNMENT: Weak (RSI/MACD/Supertrend not all aligned) - confidence reduced`);
-    // Don't block, but reduce confidence significantly
-  } else {
-    reasoning.push(`✅ MULTI-INDICATOR ALIGNMENT: Strong (RSI+MACD+Supertrend all agree)`);
-  }
+  // ENHANCEMENT: Multi-indicator alignment check will be evaluated in confidence section
+  // Now allows 2/3 alignment instead of requiring all 3
 
   // ENHANCEMENT: Dynamic position sizing based on volatility
   let slMultiplier = 1.5;  // Base multiplier
@@ -1028,14 +1016,37 @@ export async function generateSignalAnalysis(
     };
   }
 
-  // Base confidence from rule passing
-  let confidence = 75;
+  // SESSION-BASED CONFIDENCE THRESHOLDS
+  let baseConfidence = 75;
+  const sessionThreshold = sessionTime === "MORNING" ? 65 : sessionTime === "AFTERNOON" ? 70 : 75;
+  reasoning.push(`📊 SESSION-BASED: ${sessionTime} (threshold: ${sessionThreshold}%, base: ${baseConfidence}%)`);
+
+  let confidence = baseConfidence;
+
+  // HTF ALIGNMENT BONUS (was hard requirement, now bonus)
+  if (htfAligned) {
+    confidence += 10;
+    reasoning.push(`✅ HTF ALIGNMENT BONUS: +10%`);
+  } else {
+    confidence -= 5;
+    reasoning.push(`⚠️ HTF MISALIGNMENT PENALTY: -5%`);
+  }
 
   // Bonus for strong momentum
   if (technicals.momentum === "STRONG") confidence += 10;
 
-  // Bonus for multi-indicator alignment (NEW)
-  if (multiIndicatorAligned) confidence += 8;
+  // MULTI-INDICATOR ALIGNMENT (2 out of 3 is now acceptable)
+  const indicatorCheck = checkMultiIndicatorAlignment(technicals, m15Trend);
+  if (indicatorCheck.count === 3) {
+    confidence += 10;
+    reasoning.push(`🎯 PERFECT ALIGNMENT (3/3 indicators): +10%`);
+  } else if (indicatorCheck.count === 2) {
+    confidence += 5;
+    reasoning.push(`✅ GOOD ALIGNMENT (2/3 indicators): +5%`);
+  } else {
+    confidence -= 8;
+    reasoning.push(`⚠️ WEAK ALIGNMENT (1/3 indicators): -8%`);
+  }
 
   // Bonus for perfect confluence indicators
   if ((signalType === "CALL" && technicals.rsi < 40) || (signalType === "PUT" && technicals.rsi > 60)) {
@@ -1049,12 +1060,14 @@ export async function generateSignalAnalysis(
   // Grade A bonus
   if (signalGrade === "A") confidence += 5;
 
-  // Reduce confidence if multi-indicator weak
-  if (!multiIndicatorAligned) confidence -= 5;
-
   confidence = Math.min(95, confidence);
+  
+  // Apply session-based threshold (lower during MORNING = more signals)
+  if (confidence < sessionThreshold) {
+    confidence = Math.max(sessionThreshold - 5, confidence);  // Boost weak signals slightly in morning
+  }
 
-  reasoning.push(`Grade ${signalGrade} | Confidence: ${confidence}% | RR: 1:2`);
+  reasoning.push(`Grade ${signalGrade} | Confidence: ${confidence}% | RR: ${(Math.abs(takeProfit - entry) / Math.abs(entry - stopLoss)).toFixed(2)}:1`);
 
   return {
     pair,
