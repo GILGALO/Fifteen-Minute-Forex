@@ -16,14 +16,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Forex M15 Bot"
+args = "Start application"
 
 [[workflows.workflow]]
-name = "Forex M15 Bot"
+name = "Start application"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
