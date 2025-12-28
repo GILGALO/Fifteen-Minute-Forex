@@ -10,11 +10,13 @@ import { TrendingUp } from "lucide-react";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!username || !password) {
       toast({ title: "Error", description: "Please enter username and password", variant: "destructive" });
       return;
@@ -54,36 +56,51 @@ export default function Login() {
             <CardDescription>Admin Login</CardDescription>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Username</label>
-            <Input
-              data-testid="input-username"
-              placeholder="admin"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Password</label>
-            <Input
-              data-testid="input-password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            />
-          </div>
-          <Button
-            data-testid="button-login"
-            onClick={handleLogin}
-            disabled={loading}
-            className="w-full min-h-10"
-          >
-            {loading ? "Logging in..." : "Login"}
-          </Button>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Username</label>
+              <Input
+                data-testid="input-username"
+                placeholder="admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Password</label>
+              <Input
+                data-testid="input-password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  data-testid="checkbox-remember"
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-input bg-background"
+                />
+                <span className="text-sm text-muted-foreground">Remember me</span>
+              </label>
+              <a data-testid="link-forgot-password" href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                Forgot password?
+              </a>
+            </div>
+            <Button
+              data-testid="button-login"
+              type="submit"
+              disabled={loading}
+              className="w-full min-h-10"
+            >
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </form>
         </CardContent>
       </Card>
     </div>
