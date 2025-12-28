@@ -18,7 +18,6 @@ const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
 const RecentSignals = lazy(() => import("@/components/recent-signals"));
 const TradingChart = lazy(() => import("@/components/trading-chart"));
-const TradingSchedule = lazy(() => import("@/components/trading-schedule"));
 
 interface SessionStats {
   pnl: { profit: number; loss: number; net: number; basisPoints: number };
@@ -394,7 +393,11 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                 </ErrorBoundary>
               </div>
             </div>
-            
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
+          <div className="lg:col-span-12 space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 gap-6 mt-6">
               <ErrorBoundary>
                 <Suspense fallback={<Skeleton className="h-64 w-full" />}>
@@ -455,16 +458,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                 </Suspense>
               </ErrorBoundary>
             </div>
-
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-6">
-              <div className="xl:col-span-12">
-                <ErrorBoundary>
-                  <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-                    <TradingSchedule />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            </div>
           </div>
 
           <div className="lg:col-span-5 xl:col-span-4 space-y-4 sm:space-y-6">
@@ -477,7 +470,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               <div className="h-[350px] sm:h-[400px] md:h-[450px]">
                 <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
                   <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                    <TradingChart pair={activePair} />
+                    <TradingChart pair={activePair} theme={theme} />
                   </Suspense>
                 </ErrorBoundary>
               </div>
@@ -488,7 +481,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             <div className="h-[650px] lg:h-[700px] xl:h-[750px] sticky top-4">
               <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
                 <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                  <TradingChart pair={activePair} />
+                  <TradingChart pair={activePair} theme={theme} />
                 </Suspense>
               </ErrorBoundary>
             </div>
