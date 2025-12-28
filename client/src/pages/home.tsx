@@ -178,11 +178,13 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             <div className="flex flex-col gap-3 sm:gap-4 w-full lg:w-auto">
               <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 justify-start lg:justify-end">
                 {isAdmin && (
-                  <Link href="/admin">
-                    <a className="h-8 sm:h-10 md:h-11 px-2.5 sm:px-4 md:px-6 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 flex items-center gap-1.5 sm:gap-2 hover:bg-white/10 transition-all cursor-pointer group text-[11px] sm:text-xs md:text-sm" data-testid="link-admin">
-                      <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500 flex-shrink-0" />
-                      <span className="font-bold text-slate-200 hidden sm:inline">System Config</span>
-                    </a>
+                  <Link 
+                    href="/admin"
+                    className="h-8 sm:h-10 md:h-11 px-2.5 sm:px-4 md:px-6 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 flex items-center gap-1.5 sm:gap-2 hover:bg-white/10 transition-all cursor-pointer group text-[11px] sm:text-xs md:text-sm"
+                    data-testid="link-admin"
+                  >
+                    <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500 flex-shrink-0" />
+                    <span className="font-bold text-slate-200 hidden sm:inline">System Config</span>
                   </Link>
                 )}
                 <Button
