@@ -10,6 +10,7 @@ export interface IStorage {
   createUser(user: InsertUser, isAdmin?: boolean): Promise<User>;
   deleteUser(id: string): Promise<boolean>;
   listUsers(): Promise<User[]>;
+  updateUserPassword(id: string, hashedPassword: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -42,6 +43,14 @@ export class MemStorage implements IStorage {
 
   async listUsers(): Promise<User[]> {
     return Array.from(this.users.values());
+  }
+
+  async updateUserPassword(id: string, hashedPassword: string): Promise<boolean> {
+    const user = this.users.get(id);
+    if (!user) return false;
+    user.password = hashedPassword;
+    this.users.set(id, user);
+    return true;
   }
 }
 

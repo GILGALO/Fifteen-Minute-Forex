@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Trash2, Plus, LogOut } from "lucide-react";
+import { Trash2, Plus, LogOut, Lock } from "lucide-react";
 import { useLocation } from "wouter";
 import type { User } from "@shared/schema";
 
@@ -14,6 +14,9 @@ export default function Admin() {
   const { toast } = useToast();
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newAdminPassword, setNewAdminPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const { data: response, isLoading } = useQuery({
     queryKey: ["/api/admin/users"],
@@ -44,6 +47,20 @@ export default function Admin() {
     },
   });
 
+  const changePasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) =>
+      apiRequest("/api/auth/change-password", "POST", data),
+    onSuccess: () => {
+      setCurrentPassword("");
+      setNewAdminPassword("");
+      setConfirmPassword("");
+      toast({ title: "Success", description: "Password changed successfully" });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    },
+  });
+
   const handleLogout = async () => {
     try {
       await apiRequest("/api/auth/logout", "POST");
@@ -59,6 +76,18 @@ export default function Admin() {
       return;
     }
     createMutation.mutate({ username: newUsername, password: newPassword });
+  };
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newAdminPassword || !confirmPassword) {
+      toast({ title: "Error", description: "Please fill in all fields", variant: "destructive" });
+      return;
+    }
+    if (newAdminPassword !== confirmPassword) {
+      toast({ title: "Error", description: "New passwords do not match", variant: "destructive" });
+      return;
+    }
+    changePasswordMutation.mutate({ currentPassword, newPassword: newAdminPassword });
   };
 
   const users = (response as any)?.users || [];
@@ -80,6 +109,48 @@ export default function Admin() {
             Logout
           </Button>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />
+              Change Admin Password
+            </CardTitle>
+            <CardDescription>Update your admin account password</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Input
+                data-testid="input-current-password"
+                type="password"
+                placeholder="Current password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+              <Input
+                data-testid="input-new-admin-password"
+                type="password"
+                placeholder="New password"
+                value={newAdminPassword}
+                onChange={(e) => setNewAdminPassword(e.target.value)}
+              />
+              <Input
+                data-testid="input-confirm-password"
+                type="password"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <Button
+                data-testid="button-change-password"
+                onClick={handleChangePassword}
+                disabled={changePasswordMutation.isPending}
+              >
+                {changePasswordMutation.isPending ? "Updating..." : "Update"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

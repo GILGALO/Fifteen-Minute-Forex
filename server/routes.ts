@@ -570,6 +570,38 @@ export async function registerRoutes(
     }
   });
 
+  // Change password endpoint
+  app.post("/api/auth/change-password", async (req: any, res: Response) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const { currentPassword, newPassword } = req.body;
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: "Current and new password required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      const currentHashedPassword = crypto.createHash("sha256").update(currentPassword).digest("hex");
+      if (user.password !== currentHashedPassword) {
+        return res.status(401).json({ error: "Current password is incorrect" });
+      }
+
+      const newHashedPassword = crypto.createHash("sha256").update(newPassword).digest("hex");
+      await storage.updateUserPassword(userId, newHashedPassword);
+
+      res.json({ success: true, message: "Password changed successfully" });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/telegram/test", async (req, res) => {
     try {
       // Create a test signal with realistic data
