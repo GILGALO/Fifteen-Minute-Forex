@@ -379,12 +379,12 @@ function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAl
   if (exhausted) return "C";
   
   // High-Accuracy "A" Grade for Pocket Option:
-  // Requires 100% indicator alignment (MACD + Supertrend) + HTF trend confirmation
+  // Requires high momentum (ADX > 28) + 100% indicator alignment (MACD + Supertrend) + HTF trend confirmation
   if (adx > 28 && macdAligned && supertrendAligned && htfAligned) return "A";
   
   // Opportunistic "B" Grade:
-  // Good for 5-min scalps even if HTF is neutral or slightly conflicting
-  if (adx >= 22 && (macdAligned || supertrendAligned)) return "B";
+  // Good for 5-min scalps if momentum is sufficient, even with slight misalignment
+  if (adx >= 24 && (macdAligned || supertrendAligned)) return "B";
   
   return "C";
 }
@@ -453,14 +453,22 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   if (technicals.adx > 30) confidence += 10; else if (technicals.adx < 20) confidence -= 12;
-  // GRADE A+ WIN-RATE VERIFICATION
+  // GRADE A+ WIN-RATE VERIFICATION (INSTITUTIONAL PRECISION)
   // For binary options, we need extreme precision on the highest grade signals
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
   const isPerfectAlignment = indicatorCheck.count === 4; // RSI, Stoch, Supertrend, MACD all agree
   
-  if (isPerfectAlignment && htfAligned && volumeConfirmed) {
-    confidence = Math.max(88, confidence + 15);
-    reasoning.push(`💎 GRADE A+ CONFLUENCE: Institutional alignment detected!`);
+  // High-Probability Confirmation logic:
+  // Requires: Perfect Indicators + Trend Alignment + Institutional Volume + Market Correlation
+  const correlationAligned = reasoning.includes(`✅ FULL CORRELATION`) || reasoning.includes(`✅ PARTIAL CORRELATION`);
+  const institutionalQuality = isPerfectAlignment && htfAligned && volumeConfirmed && correlationAligned;
+
+  if (institutionalQuality) {
+    confidence = Math.max(92, confidence + 18);
+    reasoning.push(`💎 INSTITUTIONAL GRADE A+: Triple-Verified Winning Setup!`);
+  } else if (isPerfectAlignment && htfAligned) {
+    confidence = Math.max(88, confidence + 10);
+    reasoning.push(`✨ HIGH-QUALITY GRADE A: Trend & Indicator Alignment`);
   }
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
