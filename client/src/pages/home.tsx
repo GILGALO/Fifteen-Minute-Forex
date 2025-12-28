@@ -21,7 +21,7 @@ export default function Home() {
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  const { data: quotesData } = useQuery({
+  const { data: quotesData } = useQuery<{ quotes: any; marketStatus: { isOpen: boolean; reason?: string } }>({
     queryKey: ["/api/forex/quotes"],
     refetchInterval: 30000,
   });

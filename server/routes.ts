@@ -7,6 +7,7 @@ import {
   getAllQuotes,
   generateSignalAnalysis,
   analyzeTechnicals,
+  isMarketOpen,
   type SignalAnalysis,
 } from "./forexService";
 import { sendToTelegram } from "./telegram";
