@@ -69,10 +69,6 @@ function App() {
           <div className="flex h-screen w-full overflow-hidden">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
-              <header className="flex items-center justify-end gap-2 px-4 py-3 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm flex-shrink-0 z-50 safe-area-inset-top min-h-14">
-                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate flex items-center justify-center flex-shrink-0" />
-                <ThemeToggle />
-              </header>
               <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
                 <Router isAuthenticated={true} isAdmin={isAdmin} />
               </main>

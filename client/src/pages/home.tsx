@@ -11,6 +11,8 @@ import ErrorBoundary from "@/components/error-boundary";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
@@ -177,6 +179,8 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
             <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 w-full lg:w-auto">
               <div className="flex flex-wrap items-center gap-1 sm:gap-2 md:gap-3 justify-start lg:justify-end">
+                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate h-7 sm:h-9 md:h-10 px-2 sm:px-3 md:px-5 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-1 sm:gap-2 hover:bg-white/10 transition-all cursor-pointer flex-shrink-0" />
+                <ThemeToggle />
                 {isAdmin && (
                   <Link 
                     href="/admin"
