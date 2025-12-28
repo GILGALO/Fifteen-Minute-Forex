@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Signal } from "@/lib/constants";
 import { format } from "date-fns";
-import { TrendingUp, TrendingDown, Clock, CheckCircle2, XCircle, Timer, Activity, Filter } from "lucide-react";
+import { TrendingUp, TrendingDown, Clock, CheckCircle2, XCircle, Timer, Activity, Filter, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";

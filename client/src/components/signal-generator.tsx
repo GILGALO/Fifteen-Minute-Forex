@@ -315,133 +315,155 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
   };
 
   return (
-    <div className="space-y-5">
-      <Card className="glass-panel border-primary/30 shadow-2xl overflow-hidden relative group">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <CardContent className="p-5 space-y-5 relative z-10">
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            className="glass-panel p-4 rounded-2xl border border-primary/20 shadow-lg relative overflow-hidden"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 opacity-0 hover:opacity-100 transition-opacity duration-500" />
-            <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-3">
-                <div className={`p-2.5 rounded-xl ${autoMode ? "bg-yellow-500/20 border-2 border-yellow-500/50" : "bg-muted/30"} border transition-all duration-300`}>
-                  <Zap className={`w-5 h-5 ${autoMode ? "text-yellow-400" : "text-muted-foreground"}`} />
-                </div>
-                <div>
-                  <Label htmlFor="auto-mode" className="text-sm font-bold cursor-pointer flex items-center gap-2">
-                    Auto Mode
-                    {autoMode && <Sparkles className="w-3 h-3 text-yellow-400" />}
-                  </Label>
-                  <p className="text-xs text-muted-foreground">Automated signal generation</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                {autoMode && <Countdown />}
-                <Switch id="auto-mode" checked={autoMode} onCheckedChange={setAutoMode} />
+    <div className="space-y-6">
+      <Card className="premium-card overflow-hidden relative group border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+        <CardContent className="p-6 md:p-8 space-y-8 relative z-10">
+          <div className="flex items-center gap-5">
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl blur-xl animate-pulse" />
+              <div className="p-4 bg-slate-950 border border-emerald-500/30 rounded-2xl relative">
+                <Zap className="w-8 h-8 text-emerald-400 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
               </div>
             </div>
-          </motion.div>
-
-          {autoMode && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="glass-panel px-4 py-3 rounded-xl border border-primary/30"
-            >
-              <Label htmlFor="scan-mode" className="text-xs text-primary cursor-pointer font-semibold flex items-center gap-2">
-                <Target className="w-3 h-3" />
-                Scan All Pairs
-              </Label>
-              <Switch id="scan-mode" checked={scanMode} onCheckedChange={setScanMode} className="scale-90 ml-auto" />
-            </motion.div>
-          )}
-
-          {!autoMode && (
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="glass-panel p-4 rounded-2xl border border-primary/20 shadow-lg"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-xl ${!manualMode ? "bg-primary/20 border-2 border-primary/50" : "bg-muted/30"} border transition-all duration-300`}>
-                    <Target className={`w-5 h-5 ${!manualMode ? "text-primary" : "text-muted-foreground"}`} />
-                  </div>
-                  <div>
-                    <Label htmlFor="signal-mode" className="text-sm font-bold cursor-pointer">Signal Mode</Label>
-                    <p className="text-xs text-muted-foreground">{manualMode ? "Manual: Select pair" : "Auto: Best pair"}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground font-medium">Manual</span>
-                  <Switch id="signal-mode" checked={!manualMode} onCheckedChange={(checked) => setManualMode(!checked)} />
-                  <span className="text-xs text-muted-foreground font-medium">Auto</span>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          <div className="glass-panel p-3 rounded-xl border border-primary/40 flex items-center justify-between shadow-lg bg-gradient-to-r from-primary/10 to-transparent">
-            <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-primary" />
-              <span className="text-sm font-bold text-primary">{currentSession.name} Session</span>
-            </div>
-            <div className="text-xs text-muted-foreground font-medium bg-background/50 px-3 py-1 rounded-full">
-              {availablePairs.length} pairs
+            <div>
+              <h2 className="text-2xl font-black text-white uppercase tracking-tighter">Signal Engine</h2>
+              <p className="text-[10px] text-slate-500 uppercase tracking-[0.3em] font-black">Neural Network Analysis v11</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+          <div className="grid grid-cols-1 gap-6">
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              className="glass-panel p-5 rounded-[1.5rem] border border-emerald-500/20 shadow-xl relative overflow-hidden group/item"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-emerald-500/5 opacity-0 group-hover/item:opacity-100 transition-opacity duration-500" />
+              <div className="flex items-center justify-between relative z-10">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-2xl ${autoMode ? "bg-emerald-500/20 border-2 border-emerald-500/50" : "bg-white/5"} border transition-all duration-500`}>
+                    <Activity className={`w-6 h-6 ${autoMode ? "text-emerald-400" : "text-slate-500"}`} />
+                  </div>
+                  <div>
+                    <Label htmlFor="auto-mode" className="text-sm font-black cursor-pointer flex items-center gap-2 uppercase tracking-wider text-slate-200">
+                      Auto-Pilot
+                      {autoMode && <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />}
+                    </Label>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Continuous scan mode</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  {autoMode && <Countdown />}
+                  <Switch id="auto-mode" checked={autoMode} onCheckedChange={setAutoMode} className="data-[state=checked]:bg-emerald-500" />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            {autoMode && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, y: -20 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -20 }}
+                transition={{ duration: 0.5, ease: "circOut" }}
+                className="glass-panel px-6 py-4 rounded-[1.25rem] border border-emerald-500/30 flex items-center justify-between bg-emerald-500/5 group/scan"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <Label htmlFor="scan-mode" className="text-[11px] text-emerald-400 cursor-pointer font-black uppercase tracking-widest flex items-center gap-2">
+                    Global Asset Scanner
+                  </Label>
+                </div>
+                <Switch id="scan-mode" checked={scanMode} onCheckedChange={setScanMode} className="scale-90 data-[state=checked]:bg-emerald-500" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!autoMode && (
+            <motion.div
+              whileHover={{ scale: 1.01 }}
+              className="glass-panel p-5 rounded-[1.5rem] border border-white/10 shadow-xl"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-2xl ${!manualMode ? "bg-emerald-500/20 border-2 border-emerald-500/50" : "bg-white/5"} border transition-all duration-500`}>
+                    <Target className={`w-6 h-6 ${!manualMode ? "text-emerald-400" : "text-slate-500"}`} />
+                  </div>
+                  <div>
+                    <Label htmlFor="signal-mode" className="text-sm font-black text-slate-200 uppercase tracking-wider">Analysis Bias</Label>
+                    <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{manualMode ? "Target: Locked" : "Target: dynamic"}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 bg-slate-950/50 p-1.5 rounded-2xl border border-white/5">
+                  <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg transition-colors ${manualMode ? "text-emerald-400 bg-emerald-500/10" : "text-slate-500"}`}>Manual</span>
+                  <Switch id="signal-mode" checked={!manualMode} onCheckedChange={(checked) => setManualMode(!checked)} className="data-[state=checked]:bg-emerald-500" />
+                  <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg transition-colors ${!manualMode ? "text-emerald-400 bg-emerald-500/10" : "text-slate-500"}`}>Best</span>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          <div className="glass-panel p-4 rounded-[1.25rem] border border-emerald-500/30 flex items-center justify-between shadow-xl bg-gradient-to-r from-emerald-500/10 to-transparent">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-emerald-500/20 rounded-lg">
+                <Globe className="w-4 h-4 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+              </div>
+              <span className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">{currentSession.name} MARKET ACTIVE</span>
+            </div>
+            <div className="text-[10px] text-slate-300 font-black uppercase tracking-widest bg-emerald-500/20 px-4 py-1.5 rounded-full border border-emerald-500/30">
+              {availablePairs.length} ASSETS ONLINE
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                 <TrendingUp className="w-3 h-3" />
-                Pair
+                Select Asset
               </label>
               <Select value={selectedPair} onValueChange={handlePairChange} disabled={!autoMode && !manualMode}>
-                <SelectTrigger className="h-12 glass-panel border-primary/30 font-mono text-sm font-semibold hover:border-primary/50 transition-colors">
+                <SelectTrigger className="h-14 glass-panel border-white/10 font-mono text-sm font-black tracking-wider hover:border-emerald-500/40 transition-all rounded-2xl">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="glass-panel">
+                <SelectContent className="glass-panel border-emerald-500/30 rounded-2xl">
                   {availablePairs.map(pair => (
-                    <SelectItem key={pair} value={pair} className="font-mono font-semibold">{pair}</SelectItem>
+                    <SelectItem key={pair} value={pair} className="font-mono font-black py-3 focus:bg-emerald-500/20 focus:text-emerald-400">{pair}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
-              <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1">
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center gap-2">
                 <Clock className="w-3 h-3" />
-                Timeframe
+                Interval
               </label>
-              <div className="h-12 glass-panel border-2 border-primary/50 rounded-xl flex items-center justify-center shadow-lg bg-gradient-to-br from-primary/10 to-transparent">
-                <span className="font-mono text-sm font-black text-primary neon-text">M5 (FIXED)</span>
+              <div className="h-14 glass-panel border border-emerald-500/40 rounded-2xl flex items-center justify-center shadow-xl bg-gradient-to-br from-emerald-500/10 to-transparent">
+                <span className="font-mono text-sm font-black text-emerald-400 tracking-[0.2em] drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]">M15 PREMIUM</span>
               </div>
             </div>
           </div>
 
           <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
             <Button
-              className="w-full h-14 font-bold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-primary-foreground shadow-2xl relative overflow-hidden group"
+              className="w-full h-16 font-black bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_30px_rgba(16,185,129,0.3)] relative overflow-hidden group rounded-[1.5rem] text-sm uppercase tracking-[0.2em]"
               onClick={() => generateSignal(false)}
               disabled={isAnalyzing || autoMode}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               {isAnalyzing ? (
-                <span className="flex items-center gap-2 relative z-10">
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {manualMode || autoMode ? "Analyzing Market..." : "Scanning All Pairs..."}
+                <span className="flex items-center gap-3 relative z-10">
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                  NEURAL ANALYSIS IN PROGRESS...
                 </span>
               ) : autoMode ? (
-                <span className="flex items-center gap-2 relative z-10">
-                  <Zap className="w-5 h-5" />
-                  Auto Mode Active
+                <span className="flex items-center gap-3 relative z-10">
+                  <Zap className="w-6 h-6 fill-slate-950" />
+                  PILOT ENGAGED
                 </span>
               ) : (
-                <span className="flex items-center gap-2 relative z-10">
-                  <Sparkles className="w-5 h-5" />
-                  {manualMode ? `Generate Signal (${selectedPair})` : "Find Best Signal"}
+                <span className="flex items-center gap-3 relative z-10">
+                  <Sparkles className="w-6 h-6" />
+                  EXECUTE ANALYSIS
                 </span>
               )}
             </Button>
