@@ -38,7 +38,8 @@ export async function registerRoutes(
   app.get("/api/forex/quotes", async (req, res) => {
     try {
       const quotes = await getAllQuotes(FOREX_PAIRS, apiKey);
-      res.json(quotes);
+      const marketStatus = isMarketOpen();
+      res.json({ quotes, marketStatus });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

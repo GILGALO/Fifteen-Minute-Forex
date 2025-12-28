@@ -681,6 +681,31 @@ function detectMarketRegime(candles: CandleData[], adx: number, atr: number, bbM
   return "RANGING";
 }
 
+export function isMarketOpen(): { isOpen: boolean; reason?: string } {
+  const KENYA_OFFSET_MS = 3 * 60 * 60 * 1000;
+  const nowKenya = new Date(Date.now() + KENYA_OFFSET_MS);
+  const day = nowKenya.getUTCDay(); // 0 = Sunday, 6 = Saturday
+  const hour = nowKenya.getUTCHours();
+  const minute = nowKenya.getUTCMinutes();
+
+  // Markets close Friday at 22:00 UTC (01:00 Saturday Kenya Time)
+  // Markets open Sunday at 22:00 UTC (01:00 Monday Kenya Time)
+  
+  // Saturday (Kenya Time) is always closed
+  if (day === 6) return { isOpen: false, reason: "WEEKEND - Markets Closed" };
+  
+  // Sunday (Kenya Time) is closed until late night (market opens at 01:00 Monday Kenya Time)
+  if (day === 0) return { isOpen: false, reason: "WEEKEND - Markets Closed" };
+
+  // Friday night / Saturday morning close (Friday 22:00 UTC is Saturday 01:00 Kenya)
+  if (day === 5 && hour >= 22) return { isOpen: false, reason: "MARKET CLOSE - Weekend Break" };
+  
+  // Monday morning open (Sunday 22:00 UTC is Monday 01:00 Kenya)
+  if (day === 1 && hour < 1) return { isOpen: false, reason: "MARKET CLOSE - Weekend Break" };
+
+  return { isOpen: true };
+}
+
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
   const closes = candles.map(c => c.close);
 

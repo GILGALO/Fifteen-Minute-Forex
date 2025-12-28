@@ -2,12 +2,13 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { type Signal } from "@/lib/constants";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar } from "lucide-react";
+import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar, AlertTriangle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorBoundary from "@/components/error-boundary";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
+import { useQuery } from "@tanstack/react-query";
 
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
@@ -19,6 +20,13 @@ export default function Home() {
   const [activePair, setActivePair] = useState("EUR/USD");
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const { data: quotesData } = useQuery({
+    queryKey: ["/api/forex/quotes"],
+    refetchInterval: 30000,
+  });
+
+  const marketStatus = quotesData?.marketStatus;
 
   const totalSignals = signals.length;
   const wonSignals = signals.filter(s => s.status === 'won').length;
@@ -84,6 +92,14 @@ export default function Home() {
       </div>
 
       <div className="mb-8">
+        {marketStatus && !marketStatus.isOpen && (
+          <div className="bg-rose-500/20 border-y border-rose-500/50 py-3 px-4 flex items-center justify-center gap-3 animate-pulse">
+            <AlertTriangle className="w-5 h-5 text-rose-500" />
+            <span className="text-sm font-black text-rose-400 uppercase tracking-widest">
+              {marketStatus.reason || "MARKETS CLOSED"}
+            </span>
+          </div>
+        )}
         <ErrorBoundary fallback={<div className="h-[52px] bg-background" />}>
           <Suspense fallback={<Skeleton className="h-[52px] w-full" />}>
             <MarketTicker />
