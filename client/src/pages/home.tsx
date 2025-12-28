@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { type Signal } from "@/lib/constants";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar, AlertTriangle } from "lucide-react";
+import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar, AlertTriangle, TrendingUp as Goal, AlertCircle } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,6 +15,15 @@ const SignalGenerator = lazy(() => import("@/components/signal-generator"));
 const RecentSignals = lazy(() => import("@/components/recent-signals"));
 const TradingChart = lazy(() => import("@/components/trading-chart"));
 
+interface SessionStats {
+  pnl: { profit: number; loss: number; net: number; basisPoints: number };
+  goalProgress: number;
+  hasReachedGoal: boolean;
+  hasExceededDrawdown: boolean;
+  goalThreshold: number;
+  drawdownThreshold: number;
+}
+
 export default function Home() {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [activePair, setActivePair] = useState("EUR/USD");
@@ -24,6 +33,11 @@ export default function Home() {
   const { data: quotesData } = useQuery<{ quotes: any; marketStatus: { isOpen: boolean; reason?: string } }>({
     queryKey: ["/api/forex/quotes"],
     refetchInterval: 30000,
+  });
+
+  const { data: sessionData } = useQuery<SessionStats>({
+    queryKey: ["/api/session/stats"],
+    refetchInterval: 5000,
   });
 
   const marketStatus = quotesData?.marketStatus;
@@ -157,6 +171,63 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          {/* Daily Goal & Drawdown Alerts */}
+          {sessionData && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              {/* Daily Goal Tracker */}
+              <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasReachedGoal ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-cyan-500/40'}`} data-testid="card-daily-goal">
+                <CardContent className="p-5 relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <Goal className="w-5 h-5 text-emerald-400" />
+                    <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Daily Goal</span>
+                  </div>
+                  <div className="mb-3">
+                    <div className="text-2xl font-black text-emerald-400" data-testid="text-goal-progress">
+                      {sessionData.goalProgress.toFixed(0)}%
+                    </div>
+                    <div className="text-xs text-emerald-400/60 mt-1">Target: {(sessionData.goalThreshold * 100).toFixed(1)}% profit</div>
+                  </div>
+                  <div className="w-full h-2 bg-background rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-300"
+                      style={{ width: `${Math.min(sessionData.goalProgress, 100)}%` }}
+                      data-testid="progress-goal-bar"
+                    />
+                  </div>
+                  {sessionData.hasReachedGoal && (
+                    <div className="text-xs text-emerald-400 font-bold mt-2">✅ GOAL REACHED - Stop trading to secure profits</div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Drawdown Protection */}
+              <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasExceededDrawdown ? 'border-rose-500/60 bg-rose-500/5' : 'border-cyan-500/40'}`} data-testid="card-drawdown">
+                <CardContent className="p-5 relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <AlertCircle className="w-5 h-5 text-rose-400" />
+                    <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Drawdown</span>
+                  </div>
+                  <div className="mb-3">
+                    <div className={`text-2xl font-black ${sessionData.hasExceededDrawdown ? 'text-rose-400' : 'text-cyan-400'}`} data-testid="text-drawdown-value">
+                      {Math.abs(sessionData.pnl.basisPoints / 100).toFixed(2)}%
+                    </div>
+                    <div className="text-xs text-cyan-400/60 mt-1">Max allowed: {(sessionData.drawdownThreshold * 100).toFixed(1)}%</div>
+                  </div>
+                  <div className="w-full h-2 bg-background rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-300 ${sessionData.pnl.basisPoints < 0 ? 'bg-gradient-to-r from-rose-500 to-rose-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-400'}`}
+                      style={{ width: `${Math.min(Math.abs(sessionData.pnl.basisPoints) / (sessionData.drawdownThreshold * 100) * 100, 100)}%` }}
+                      data-testid="progress-drawdown-bar"
+                    />
+                  </div>
+                  {sessionData.hasExceededDrawdown && (
+                    <div className="text-xs text-rose-400 font-bold mt-2">⚠️ MAX DRAWDOWN - Stop trading to prevent loss</div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
           {/* Premium Stats Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 mt-6">

@@ -170,6 +170,29 @@ export async function registerRoutes(
     res.json({ configured });
   });
 
+  app.get("/api/session/stats", async (req, res) => {
+    try {
+      const { sessionTracker } = await import("./sessionTracker");
+      const stats = sessionTracker.getStats();
+      const pnl = sessionTracker.getDailyPnL();
+      const goalProgress = sessionTracker.getGoalProgress();
+      const hasReachedGoal = sessionTracker.hasReachedDailyGoal();
+      const hasExceededDrawdown = sessionTracker.hasExceededMaxDrawdown();
+      
+      res.json({
+        stats,
+        pnl,
+        goalProgress,
+        hasReachedGoal,
+        hasExceededDrawdown,
+        goalThreshold: stats.sessionGoal / 100,
+        drawdownThreshold: stats.maxDrawdown / 100
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.get("/api/telegram/verify", async (req, res) => {
     try {
       const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;

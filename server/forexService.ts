@@ -1,5 +1,7 @@
 import { log } from "./index";
 import { logTrade, getPerformanceStats, getBestPerformingSetups } from "./tradeLog";
+import { isNewsEventTime } from "./newsEvents";
+import { sessionTracker } from "./sessionTracker";
 
 export interface ForexQuote {
   pair: string;
@@ -830,6 +832,61 @@ export async function generateSignalAnalysis(
 
   const reasoning: string[] = [];
 
+  // ===== FEATURE 1: NEWS EVENT BLOCKING =====
+  const { blocked: newsBlocked, event: newsEvent } = isNewsEventTime();
+  if (newsBlocked) {
+    reasoning.push(`🚫 NEWS EVENT BLOCK: ${newsEvent?.name} - No trading within 30min of major news`);
+    return {
+      pair,
+      currentPrice: 0,
+      signalType: "CALL",
+      confidence: 0,
+      signalGrade: "SKIPPED",
+      entry: 0,
+      stopLoss: 0,
+      takeProfit: 0,
+      technicals: {} as TechnicalAnalysis,
+      reasoning,
+      ruleChecklist,
+    };
+  }
+
+  // ===== FEATURE 2: DAILY GOAL & DRAWDOWN PROTECTION =====
+  const stats = sessionTracker.getStats();
+  if (sessionTracker.hasReachedDailyGoal()) {
+    reasoning.push(`🎯 DAILY GOAL REACHED (${stats.sessionGoal/100}%): Stop trading to preserve profits`);
+    return {
+      pair,
+      currentPrice: 0,
+      signalType: "CALL",
+      confidence: 0,
+      signalGrade: "SKIPPED",
+      entry: 0,
+      stopLoss: 0,
+      takeProfit: 0,
+      technicals: {} as TechnicalAnalysis,
+      reasoning,
+      ruleChecklist,
+    };
+  }
+
+  if (sessionTracker.hasExceededMaxDrawdown()) {
+    reasoning.push(`⚠️ MAX DRAWDOWN EXCEEDED (${stats.maxDrawdown/100}%): Stop trading to prevent further loss`);
+    return {
+      pair,
+      currentPrice: 0,
+      signalType: "CALL",
+      confidence: 0,
+      signalGrade: "SKIPPED",
+      entry: 0,
+      stopLoss: 0,
+      takeProfit: 0,
+      technicals: {} as TechnicalAnalysis,
+      reasoning,
+      ruleChecklist,
+    };
+  }
+
   // SESSION FILTER - Pair must match trading session
   if (!sessionForPair) {
     reasoning.push(`❌ SESSION FILTER FAILED: ${pair} not active in current session`);
@@ -853,6 +910,38 @@ export async function generateSignalAnalysis(
 
   const candles = await getForexCandles(pair, "15min", apiKey);
   const candlesH1 = await getForexCandles(pair, "60min", apiKey);
+  
+  // ===== FEATURE 3: VOLUME CONFIRMATION =====
+  const lastCandle = candles[candles.length - 1];
+  const avgVolume = candles.slice(-20).reduce((sum, c) => sum + (c.volume || 0), 0) / 20;
+  const volumeConfirmed = !lastCandle.volume || lastCandle.volume > avgVolume * 0.8;
+  if (!volumeConfirmed) {
+    reasoning.push(`⚠️ VOLUME CONFIRMATION WEAK: Current ${lastCandle.volume} < avg ${avgVolume.toFixed(0)} (80% threshold)`);
+  } else {
+    reasoning.push(`✅ VOLUME CONFIRMATION: Strong volume on last candle`);
+  }
+
+  // ===== FEATURE 4: CORRELATION FILTERING (EUR/USD + GBP/USD SYNC) =====
+  let correlationCheck = true;
+  if (pair === "EUR/USD" || pair === "GBP/USD") {
+    const otherPair = pair === "EUR/USD" ? "GBP/USD" : "EUR/USD";
+    try {
+      const otherCandles = await getForexCandles(otherPair, "15min", apiKey);
+      const otherTechnicals = analyzeTechnicals(otherCandles);
+      const otherTrend = otherTechnicals.supertrend.direction;
+      const thisTrend = analyzeTechnicals(candles).supertrend.direction;
+      
+      if (thisTrend === otherTrend) {
+        reasoning.push(`✅ CORRELATION ALIGNED: ${pair} & ${otherPair} both ${thisTrend}`);
+      } else {
+        correlationCheck = false;
+        reasoning.push(`⚠️ CORRELATION MISALIGNED: ${pair}=${thisTrend} vs ${otherPair}=${otherTrend} (confidence penalty -15%)`);
+      }
+    } catch (e) {
+      reasoning.push(`⚠️ CORRELATION CHECK: Could not fetch ${otherPair} data`);
+    }
+  }
+
   const technicals = analyzeTechnicals(candles);
   const technicalsH1 = analyzeTechnicals(candlesH1);
 
@@ -889,6 +978,41 @@ export async function generateSignalAnalysis(
     };
   }
   reasoning.push(`✅ MARKET REGIME: TRENDING`);
+
+  // VOLUME & CORRELATION HARD FILTERS
+  if (!volumeConfirmed) {
+    reasoning.push(`❌ VOLUME CONFIRMATION FAILED: Insufficient volume on signal candle`);
+    return {
+      pair,
+      currentPrice,
+      signalType: "CALL",
+      confidence: 0,
+      signalGrade: "SKIPPED",
+      entry: currentPrice,
+      stopLoss: currentPrice,
+      takeProfit: currentPrice,
+      technicals,
+      reasoning,
+      ruleChecklist,
+    };
+  }
+
+  if (!correlationCheck && (pair === "EUR/USD" || pair === "GBP/USD")) {
+    reasoning.push(`❌ CORRELATION FILTER FAILED: Pair not moving with related pairs`);
+    return {
+      pair,
+      currentPrice,
+      signalType: "CALL",
+      confidence: 0,
+      signalGrade: "SKIPPED",
+      entry: currentPrice,
+      stopLoss: currentPrice,
+      takeProfit: currentPrice,
+      technicals,
+      reasoning,
+      ruleChecklist,
+    };
+  }
 
   // RULE 3: CANDLE CONFIRMATION (3 consecutive)
   const candleConfirmed = hasThreeConsecutiveTrendCandles(candles, m15Trend);
