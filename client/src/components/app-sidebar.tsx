@@ -12,7 +12,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import gilgaloLogo from "@assets/gilgalo-logo.png";
 
 interface AppSidebarProps {
   isAdmin: boolean;
@@ -53,12 +52,7 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
       <SidebarContent>
         <SidebarGroup>
           <div className="flex items-center justify-center p-4 mb-4">
-            <img
-              src={gilgaloLogo}
-              alt="GILGALO"
-              className="h-16 w-auto"
-              data-testid="logo-gilgalo"
-            />
+            <span className="text-2xl font-bold text-white" data-testid="logo-gilgalo">GILGALO</span>
           </div>
         </SidebarGroup>
 
