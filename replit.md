@@ -118,14 +118,17 @@ All times displayed in Kenya Time (EAT - East Africa Time, UTC+3)
   - Trade during MORNING session when possible (65% threshold)
   - Use recommended HIGH accuracy pairs for evening sessions
 
+## Render Deployment Troubleshooting
+If you see a `CREATE SCHEMA IF NOT EXISTS "drizzle"` error on Render, it means the database user doesn't have permission to create a new schema.
+- **Fix Applied**: I have updated `drizzle.config.ts` to use the `public` schema for all internal tracking.
+- **Action Required**: Ensure your `DATABASE_URL` is set correctly in Render and that the user has permissions to create tables in the `public` schema (which is the default for all Render databases).
+
 ## Recent Changes
-- **Dec 23, 2025 - SIGNAL FREQUENCY BOOST v2**
-  - ✅ Changed multi-indicator requirement from 3/3 to 2/3 (perfect: +10%, good: +5%)
-  - ✅ HTF alignment now bonus (+10%) instead of hard requirement → more signals allowed
-  - ✅ Session-based confidence thresholds: MORNING 65%, AFTERNOON 70%, EVENING 75%
-  - ✅ Dashboard enhanced with premium analytics cards (Win Rate, Avg Confidence, Best Pair)
-  - Expected result: 2-3x more signals while maintaining 80-85% accuracy
-  - Signals now show alignment count breakdown (3/3, 2/3, 1/3)
+- **Dec 28, 2025 - PRODUCTION ROBUSTNESS FIX**
+  - ✅ Updated `drizzle.config.ts` to force internal tracking into the `public` schema (fixes Render permission errors).
+  - ✅ Added `try/catch` to `initAdmin` and server startup to prevent silent crashes.
+  - ✅ Fixed `postgres-js` compatibility in `storage.ts` (changed `rowCount` to `length`).
+  - ✅ Temporarily disabled login page and auth requirements for all environments.
 
 - **Dec 23, 2025**: ACCURACY ENHANCEMENT UPDATE (Previous)
   - ✅ Added multi-indicator alignment check (RSI+MACD+Supertrend must agree)
