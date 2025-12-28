@@ -65,8 +65,8 @@ function App() {
           <div className="flex h-screen w-full overflow-hidden">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
-              <header className="flex items-center justify-between gap-2 sm:gap-4 px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm flex-shrink-0 z-50">
-                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate h-9 w-9 flex items-center justify-center" />
+              <header className="flex items-center justify-between gap-3 px-3 sm:px-4 md:px-6 pt-5 sm:pt-4 md:pt-4 pb-3 sm:pb-3 md:pb-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm flex-shrink-0 z-50 safe-area-inset-top">
+                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate h-10 w-10 sm:h-9 sm:w-9 flex items-center justify-center flex-shrink-0" />
                 <div className="flex-1" />
                 <ThemeToggle />
               </header>
