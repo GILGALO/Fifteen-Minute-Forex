@@ -357,7 +357,7 @@ function detectCandlePattern(candles: CandleData[]): string | null {
 }
 
 function detectTrendExhaustion(adx: number, rsi: number, signalType: "CALL" | "PUT"): boolean {
-  return (signalType === "CALL" && rsi > 85 && adx < 28) || (signalType === "PUT" && rsi < 15 && adx < 28);
+  return (signalType === "CALL" && rsi > 92 && adx < 22) || (signalType === "PUT" && rsi < 8 && adx < 22);
 }
 
 export function isMarketOpen(): boolean {
@@ -403,12 +403,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const technicals = analyzeTechnicals(candles), technicalsH1 = analyzeTechnicals(candlesH1);
   const m5Trend = technicals.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
 
-  let baseConfidence = 78, sessionThreshold = 70, confidence = baseConfidence;
-  reasoning.push(`📊 GLOBAL SESSION MODE: Active`);
+  let baseConfidence = 65, sessionThreshold = 60, confidence = baseConfidence;
+  reasoning.push(`📊 HIGH-OPPORTUNITY MODE: Active (Threshold: ${sessionThreshold}%)`);
 
   const lastCandle = candles[candles.length - 1], avgVol = candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
-  const volOk = !lastCandle.volume || lastCandle.volume > avgVol * 0.8;
-  if (!volOk) reasoning.push(`⚠️ VOLUME WEAK`); else reasoning.push(`✅ VOLUME OK`);
+  const volOk = !lastCandle.volume || lastCandle.volume > avgVol * 0.5;
+  if (!volOk) reasoning.push(`⚠️ VOLUME LOW`); else reasoning.push(`✅ VOLUME OK`);
 
   const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD"];
   if (majorPairs.includes(pair)) {
@@ -421,7 +421,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const currentPrice = lastCandle.close, htfAligned = m5Trend === h1Trend;
   ruleChecklist.htfAlignment = htfAligned;
-  if (htfAligned) { confidence += 10; reasoning.push(`✅ HTF ALIGNED`); } else { confidence -= 5; reasoning.push(`⚠️ HTF MISALIGNED`); }
+  if (htfAligned) { confidence += 10; reasoning.push(`✅ HTF ALIGNED`); } else { confidence += 2; reasoning.push(`⚠️ HTF MISALIGNED (Binary Mode)`); }
 
   if (technicals.marketRegime !== "TRENDING") {
     reasoning.push(`❌ NOT TRENDING`);
@@ -430,13 +430,10 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const candleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
   ruleChecklist.candleConfirmation = candleConfirmed;
-  if (!candleConfirmed) {
-    reasoning.push(`❌ NO CANDLE CONFIRMATION`);
-    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
-  }
-
-  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 30 && technicals.rsi <= 85) : (technicals.rsi >= 15 && technicals.rsi <= 70);
-  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 90 : technicals.stochastic.k > 10;
+  
+  // Relaxed candle confirmation for binary options
+  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 25 && technicals.rsi <= 88) : (technicals.rsi >= 12 && technicals.rsi <= 75);
+  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 95 : technicals.stochastic.k > 5;
   if (!rsiOk || !stochOk) {
     reasoning.push(`❌ MOMENTUM UNSAFE`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
@@ -450,7 +447,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   if (technicals.adx > 30) confidence += 10; else if (technicals.adx < 20) confidence -= 12;
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
-  confidence += indicatorCheck.count === 3 ? 10 : (indicatorCheck.count === 2 ? 5 : -8);
+  confidence += indicatorCheck.count >= 2 ? 10 : -5;
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   if (signalGrade === "C" && !candleConfirmed) {
