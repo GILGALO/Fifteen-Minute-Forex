@@ -41,8 +41,14 @@ export async function registerRoutes(
   app.get("/api/forex/quotes", async (req, res) => {
     try {
       const quotes = await getAllQuotes(FOREX_PAIRS, apiKey);
-      const marketStatus = isMarketOpen();
-      res.json({ quotes, marketStatus });
+      const { isOpen, nextAction } = isMarketOpen();
+      res.json({ 
+        quotes, 
+        marketStatus: { 
+          isOpen, 
+          reason: isOpen ? "MARKETS OPEN" : `MARKETS CLOSED (REOPENS: ${nextAction})` 
+        } 
+      });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

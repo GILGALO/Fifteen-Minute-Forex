@@ -360,19 +360,25 @@ function detectTrendExhaustion(adx: number, rsi: number, signalType: "CALL" | "P
   return (signalType === "CALL" && rsi > 92 && adx < 22) || (signalType === "PUT" && rsi < 8 && adx < 22);
 }
 
-export function isMarketOpen(): boolean {
+export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
   const now = new Date();
   const day = now.getUTCDay();
   const hour = now.getUTCHours();
 
-  // Market closes Friday 21:00 UTC
-  if (day === 5 && hour >= 21) return false;
-  // Market closed Saturday
-  if (day === 6) return false;
-  // Market opens Sunday 21:00 UTC
-  if (day === 0 && hour < 21) return false;
+  // Friday close: 21:00 UTC
+  if (day === 5 && hour >= 21) {
+    return { isOpen: false, nextAction: "Sunday at 21:00 UTC" };
+  }
+  // Saturday: Closed all day
+  if (day === 6) {
+    return { isOpen: false, nextAction: "Sunday at 21:00 UTC" };
+  }
+  // Sunday open: 21:00 UTC
+  if (day === 0 && hour < 21) {
+    return { isOpen: false, nextAction: "Today at 21:00 UTC" };
+  }
 
-  return true;
+  return { isOpen: true, nextAction: "Friday at 21:00 UTC" };
 }
 
 function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" {
