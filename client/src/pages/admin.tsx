@@ -136,11 +136,11 @@ export default function Admin() {
           </div>
           <div className="p-6 rounded-2xl bg-gradient-to-br from-cyan-500/10 to-cyan-600/5 border border-cyan-400/30 backdrop-blur-sm">
             <p className="text-cyan-400/80 text-sm font-semibold uppercase tracking-wide">Admin Accounts</p>
-            <p className="text-4xl font-black text-cyan-300 mt-2">{users.filter(u => u.isAdmin).length}</p>
+            <p className="text-4xl font-black text-cyan-300 mt-2">{users.filter((u: any) => u.isAdmin).length}</p>
           </div>
           <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-400/30 backdrop-blur-sm">
             <p className="text-blue-400/80 text-sm font-semibold uppercase tracking-wide">Regular Users</p>
-            <p className="text-4xl font-black text-blue-300 mt-2">{users.filter(u => !u.isAdmin).length}</p>
+            <p className="text-4xl font-black text-blue-300 mt-2">{users.filter((u: any) => !u.isAdmin).length}</p>
           </div>
         </div>
 
@@ -259,7 +259,7 @@ export default function Admin() {
             <div className="p-16 text-center text-muted-foreground">No accounts found</div>
           ) : (
             <div className="divide-y divide-border/30">
-              {users.map((user: User, idx) => (
+              {users.map((user: User, idx: number) => (
                 <div
                   key={user.id}
                   data-testid={`user-row-${user.id}`}
