@@ -36,13 +36,13 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 sm:p-6">
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
         <div className="absolute top-20 left-20 w-[400px] h-[400px] bg-emerald-500/15 rounded-full blur-[100px]" />
         <div className="absolute top-1/3 right-20 w-[350px] h-[350px] bg-cyan-500/15 rounded-full blur-[90px]" />
       </div>
 
-      <Card className="w-full max-w-md relative z-10">
+      <Card className="w-full max-w-md relative z-10 mx-auto">
         <CardHeader className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-blue-500/20 border-2 border-emerald-400/60 rounded-2xl">
@@ -80,7 +80,7 @@ export default function Login() {
             data-testid="button-login"
             onClick={handleLogin}
             disabled={loading}
-            className="w-full"
+            className="w-full min-h-10"
           >
             {loading ? "Logging in..." : "Login"}
           </Button>
