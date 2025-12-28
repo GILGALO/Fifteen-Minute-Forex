@@ -26,7 +26,7 @@ export default function Login() {
       const response = await res.json() as any;
       if (response?.success) {
         toast({ title: "Success", description: "Logged in successfully" });
-        navigate("/");
+        window.location.href = "/";
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Login failed", variant: "destructive" });
