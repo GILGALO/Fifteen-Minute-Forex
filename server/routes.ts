@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema } from "@shared/schema";
+import { insertUserSchema, insertTradeSchema } from "@shared/schema";
 import {
   getForexQuote,
   getForexCandles,
@@ -703,6 +703,34 @@ export async function registerRoutes(
         error: error.message,
         hint: "Make sure the bot is added as admin to the channel with post message permissions"
       });
+    }
+  });
+
+  app.get("/api/trades", async (req, res) => {
+    try {
+      const trades = await storage.listTrades();
+      res.json(trades);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/trades", async (req, res) => {
+    try {
+      const validated = insertTradeSchema.parse(req.body);
+      const trade = await storage.createTrade(validated);
+      res.json(trade);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/trades/:id", async (req, res) => {
+    try {
+      const success = await storage.deleteTrade(req.params.id);
+      res.json({ success });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
     }
   });
 

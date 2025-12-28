@@ -1,4 +1,4 @@
-import { type User, type InsertUser } from "@shared/schema";
+import { type User, type InsertUser, type Trade, type InsertTrade } from "@shared/schema";
 import crypto from "node:crypto";
 
 export interface IStorage {
@@ -8,13 +8,18 @@ export interface IStorage {
   deleteUser(id: string): Promise<boolean>;
   listUsers(): Promise<User[]>;
   updateUserPassword(id: string, hashedPassword: string): Promise<boolean>;
+  createTrade(trade: InsertTrade): Promise<Trade>;
+  listTrades(): Promise<Trade[]>;
+  deleteTrade(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
+  private trades: Map<string, Trade>;
 
   constructor() {
     this.users = new Map();
+    this.trades = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -51,6 +56,27 @@ export class MemStorage implements IStorage {
     if (!user) return false;
     this.users.set(id, { ...user, password: hashedPassword });
     return true;
+  }
+
+  async createTrade(insertTrade: InsertTrade): Promise<Trade> {
+    const id = crypto.randomUUID();
+    const trade: Trade = {
+      ...insertTrade,
+      id,
+      timestamp: new Date(),
+    } as Trade;
+    this.trades.set(id, trade);
+    return trade;
+  }
+
+  async listTrades(): Promise<Trade[]> {
+    return Array.from(this.trades.values()).sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }
+
+  async deleteTrade(id: string): Promise<boolean> {
+    return this.trades.delete(id);
   }
 }
 
