@@ -18,7 +18,9 @@ const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
 const RecentSignals = lazy(() => import("@/components/recent-signals"));
 const TradingChart = lazy(() => import("@/components/trading-chart"));
-    <div className="min-h-screen bg-[#020617] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden pb-12 sm:pb-20">
+const TradingSchedule = lazy(() => import("@/components/trading-schedule"));
+
+interface SessionStats {
   pnl: { profit: number; loss: number; net: number; basisPoints: number };
   goalProgress: number;
   hasReachedGoal: boolean;
@@ -393,6 +395,67 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               </div>
             </div>
             
+            <div className="grid grid-cols-1 gap-6 mt-6">
+              <ErrorBoundary>
+                <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                  <Card className="glass-panel border-white/10 overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <Activity className="w-5 h-5 text-emerald-400" />
+                          <h3 className="text-lg font-black uppercase tracking-widest">Trade History</h3>
+                        </div>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="border-b border-white/5">
+                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Pair</th>
+                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Type</th>
+                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Time</th>
+                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
+                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Result</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-white/5">
+                            {signals.filter(s => s.status !== 'active').length === 0 ? (
+                              <tr>
+                                <td colSpan={5} className="py-8 text-center text-slate-500 text-xs font-bold uppercase tracking-widest">
+                                  No trades in current session
+                                </td>
+                              </tr>
+                            ) : (
+                              signals.filter(s => s.status !== 'active').map((trade) => (
+                                <tr key={trade.id} className="group hover:bg-white/[0.02] transition-colors">
+                                  <td className="py-4 font-black text-xs text-slate-200">{trade.pair}</td>
+                                  <td className="py-4 font-black text-xs">
+                                    <span className={trade.type === 'CALL' ? 'text-emerald-400' : 'text-rose-400'}>
+                                      {trade.type}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 text-xs text-slate-400 font-mono">{trade.startTime}</td>
+                                  <td className="py-4 uppercase tracking-tighter text-[10px] font-black text-slate-500">
+                                    Completed
+                                  </td>
+                                  <td className="py-4">
+                                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded ${
+                                      trade.status === 'won' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                                    }`}>
+                                      {trade.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mt-6">
               <div className="xl:col-span-12">
                 <ErrorBoundary>

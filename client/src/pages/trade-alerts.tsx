@@ -1,53 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Bell, Plus, Trash2, CheckCircle } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Alert, InsertAlert } from "@shared/schema";
-import { useToast } from "@/hooks/use-toast";
+
+interface Alert {
+  id: string;
+  pair: string;
+  targetPrice: string;
+  type: "above" | "below";
+  triggered: boolean;
+}
 
 export default function TradeAlerts() {
-  const { toast } = useToast();
+  const [alerts, setAlerts] = useState<Alert[]>([]);
   const [pair, setPair] = useState("EUR/USD");
   const [targetPrice, setTargetPrice] = useState("");
   const [type, setType] = useState<"above" | "below">("above");
 
-  const { data: alerts = [] } = useQuery<Alert[]>({
-    queryKey: ["/api/alerts"],
-  });
-
-  const createAlertMutation = useMutation({
-    mutationFn: async (newAlert: InsertAlert) => {
-      const res = await apiRequest("POST", "/api/alerts", newAlert);
-      return res.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
-      toast({ title: "Alert Created", description: "You will be notified when the price hits your target." });
-      setTargetPrice("");
-    },
-  });
-
-  const deleteAlertMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await apiRequest("DELETE", `/api/alerts/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/alerts"] });
-      toast({ title: "Alert Deleted" });
-    },
-  });
+  const pairs = ["EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF", "AUD/USD", "USD/CAD"];
 
   const addAlert = () => {
     if (!targetPrice) return;
-    createAlertMutation.mutate({
+    const newAlert: Alert = {
+      id: Date.now().toString(),
       pair,
-      targetPrice: targetPrice,
+      targetPrice,
       type,
-      triggered: "false",
-    });
+      triggered: false,
+    };
+    setAlerts([...alerts, newAlert]);
+    setTargetPrice("");
+  };
+
+  const deleteAlert = (id: string) => {
+    setAlerts(alerts.filter((a) => a.id !== id));
   };
 
   return (
@@ -180,7 +167,7 @@ export default function TradeAlerts() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => deleteAlertMutation.mutate(alert.id)}
+                        onClick={() => deleteAlert(alert.id)}
                         className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                         data-testid={`btn-delete-${alert.id}`}
                       >

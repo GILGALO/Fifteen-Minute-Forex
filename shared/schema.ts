@@ -10,11 +10,6 @@ export const users = pgTable("users", {
   isAdmin: text("is_admin").notNull().default("false"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
-});
-
 export const trades = pgTable("trades", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   pair: text("pair").notNull(),
@@ -28,22 +23,12 @@ export const trades = pgTable("trades", {
   timestamp: timestamp("timestamp").notNull().default(sql`NOW()`),
 });
 
+export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+});
+
 export const insertTradeSchema = createInsertSchema(trades).omit({
-  id: true,
-  timestamp: true,
-});
-
-
-export const alerts = pgTable("alerts", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  pair: text("pair").notNull(),
-  targetPrice: numeric("target_price").notNull(),
-  type: text("type").notNull(), // "above" | "below"
-  triggered: text("triggered").notNull().default("false"),
-  timestamp: timestamp("timestamp").notNull().default(sql`NOW()`),
-});
-
-export const insertAlertSchema = createInsertSchema(alerts).omit({
   id: true,
   timestamp: true,
 });
@@ -52,5 +37,3 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertTrade = z.infer<typeof insertTradeSchema>;
 export type Trade = typeof trades.$inferSelect;
-export type InsertAlert = z.infer<typeof insertAlertSchema>;
-export type Alert = typeof alerts.$inferSelect;

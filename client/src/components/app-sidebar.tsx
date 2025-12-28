@@ -37,11 +37,6 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
       icon: Home,
     },
     {
-      title: "Trade History",
-      url: "/trade-history",
-      icon: BarChart3,
-    },
-    {
       title: "Trading Journal",
       url: "/trading-journal",
       icon: BookOpen,
