@@ -365,20 +365,22 @@ export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
   const day = now.getUTCDay();
   const hour = now.getUTCHours();
 
-  // Friday close: 21:00 UTC
+  const kenyaOffset = 3; // UTC+3
+  
+  // Friday close: 21:00 UTC (Saturday 00:00 EAT)
   if (day === 5 && hour >= 21) {
-    return { isOpen: false, nextAction: "Sunday at 21:00 UTC" };
+    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
   }
   // Saturday: Closed all day
   if (day === 6) {
-    return { isOpen: false, nextAction: "Sunday at 21:00 UTC" };
+    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
   }
-  // Sunday open: 21:00 UTC
+  // Sunday open: 21:00 UTC (Monday 00:00 EAT)
   if (day === 0 && hour < 21) {
-    return { isOpen: false, nextAction: "Today at 21:00 UTC" };
+    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
   }
 
-  return { isOpen: true, nextAction: "Friday at 21:00 UTC" };
+  return { isOpen: true, nextAction: "Saturday at 00:00 EAT" };
 }
 
 function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" {
