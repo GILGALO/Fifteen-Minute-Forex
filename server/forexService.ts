@@ -932,26 +932,35 @@ export async function generateSignalAnalysis(
     reasoning.push(`✅ VOLUME CONFIRMATION: Strong volume on last candle`);
   }
 
-  // ===== FEATURE 4: CORRELATION FILTERING (EUR/USD + GBP/USD SYNC) =====
-  let correlationCheck = true;
-  if (pair === "EUR/USD" || pair === "GBP/USD") {
-    const otherPair = pair === "EUR/USD" ? "GBP/USD" : "EUR/USD";
-    try {
-      const otherCandles = await getForexCandles(otherPair, "15min", apiKey);
-      const otherTechnicals = analyzeTechnicals(otherCandles);
-      const otherTrend = otherTechnicals.supertrend.direction;
-      const thisTrend = analyzeTechnicals(candles).supertrend.direction;
-      
-      if (thisTrend === otherTrend) {
-        reasoning.push(`✅ CORRELATION ALIGNED: ${pair} & ${otherPair} both ${thisTrend}`);
-      } else {
-        correlationCheck = false;
-        reasoning.push(`⚠️ CORRELATION MISALIGNED: ${pair}=${thisTrend} vs ${otherPair}=${otherTrend} (confidence penalty -15%)`);
+    // ===== FEATURE 4: SMART CORRELATION FILTERING (Enhanced for M5) =====
+    let correlationCheck = true;
+    const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD"];
+    if (majorPairs.includes(pair)) {
+      try {
+        const otherPairs = majorPairs.filter(p => p !== pair);
+        const results = await Promise.all(otherPairs.map(async (p) => {
+          const c = await getForexCandles(p, "5min", apiKey);
+          return analyzeTechnicals(c).supertrend.direction;
+        }));
+        
+        const thisTrend = analyzeTechnicals(candles).supertrend.direction;
+        const alignedCount = results.filter(t => t === thisTrend).length;
+        
+        if (alignedCount === otherPairs.length) {
+          reasoning.push(`✅ FULL CORRELATION ALIGNED: All majors moving in ${thisTrend} direction`);
+          confidence += 12; // Extra boost for full market agreement
+        } else if (alignedCount > 0) {
+          reasoning.push(`✅ PARTIAL CORRELATION: ${alignedCount + 1}/${majorPairs.length} majors aligned`);
+          confidence += 5;
+        } else {
+          correlationCheck = false;
+          reasoning.push(`⚠️ CORRELATION DIVERGENCE: Other majors disagree with ${pair} trend (confidence penalty -10%)`);
+          confidence -= 10;
+        }
+      } catch (e) {
+        reasoning.push(`⚠️ CORRELATION CHECK: Data fetching issues`);
       }
-    } catch (e) {
-      reasoning.push(`⚠️ CORRELATION CHECK: Could not fetch ${otherPair} data`);
     }
-  }
 
   const technicals = analyzeTechnicals(candles);
   const technicalsH1 = analyzeTechnicals(candlesH1);
@@ -1215,20 +1224,28 @@ export async function generateSignalAnalysis(
     reasoning.push(`🚀 STRONG MOMENTUM BONUS: +10%`);
   }
   
-  if (technicals.adx > 35) {
-    confidence += 12;
-    reasoning.push(`⚡ ULTRA-STRONG TREND (ADX > 35): +12%`);
-  } else if (technicals.adx > 25) {
-    confidence += 7;
-    reasoning.push(`📈 STRONG TREND (ADX > 25): +7%`);
+  // ADX TREND SCALING: Dynamically adjust confidence based on trend strength
+  if (technicals.adx > 40) {
+    confidence += 15;
+    reasoning.push(`🔥 HYPER-TREND (ADX > 40): +15% Confidence Boost`);
+  } else if (technicals.adx > 30) {
+    confidence += 10;
+    reasoning.push(`⚡ STRONG TREND (ADX > 30): +10% Confidence Boost`);
+  } else if (technicals.adx < 20) {
+    confidence -= 12;
+    reasoning.push(`🧊 WEAK TREND (ADX < 20): -12% Confidence Penalty`);
   }
 
-  // VOLUME CONFIRMATION BONUS
-  const bonusLastCandle = candles[candles.length - 1];
-  const bonusAvgVolume = candles.slice(-20).reduce((sum, c) => sum + (c.volume || 0), 0) / 20;
-  if (bonusLastCandle.volume && bonusLastCandle.volume > bonusAvgVolume * 1.5) {
-    confidence += 10;
-    reasoning.push(`📊 HIGH VOLUME CONFIRMATION: +10%`);
+  // INSTITUTIONAL VOLUME ANALYSIS (The "Big Money" Move)
+  const lastC = candles[candles.length - 1];
+  const volBuffer = candles.slice(-30).map(c => c.volume || 0);
+  const meanVol = volBuffer.reduce((a, b) => a + b, 0) / volBuffer.length;
+  if (lastC.volume && lastC.volume > meanVol * 2) {
+    confidence += 15;
+    reasoning.push(`🏛️ INSTITUTIONAL VOLUME: "Big Money" move detected! +15%`);
+  } else if (lastC.volume && lastC.volume > meanVol * 1.5) {
+    confidence += 8;
+    reasoning.push(`📊 VOLUME SPIKE: Above average activity +8%`);
   }
 
   // MULTI-INDICATOR ALIGNMENT (2 out of 3 is now acceptable)
