@@ -120,3 +120,5 @@ export function PriceAlerts({ currentQuotes }: { currentQuotes: any[] }) {
     </Card>
   );
 }
+
+export default PriceAlerts;
