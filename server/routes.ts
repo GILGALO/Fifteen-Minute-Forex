@@ -410,7 +410,7 @@ export async function registerRoutes(
   const initAdmin = async () => {
     const adminExists = await storage.getUserByUsername("admin");
     if (!adminExists) {
-      const hashedPassword = crypto.createHash("sha256").update("admin123").digest("hex");
+      const hashedPassword = crypto.createHash("sha256").update("Salim@2445").digest("hex");
       await storage.createUser(
         { username: "admin", password: hashedPassword },
         true

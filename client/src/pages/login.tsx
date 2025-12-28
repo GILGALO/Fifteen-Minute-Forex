@@ -84,7 +84,7 @@ export default function Login() {
             {loading ? "Logging in..." : "Login"}
           </Button>
           <p className="text-xs text-muted-foreground text-center">
-            Default: username: admin, password: admin123
+            Default: username: admin, password: Salim@2445
           </p>
         </CardContent>
       </Card>
