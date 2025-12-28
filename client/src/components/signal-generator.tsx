@@ -221,7 +221,10 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
       // Round to exact minute (remove seconds)
       startTimeDate.setSeconds(0, 0);
       
-    const kenyaTime = new Date(startTimeDate.getTime());
+      const endTimeDate = addMinutes(startTimeDate, intervalMinutes);
+      endTimeDate.setSeconds(0, 0);
+      
+      const kenyaTime = new Date(startTimeDate.getTime());
     const dayName = format(kenyaTime, "eee");
 
     const signal: Signal = {
