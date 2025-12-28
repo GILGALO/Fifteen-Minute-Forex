@@ -129,12 +129,15 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden pb-20">
-      {/* Dynamic Background Elements */}
+      {/* Enhanced Dynamic Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-emerald-600/10 rounded-full blur-[150px] animate-pulse opacity-50" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] bg-blue-600/10 rounded-full blur-[150px] animate-pulse delay-1000 opacity-50" />
-        <div className="absolute top-[40%] left-[30%] w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[120px] animate-pulse delay-700" />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
+        <div className="absolute top-[-20%] right-[-10%] w-[1200px] h-[1200px] bg-emerald-600/5 rounded-full blur-[180px] animate-pulse opacity-40" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[1200px] h-[1200px] bg-blue-600/5 rounded-full blur-[180px] animate-pulse delay-1000 opacity-40" />
+        <div className="absolute top-[40%] left-[30%] w-[800px] h-[800px] bg-indigo-600/3 rounded-full blur-[150px] animate-pulse delay-700" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay" />
+        
+        {/* Subtle Scanline Effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/[0.01] to-transparent bg-[length:100%_4px] animate-scanline pointer-events-none" />
       </div>
 
       <div className="mb-4 md:mb-8 relative z-50">
