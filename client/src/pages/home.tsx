@@ -145,12 +145,12 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
               <div>
                 <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-1 leading-none italic">
-                  <span className="text-white">GIL</span>
-                  <span className="text-emerald-500">GALO</span>
+                  <span className="text-white uppercase">GILGALO</span>
+                  <span className="text-emerald-500 uppercase">TRADING</span>
                 </h1>
                 <div className="flex items-center gap-3">
                   <div className="h-[1px] w-12 bg-emerald-500/50" />
-                  <p className="text-slate-400 font-black text-sm tracking-[0.4em] uppercase">Control System v11</p>
+                  <p className="text-slate-400 font-black text-sm tracking-[0.2em] uppercase">Professional Signal Intelligence</p>
                 </div>
               </div>
             </div>
