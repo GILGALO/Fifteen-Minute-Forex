@@ -22,7 +22,8 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const response = await apiRequest("/api/auth/login", "POST", { username, password }) as any;
+      const res = await apiRequest("POST", "/api/auth/login", { username, password });
+      const response = await res.json() as any;
       if (response?.success) {
         toast({ title: "Success", description: "Logged in successfully" });
         navigate("/");

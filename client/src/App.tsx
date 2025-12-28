@@ -32,7 +32,8 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await apiRequest("/api/auth/me", "GET") as any;
+        const res = await apiRequest("GET", "/api/auth/me");
+        const response = await res.json() as any;
         if (response?.user) {
           setIsAuthenticated(true);
           setIsAdmin(response.user.isAdmin);

@@ -24,7 +24,7 @@ export default function Admin() {
 
   const createMutation = useMutation({
     mutationFn: async (data: { username: string; password: string }) =>
-      apiRequest("/api/admin/users", "POST", data),
+      apiRequest("POST", "/api/admin/users", data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       setNewUsername("");
@@ -37,7 +37,7 @@ export default function Admin() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: async (id: string) => apiRequest(`/api/admin/users/${id}`, "DELETE"),
+    mutationFn: async (id: string) => apiRequest("DELETE", `/api/admin/users/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       toast({ title: "Success", description: "User deleted successfully" });
@@ -49,7 +49,7 @@ export default function Admin() {
 
   const changePasswordMutation = useMutation({
     mutationFn: async (data: { currentPassword: string; newPassword: string }) =>
-      apiRequest("/api/auth/change-password", "POST", data),
+      apiRequest("POST", "/api/auth/change-password", data),
     onSuccess: () => {
       setCurrentPassword("");
       setNewAdminPassword("");
@@ -63,7 +63,7 @@ export default function Admin() {
 
   const handleLogout = async () => {
     try {
-      await apiRequest("/api/auth/logout", "POST");
+      await apiRequest("POST", "/api/auth/logout");
       navigate("/login");
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
