@@ -38,7 +38,7 @@ export class DatabaseStorage implements IStorage {
 
   async deleteUser(id: string): Promise<boolean> {
     const result = await db.delete(usersTable).where(eq(usersTable.id, id));
-    return result.rowCount > 0;
+    return result.length > 0;
   }
 
   async listUsers(): Promise<User[]> {
@@ -50,7 +50,7 @@ export class DatabaseStorage implements IStorage {
       .update(usersTable)
       .set({ password: hashedPassword })
       .where(eq(usersTable.id, id));
-    return result.rowCount > 0;
+    return result.length > 0;
   }
 }
 

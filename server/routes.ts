@@ -408,14 +408,18 @@ export async function registerRoutes(
 
   // Initialize admin user on startup
   const initAdmin = async () => {
-    const adminExists = await storage.getUserByUsername("admin");
-    if (!adminExists) {
-      const hashedPassword = crypto.createHash("sha256").update("Salim@2445").digest("hex");
-      await storage.createUser(
-        { username: "admin", password: hashedPassword },
-        true
-      );
-      log("[AUTH] Admin user initialized with default credentials", "auth");
+    try {
+      const adminExists = await storage.getUserByUsername("admin");
+      if (!adminExists) {
+        const hashedPassword = crypto.createHash("sha256").update("Salim@2445").digest("hex");
+        await storage.createUser(
+          { username: "admin", password: hashedPassword },
+          true
+        );
+        log("[AUTH] Admin user initialized with default credentials", "auth");
+      }
+    } catch (error: any) {
+      log(`[AUTH ERROR] Failed to initialize admin user: ${error.message}`, "auth");
     }
   };
   initAdmin();
