@@ -172,7 +172,7 @@
 
 @layer components {
   .glass-panel {
-    @apply backdrop-blur-xl bg-slate-950/60 border border-purple-500/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_32px_rgba(168,85,247,0.15)] transition-all duration-500 hover:border-purple-500/30;
+    @apply backdrop-blur-xl bg-gradient-to-br from-slate-950/80 to-slate-950/50 border border-purple-500/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_32px_rgba(168,85,247,0.15)] transition-all duration-500 hover:border-purple-500/30;
   }
 
   .premium-card {

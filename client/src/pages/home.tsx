@@ -165,8 +165,8 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
               <div className="flex-1">
                 <h1 className="text-lg sm:text-2xl md:text-4xl lg:text-6xl xl:text-8xl font-black tracking-tighter mb-0.5 sm:mb-1 leading-tight sm:leading-none italic flex flex-wrap gap-x-1 sm:gap-x-2">
-                  <span className="text-white uppercase">GILGALO</span>
-                  <span className="text-emerald-500 uppercase">TRADING</span>
+                  <span className="bg-gradient-to-r from-white via-slate-100 to-white bg-clip-text text-transparent uppercase">GILGALO</span>
+                  <span className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-cyan-400 bg-clip-text text-transparent uppercase">TRADING</span>
                 </h1>
                 <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
                   <div className="h-[1px] w-4 sm:w-6 md:w-12 bg-emerald-500/50" />
@@ -220,6 +220,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
           {sessionData && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
               <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasReachedGoal ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-cyan-500/40'}`} data-testid="card-daily-goal">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 <CardContent className="p-3 sm:p-4 md:p-5 relative z-10">
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
                     <Goal className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-400" />
@@ -245,6 +246,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               </Card>
 
               <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasExceededDrawdown ? 'border-rose-500/60 bg-rose-500/5' : 'border-cyan-500/40'}`} data-testid="card-drawdown">
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                 <CardContent className="p-3 sm:p-4 md:p-5 relative z-10">
                   <div className="flex items-center justify-between mb-2 sm:mb-3">
                     <AlertCircle className="w-4 sm:w-5 h-4 sm:h-5 text-rose-400" />
@@ -274,6 +276,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2 md:gap-4 mb-4 sm:mb-6 mt-4 sm:mt-6 md:mt-8">
             <div className="group relative rounded-lg sm:rounded-xl overflow-hidden" data-testid="card-active-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
                 <div className="flex items-center justify-between mb-0.5 sm:mb-1">
                   <Target className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
@@ -288,6 +291,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
             <div className="group relative rounded-lg sm:rounded-xl overflow-hidden" data-testid="card-won-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-emerald-500/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
                 <div className="flex items-center justify-between mb-0.5 sm:mb-1">
                   <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-400" />
@@ -302,6 +306,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
             <div className="group relative rounded-lg sm:rounded-xl overflow-hidden" data-testid="card-lost-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-rose-700 to-rose-800 opacity-20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-rose-500/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-rose-500/30 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl h-full flex flex-col justify-between hover:border-rose-500/60 transition-all duration-300">
                 <div className="flex items-center justify-between mb-0.5 sm:mb-1">
                   <TrendingDown className="w-3 h-3 sm:w-4 sm:h-4 text-rose-400" />
@@ -316,6 +321,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
             <div className="group relative rounded-lg sm:rounded-xl overflow-hidden" data-testid="card-total-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-600 via-cyan-700 to-cyan-800 opacity-20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-cyan-500/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-cyan-500/30 p-2 sm:p-3 md:p-4 rounded-lg sm:rounded-xl h-full flex flex-col justify-between hover:border-cyan-500/60 transition-all duration-300">
                 <div className="flex items-center justify-between mb-0.5 sm:mb-1">
                   <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 text-cyan-400" />
