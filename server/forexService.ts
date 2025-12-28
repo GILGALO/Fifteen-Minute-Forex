@@ -73,7 +73,7 @@ const HIGH_ACCURACY_PAIRS = ["GBP/USD", "EUR/JPY", "USD/JPY", "USD/CAD", "GBP/JP
 const MEDIUM_ACCURACY_PAIRS = ["EUR/USD", "AUD/USD", "EUR/AUD", "EUR/GBP"];
 const LOW_ACCURACY_PAIRS = ["USD/CHF", "AUD/JPY", "NZD/USD"];
 
-const TIMEFRAME = "15min";
+const TIMEFRAME = "5min";
 const KENYA_UTC_OFFSET = 3;
 
 function getPairAccuracy(pair: string): PairAccuracy {
@@ -919,7 +919,7 @@ export async function generateSignalAnalysis(
 
   reasoning.push(`✅ SESSION FILTER: ${pair} active in ${sessionForPair} session`);
 
-  const candles = await getForexCandles(pair, "15min", apiKey);
+  const candles = await getForexCandles(pair, "5min", apiKey);
   const candlesH1 = await getForexCandles(pair, "60min", apiKey);
   
   // ===== FEATURE 3: VOLUME CONFIRMATION =====

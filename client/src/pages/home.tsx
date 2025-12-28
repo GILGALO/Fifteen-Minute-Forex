@@ -113,13 +113,13 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
       id: "sample-" + Date.now(),
       pair: "GBP/USD",
       type: Math.random() > 0.5 ? "CALL" : "PUT",
-      timeframe: "M15",
+      timeframe: "M5",
       confidence: 85 + Math.floor(Math.random() * 11),
       entry: 1.26543,
       stopLoss: 1.26321,
       takeProfit: 1.26876,
       startTime: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-      endTime: new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+      endTime: new Date(Date.now() + 5 * 60 * 1000).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
       status: "active",
       timestamp: Date.now()
     };
