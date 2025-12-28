@@ -1,4 +1,4 @@
-import { Home, Settings, Users, LogOut, BarChart3, Calculator, Bell, BookOpen } from "lucide-react";
+import { Home, Settings, Users, LogOut, BarChart3, Calculator, Bell, BookOpen, Clock } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +40,11 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
       title: "Trading Journal",
       url: "/trading-journal",
       icon: BookOpen,
+    },
+    {
+      title: "Trading Schedule",
+      url: "/trading-schedule",
+      icon: Clock,
     },
     {
       title: "Risk Calculator",
