@@ -133,17 +133,17 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
         <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse delay-1000" />
       </div>
 
-      <div className="mb-8 relative z-50">
+      <div className="mb-4 md:mb-8 relative z-50">
         {marketStatus && !marketStatus.isOpen && (
-          <div className="bg-rose-500/10 border-y border-rose-500/20 py-2 px-4 flex items-center justify-center gap-3">
-            <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-            <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.3em]">
+          <div className="bg-rose-500/10 border-y border-rose-500/20 py-2 px-4 flex items-center justify-center gap-2 md:gap-3">
+            <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-rose-500 animate-ping" />
+            <span className="text-[8px] md:text-[10px] font-black text-rose-400 uppercase tracking-[0.15em] md:tracking-[0.3em] text-center">
               {marketStatus.reason || "MARKETS CLOSED"}
             </span>
           </div>
         )}
-        <ErrorBoundary fallback={<div className="h-[52px] bg-background" />}>
-          <Suspense fallback={<Skeleton className="h-[52px] w-full" />}>
+        <ErrorBoundary fallback={<div className="h-[40px] md:h-[52px] bg-background" />}>
+          <Suspense fallback={<Skeleton className="h-[40px] md:h-[52px] w-full" />}>
             <MarketTicker />
           </Suspense>
         </ErrorBoundary>
@@ -162,13 +162,13 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               </div>
 
               <div>
-                <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter mb-1 leading-none italic flex flex-wrap gap-x-2">
+                <h1 className="text-2xl sm:text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter mb-1 leading-none italic flex flex-wrap gap-x-2">
                   <span className="text-white uppercase">GILGALO</span>
                   <span className="text-emerald-500 uppercase">TRADING</span>
                 </h1>
                 <div className="flex items-center gap-2 md:gap-3">
-                  <div className="h-[1px] w-8 md:w-12 bg-emerald-500/50" />
-                  <p className="text-slate-400 font-black text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase">Professional Signal Intelligence</p>
+                  <div className="h-[1px] w-6 md:w-12 bg-emerald-500/50" />
+                  <p className="text-slate-400 font-black text-[8px] md:text-sm tracking-[0.05em] md:tracking-[0.2em] uppercase">Professional Signal Intelligence</p>
                 </div>
               </div>
             </div>

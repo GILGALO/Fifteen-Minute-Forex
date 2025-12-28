@@ -70,7 +70,7 @@ function MarketTicker() {
   }, []);
 
   return (
-    <div className="w-full glass-panel border-b border-primary/30 overflow-hidden h-[52px] relative z-50" data-testid="market-ticker">
+    <div className="w-full glass-panel border-b border-primary/30 overflow-hidden h-[40px] md:h-[52px] relative z-50" data-testid="market-ticker">
       <div className="absolute inset-0 pointer-events-none z-10 bg-gradient-to-r from-background via-transparent to-background" />
       <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent" />
       <div ref={containerRef} className="w-full h-full" />

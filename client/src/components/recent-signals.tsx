@@ -82,40 +82,40 @@ function RecentSignals({ signals }: RecentSignalsProps) {
               >
                 <div className="space-y-3 font-mono">
                   <div className="flex justify-between items-center border-b border-white/5 pb-2 mb-2">
-                    <span className="text-emerald-400 font-black tracking-tighter uppercase text-sm">NEW SIGNAL ALERT 🚀</span>
+                    <span className="text-emerald-400 font-black tracking-tighter uppercase text-[10px] sm:text-sm">NEW SIGNAL ALERT 🚀</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-slate-500 font-bold tabular-nums">{signal.confidence}%</span>
+                      <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold tabular-nums">{signal.confidence}%</span>
                       {getStatusIcon(signal.status)}
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-1.5 text-xs sm:text-sm">
+                  <div className="grid grid-cols-1 gap-1.5 text-[10px] sm:text-sm">
                     <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">📊 Pair:</span>
+                      <span className="text-slate-500 w-20 sm:w-24 tracking-tight">📊 Pair:</span>
                       <span className="font-black uppercase tracking-wider">{signal.pair}</span>
                     </div>
                     
                     <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">⚡ Type:</span>
+                      <span className="text-slate-500 w-20 sm:w-24 tracking-tight">⚡ Type:</span>
                       <span className={`font-black flex items-center gap-1.5 ${
                         signal.type === "CALL" ? "text-emerald-400" : "text-rose-400"
                       }`}>
-                        {signal.type === "CALL" ? "🟢 BUY/CALL" : "🔴 SELL/PUT"}
+                        {signal.type === "CALL" ? "🟢 BUY" : "🔴 SELL"}
                       </span>
                     </div>
                     
                     <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">⏱ Timeframe:</span>
+                      <span className="text-slate-500 w-20 sm:w-24 tracking-tight">⏱ Time:</span>
                       <span className="font-bold">{signal.timeframe}</span>
                     </div>
                     
                     <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">⏰ Start Time:</span>
+                      <span className="text-slate-500 w-20 sm:w-24 tracking-tight">⏰ Start:</span>
                       <span className="font-bold tabular-nums">{signal.startTime}</span>
                     </div>
                     
                     <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">🏁 End Time:</span>
+                      <span className="text-slate-500 w-20 sm:w-24 tracking-tight">🏁 End:</span>
                       <span className="font-bold tabular-nums">{signal.endTime}</span>
                     </div>
                   </div>
