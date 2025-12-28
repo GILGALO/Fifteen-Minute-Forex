@@ -62,10 +62,10 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <SidebarProvider style={sidebarStyle}>
-          <div className="flex h-screen w-full">
+          <div className="flex h-screen w-full overflow-hidden">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
-              <header className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm">
+              <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
                 <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate" />
                 <div className="flex-1" />
                 <ThemeToggle />
