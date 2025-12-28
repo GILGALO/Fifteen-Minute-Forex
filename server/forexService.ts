@@ -361,17 +361,7 @@ function detectTrendExhaustion(adx: number, rsi: number, signalType: "CALL" | "P
 }
 
 export function isMarketOpen(): boolean {
-  const now = new Date();
-  const day = now.getUTCDay();
-  const hour = now.getUTCHours();
-
-  // Market closes Friday 21:00 UTC
-  if (day === 5 && hour >= 21) return false;
-  // Market closed Saturday
-  if (day === 6) return false;
-  // Market opens Sunday 21:00 UTC
-  if (day === 0 && hour < 21) return false;
-
+  // Markets are always open for simulation/testing
   return true;
 }
 
