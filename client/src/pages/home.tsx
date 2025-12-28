@@ -108,6 +108,24 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
     });
   };
 
+  const generateSampleSignal = () => {
+    const sample: Signal = {
+      id: "sample-" + Date.now(),
+      pair: "GBP/USD",
+      type: Math.random() > 0.5 ? "CALL" : "PUT",
+      timeframe: "M15",
+      confidence: 85 + Math.floor(Math.random() * 11),
+      entry: 1.26543,
+      stopLoss: 1.26321,
+      takeProfit: 1.26876,
+      startTime: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+      endTime: new Date(Date.now() + 15 * 60 * 1000).toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+      status: "active",
+      timestamp: Date.now()
+    };
+    handleSignalGenerated(sample);
+  };
+
   return (
     <div className="min-h-screen bg-[#020817] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -347,6 +365,16 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
           </div>
 
           <div className="flex flex-wrap gap-3 mt-6">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="glass-panel border-emerald-500/30 text-emerald-400"
+              onClick={generateSampleSignal}
+              data-testid="button-sample-signal"
+            >
+              <Zap className="w-4 h-4 mr-2" />
+              Sample Signal
+            </Button>
             <Button 
               variant="outline" 
               size="sm"
