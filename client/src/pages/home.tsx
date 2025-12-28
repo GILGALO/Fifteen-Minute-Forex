@@ -58,8 +58,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
   const wonSignals = signals.filter(s => s.status === 'won').length;
   const lostSignals = signals.filter(s => s.status === 'lost').length;
   const activeSignals = signals.filter(s => s.status === 'active').length;
-  const winRate = totalSignals > 0 ? ((wonSignals / (wonSignals + lostSignals)) * 100).toFixed(1) : '0.0';
-  const avgConfidence = totalSignals > 0 ? (signals.reduce((acc, s) => acc + s.confidence, 0) / totalSignals).toFixed(1) : '0.0';
 
   useEffect(() => {
     const dateInterval = setInterval(() => {
@@ -129,14 +127,11 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden pb-20">
-      {/* Enhanced Dynamic Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-[-20%] right-[-10%] w-[1200px] h-[1200px] bg-emerald-600/5 rounded-full blur-[180px] animate-pulse opacity-40" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[1200px] h-[1200px] bg-blue-600/5 rounded-full blur-[180px] animate-pulse delay-1000 opacity-40" />
         <div className="absolute top-[40%] left-[30%] w-[800px] h-[800px] bg-indigo-600/3 rounded-full blur-[150px] animate-pulse delay-700" />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.02] mix-blend-overlay" />
-        
-        {/* Subtle Scanline Effect */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/[0.01] to-transparent bg-[length:100%_4px] animate-scanline pointer-events-none" />
       </div>
 
@@ -182,6 +177,14 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
             <div className="flex flex-col gap-4 w-full lg:w-auto">
               <div className="flex flex-wrap items-center gap-2 md:gap-3 justify-start lg:justify-end">
+                {isAdmin && (
+                  <Link href="/admin">
+                    <a className="h-10 md:h-11 px-4 md:px-6 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group" data-testid="link-admin">
+                      <Settings className="w-4 h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500" />
+                      <span className="text-xs md:text-sm font-bold text-slate-200">System Config</span>
+                    </a>
+                  </Link>
+                )}
                 <Button
                   onClick={handleLogout}
                   variant="ghost"
@@ -214,10 +217,8 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             </div>
           </div>
 
-          {/* Daily Goal & Drawdown Alerts */}
           {sessionData && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {/* Daily Goal Tracker */}
               <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasReachedGoal ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-cyan-500/40'}`} data-testid="card-daily-goal">
                 <CardContent className="p-5 relative z-10">
                   <div className="flex items-center justify-between mb-3">
@@ -243,7 +244,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                 </CardContent>
               </Card>
 
-              {/* Drawdown Protection */}
               <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasExceededDrawdown ? 'border-rose-500/60 bg-rose-500/5' : 'border-cyan-500/40'}`} data-testid="card-drawdown">
                 <CardContent className="p-5 relative z-10">
                   <div className="flex items-center justify-between mb-3">
@@ -272,7 +272,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
           )}
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 mt-8">
-            {/* ACTIVE SIGNALS CARD */}
             <div className="group relative rounded-xl overflow-hidden" data-testid="card-active-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
@@ -287,7 +286,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               </div>
             </div>
 
-            {/* WON SIGNALS CARD */}
             <div className="group relative rounded-xl overflow-hidden" data-testid="card-won-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
@@ -302,7 +300,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               </div>
             </div>
 
-            {/* LOST SIGNALS CARD */}
             <div className="group relative rounded-xl overflow-hidden" data-testid="card-lost-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-rose-700 to-rose-800 opacity-20" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-rose-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-rose-500/60 transition-all duration-300">
@@ -317,7 +314,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               </div>
             </div>
 
-            {/* TOTAL SIGNALS CARD */}
             <div className="group relative rounded-xl overflow-hidden" data-testid="card-total-signals">
               <div className="absolute inset-0 bg-gradient-to-br from-cyan-600 via-cyan-700 to-cyan-800 opacity-20" />
               <div className="relative backdrop-blur-xl bg-slate-950/40 border border-cyan-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-cyan-500/60 transition-all duration-300">
@@ -333,47 +329,24 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             </div>
           </div>
 
-          {/* Analytics Dashboard */}
           <div className="mb-8">
             <AnalyticsDashboard signals={signals} />
           </div>
 
           <div className="flex flex-wrap gap-3 mt-6">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="glass-panel border-emerald-500/30 text-emerald-400"
-              onClick={generateSampleSignal}
-              data-testid="button-sample-signal"
-            >
+            <Button variant="outline" size="sm" className="glass-panel border-emerald-500/30 text-emerald-400" onClick={generateSampleSignal} data-testid="button-sample-signal">
               <Zap className="w-4 h-4 mr-2" />
               Sample Signal
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setSignals([])}
-              className="glass-panel border-rose-500/30 text-rose-400"
-              data-testid="button-clear-history"
-            >
+            <Button variant="outline" size="sm" onClick={() => setSignals([])} className="glass-panel border-rose-500/30 text-rose-400" data-testid="button-clear-history">
               <Activity className="w-4 h-4 mr-2" />
               Clear History
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="glass-panel border-cyan-500/30 text-cyan-400"
-              data-testid="button-view-analytics"
-            >
+            <Button variant="outline" size="sm" className="glass-panel border-cyan-500/30 text-cyan-400" data-testid="button-view-analytics">
               <Clock className="w-4 h-4 mr-2" />
               View Analytics
             </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="glass-panel border-emerald-500/30 text-emerald-400"
-              data-testid="button-export-data"
-            >
+            <Button variant="outline" size="sm" className="glass-panel border-emerald-500/30 text-emerald-400" data-testid="button-export-data">
               <Target className="w-4 h-4 mr-2" />
               Export Data
             </Button>
@@ -403,236 +376,9 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
           <div className="lg:col-span-5 xl:col-span-4 space-y-4 sm:space-y-6">
             <ErrorBoundary>
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                <SignalGenerator 
-                  onSignalGenerated={handleSignalGenerated} 
-                  onPairChange={setActivePair}
-                />
+                <SignalGenerator onSignalGenerated={handleSignalGenerated} onPairChange={setActivePair} />
               </Suspense>
             </ErrorBoundary>
-
-            <div className="block lg:hidden">
-              <div className="h-[350px] sm:h-[400px] md:h-[450px]">
-                <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
-                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                    <TradingChart pair={activePair} />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            </div>
-          </div>
-
-          <div className="hidden lg:block lg:col-span-7 xl:col-span-8">
-            <div className="h-[650px] lg:h-[700px] xl:h-[750px] sticky top-4">
-              <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
-                <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                  <TradingChart pair={activePair} />
-                </Suspense>
-              </ErrorBoundary>
-            </div>
-          </div>
-        </div>
-      </main>
-      <Toaster />
-    </div>
-  );
-}
-
-          {/* Daily Goal & Drawdown Alerts */}
-          {sessionData && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {/* Daily Goal Tracker */}
-              <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasReachedGoal ? 'border-emerald-500/60 bg-emerald-500/5' : 'border-cyan-500/40'}`} data-testid="card-daily-goal">
-                <CardContent className="p-5 relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <Goal className="w-5 h-5 text-emerald-400" />
-                    <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Daily Goal</span>
-                  </div>
-                  <div className="mb-3">
-                    <div className="text-2xl font-black text-emerald-400" data-testid="text-goal-progress">
-                      {sessionData.goalProgress.toFixed(0)}%
-                    </div>
-                    <div className="text-xs text-emerald-400/60 mt-1">Target: {(sessionData.goalThreshold * 100).toFixed(1)}% profit</div>
-                  </div>
-                  <div className="w-full h-2 bg-background rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-300"
-                      style={{ width: `${Math.min(sessionData.goalProgress, 100)}%` }}
-                      data-testid="progress-goal-bar"
-                    />
-                  </div>
-                  {sessionData.hasReachedGoal && (
-                    <div className="text-xs text-emerald-400 font-bold mt-2">✅ GOAL REACHED - Stop trading to secure profits</div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Drawdown Protection */}
-              <Card className={`glass-panel border overflow-hidden relative group ${sessionData.hasExceededDrawdown ? 'border-rose-500/60 bg-rose-500/5' : 'border-cyan-500/40'}`} data-testid="card-drawdown">
-                <CardContent className="p-5 relative z-10">
-                  <div className="flex items-center justify-between mb-3">
-                    <AlertCircle className="w-5 h-5 text-rose-400" />
-                    <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Drawdown</span>
-                  </div>
-                  <div className="mb-3">
-                    <div className={`text-2xl font-black ${sessionData.hasExceededDrawdown ? 'text-rose-400' : 'text-cyan-400'}`} data-testid="text-drawdown-value">
-                      {Math.abs(sessionData.pnl.basisPoints / 100).toFixed(2)}%
-                    </div>
-                    <div className="text-xs text-cyan-400/60 mt-1">Max allowed: {(sessionData.drawdownThreshold * 100).toFixed(1)}%</div>
-                  </div>
-                  <div className="w-full h-2 bg-background rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full transition-all duration-300 ${sessionData.pnl.basisPoints < 0 ? 'bg-gradient-to-r from-rose-500 to-rose-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-400'}`}
-                      style={{ width: `${Math.min(Math.abs(sessionData.pnl.basisPoints) / (sessionData.drawdownThreshold * 100) * 100, 100)}%` }}
-                      data-testid="progress-drawdown-bar"
-                    />
-                  </div>
-                  {sessionData.hasExceededDrawdown && (
-                    <div className="text-xs text-rose-400 font-bold mt-2">⚠️ MAX DRAWDOWN - Stop trading to prevent loss</div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-4 mt-8">
-            {/* ACTIVE SIGNALS CARD */}
-            <div className="group relative rounded-xl overflow-hidden" data-testid="card-active-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
-              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
-                <div className="flex items-center justify-between mb-1">
-                  <Target className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[8px] font-black text-emerald-400/80 uppercase tracking-widest">Active</span>
-                </div>
-                <div>
-                  <div className="text-xl md:text-3xl font-black text-white leading-none mb-1" data-testid="text-active-count">{activeSignals}</div>
-                  <p className="text-[7px] text-slate-500 font-bold uppercase tracking-tighter">Current</p>
-                </div>
-              </div>
-            </div>
-
-            {/* WON SIGNALS CARD */}
-            <div className="group relative rounded-xl overflow-hidden" data-testid="card-won-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
-              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
-                <div className="flex items-center justify-between mb-1">
-                  <TrendingUp className="w-4 h-4 text-emerald-400" />
-                  <span className="text-[8px] font-black text-emerald-400/80 uppercase tracking-widest">Won</span>
-                </div>
-                <div>
-                  <div className="text-xl md:text-3xl font-black text-white leading-none mb-1" data-testid="text-won-count">{wonSignals}</div>
-                  <p className="text-[7px] text-slate-500 font-bold uppercase tracking-tighter">Profit</p>
-                </div>
-              </div>
-            </div>
-
-            {/* LOST SIGNALS CARD */}
-            <div className="group relative rounded-xl overflow-hidden" data-testid="card-lost-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-rose-700 to-rose-800 opacity-20" />
-              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-rose-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-rose-500/60 transition-all duration-300">
-                <div className="flex items-center justify-between mb-1">
-                  <TrendingDown className="w-4 h-4 text-rose-400" />
-                  <span className="text-[8px] font-black text-rose-400/80 uppercase tracking-widest">Lost</span>
-                </div>
-                <div>
-                  <div className="text-xl md:text-3xl font-black text-white leading-none mb-1" data-testid="text-lost-count">{lostSignals}</div>
-                  <p className="text-[7px] text-slate-500 font-bold uppercase tracking-tighter">Loss</p>
-                </div>
-              </div>
-            </div>
-
-            {/* TOTAL SIGNALS CARD */}
-            <div className="group relative rounded-xl overflow-hidden" data-testid="card-total-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600 via-cyan-700 to-cyan-800 opacity-20" />
-              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-cyan-500/30 p-3 md:p-4 rounded-xl h-full flex flex-col justify-between hover:border-cyan-500/60 transition-all duration-300">
-                <div className="flex items-center justify-between mb-1">
-                  <BarChart3 className="w-4 h-4 text-cyan-400" />
-                  <span className="text-[8px] font-black text-cyan-400/80 uppercase tracking-widest">Total</span>
-                </div>
-                <div>
-                  <div className="text-xl md:text-3xl font-black text-white leading-none mb-1" data-testid="text-total-count">{totalSignals}</div>
-                  <p className="text-[7px] text-slate-500 font-bold uppercase tracking-tighter">All</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Analytics Dashboard */}
-          <div className="mb-8">
-            <AnalyticsDashboard signals={signals} />
-          </div>
-
-          <div className="flex flex-wrap gap-3 mt-6">
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="glass-panel border-emerald-500/30 text-emerald-400"
-              onClick={generateSampleSignal}
-              data-testid="button-sample-signal"
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Sample Signal
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setSignals([])}
-              className="glass-panel border-rose-500/30 text-rose-400"
-              data-testid="button-clear-history"
-            >
-              <Activity className="w-4 h-4 mr-2" />
-              Clear History
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="glass-panel border-cyan-500/30 text-cyan-400"
-              data-testid="button-view-analytics"
-            >
-              <Clock className="w-4 h-4 mr-2" />
-              View Analytics
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="glass-panel border-emerald-500/30 text-emerald-400"
-              data-testid="button-export-data"
-            >
-              <Target className="w-4 h-4 mr-2" />
-              Export Data
-            </Button>
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
-          <div className="lg:col-span-12 space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-              <div className="xl:col-span-8">
-                <ErrorBoundary>
-                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                    <RecentSignals signals={signals} />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-              <div className="xl:col-span-4">
-                <ErrorBoundary>
-                  <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
-                    <TradingSchedule />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 xl:col-span-4 space-y-4 sm:space-y-6">
-            <ErrorBoundary>
-              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                <SignalGenerator 
-                  onSignalGenerated={handleSignalGenerated} 
-                  onPairChange={setActivePair}
-                />
-              </Suspense>
-            </ErrorBoundary>
-
             <div className="block lg:hidden">
               <div className="h-[350px] sm:h-[400px] md:h-[450px]">
                 <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
