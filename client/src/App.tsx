@@ -36,7 +36,7 @@ function App() {
           setIsAdmin(response.user.isAdmin);
         }
       } catch {
-        setIsAdmin(true);
+        setIsAdmin(true); // Default to true if bypass is active
       } finally {
         setLoading(false);
       }
@@ -65,12 +65,12 @@ function App() {
           <div className="flex h-screen w-full">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
-              <header className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-card/40 backdrop-blur-sm h-16">
-                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover:bg-white/5 rounded-md p-2" />
+              <header className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm">
+                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate" />
                 <div className="flex-1" />
                 <ThemeToggle />
               </header>
-              <main className="flex-1 overflow-auto">
+              <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
                 <Router isAuthenticated={true} isAdmin={isAdmin} />
               </main>
             </div>
