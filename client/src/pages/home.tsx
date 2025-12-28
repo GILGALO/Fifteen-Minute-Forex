@@ -275,89 +275,65 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             </div>
           )}
 
-          {/* PREMIUM MASSIVE STATS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8 mb-12 mt-12">
+          {/* PREMIUM COMPACT STATS */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10 mt-8">
             {/* ACTIVE SIGNALS CARD */}
-            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-active-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-30" />
-              <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
-              
-              <div className="relative backdrop-blur-xl bg-gradient-to-br from-emerald-600/25 to-emerald-700/10 border-2 border-emerald-400/70 p-8 md:p-10 rounded-3xl h-full">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="p-4 bg-emerald-500/30 rounded-2xl group-hover:scale-110 transition-transform">
-                    <Target className="w-8 h-8 text-emerald-200" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-black text-emerald-400/80 uppercase tracking-[3px]">ACTIVE</p>
-                  </div>
+            <div className="group relative rounded-2xl overflow-hidden" data-testid="card-active-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
+              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-4 md:p-6 rounded-2xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <Target className="w-5 h-5 text-emerald-400" />
+                  <span className="text-[8px] font-black text-emerald-400/80 uppercase tracking-widest">Active</span>
                 </div>
-                <div className="text-7xl md:text-8xl font-black text-emerald-100 leading-none mb-3" data-testid="text-active-count">{activeSignals}</div>
-                <p className="text-emerald-400/80 font-bold text-sm md:text-base uppercase tracking-widest">Signals Running</p>
-                <div className="mt-6 h-1 bg-gradient-to-r from-emerald-500/40 to-transparent rounded-full" />
+                <div>
+                  <div className="text-3xl md:text-4xl font-black text-white leading-none mb-1" data-testid="text-active-count">{activeSignals}</div>
+                  <p className="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Current Signals</p>
+                </div>
               </div>
             </div>
 
             {/* WON SIGNALS CARD */}
-            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-won-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-30" />
-              <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
-              
-              <div className="relative backdrop-blur-xl bg-gradient-to-br from-emerald-600/25 to-emerald-700/10 border-2 border-emerald-400/70 p-8 md:p-10 rounded-3xl h-full">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="p-4 bg-emerald-500/30 rounded-2xl group-hover:scale-110 transition-transform">
-                    <TrendingUp className="w-8 h-8 text-emerald-200" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-black text-emerald-400/80 uppercase tracking-[3px]">WON</p>
-                  </div>
+            <div className="group relative rounded-2xl overflow-hidden" data-testid="card-won-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-20" />
+              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-emerald-500/30 p-4 md:p-6 rounded-2xl h-full flex flex-col justify-between hover:border-emerald-500/60 transition-all duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <TrendingUp className="w-5 h-5 text-emerald-400" />
+                  <span className="text-[8px] font-black text-emerald-400/80 uppercase tracking-widest">Won</span>
                 </div>
-                <div className="text-7xl md:text-8xl font-black text-emerald-100 leading-none mb-3" data-testid="text-won-count">{wonSignals}</div>
-                <p className="text-emerald-400/80 font-bold text-sm md:text-base uppercase tracking-widest">Profitable Trades</p>
-                <div className="mt-6 h-1 bg-gradient-to-r from-emerald-500/40 to-transparent rounded-full" />
+                <div>
+                  <div className="text-3xl md:text-4xl font-black text-white leading-none mb-1" data-testid="text-won-count">{wonSignals}</div>
+                  <p className="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Profitable Trades</p>
+                </div>
               </div>
             </div>
 
             {/* LOST SIGNALS CARD */}
-            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-lost-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-rose-700 to-rose-800 opacity-30" />
-              <div className="absolute top-0 right-0 w-40 h-40 bg-rose-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-rose-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
-              
-              <div className="relative backdrop-blur-xl bg-gradient-to-br from-rose-600/25 to-rose-700/10 border-2 border-rose-400/70 p-8 md:p-10 rounded-3xl h-full">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="p-4 bg-rose-500/30 rounded-2xl group-hover:scale-110 transition-transform">
-                    <TrendingDown className="w-8 h-8 text-rose-200" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-black text-rose-400/80 uppercase tracking-[3px]">LOST</p>
-                  </div>
+            <div className="group relative rounded-2xl overflow-hidden" data-testid="card-lost-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-rose-700 to-rose-800 opacity-20" />
+              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-rose-500/30 p-4 md:p-6 rounded-2xl h-full flex flex-col justify-between hover:border-rose-500/60 transition-all duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <TrendingDown className="w-5 h-5 text-rose-400" />
+                  <span className="text-[8px] font-black text-rose-400/80 uppercase tracking-widest">Lost</span>
                 </div>
-                <div className="text-7xl md:text-8xl font-black text-rose-100 leading-none mb-3" data-testid="text-lost-count">{lostSignals}</div>
-                <p className="text-rose-400/80 font-bold text-sm md:text-base uppercase tracking-widest">Failed Trades</p>
-                <div className="mt-6 h-1 bg-gradient-to-r from-rose-500/40 to-transparent rounded-full" />
+                <div>
+                  <div className="text-3xl md:text-4xl font-black text-white leading-none mb-1" data-testid="text-lost-count">{lostSignals}</div>
+                  <p className="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">Failed Trades</p>
+                </div>
               </div>
             </div>
 
             {/* TOTAL SIGNALS CARD */}
-            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-total-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600 via-cyan-700 to-cyan-800 opacity-30" />
-              <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-cyan-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
-              
-              <div className="relative backdrop-blur-xl bg-gradient-to-br from-cyan-600/25 to-cyan-700/10 border-2 border-cyan-400/70 p-8 md:p-10 rounded-3xl h-full">
-                <div className="flex items-start justify-between mb-6">
-                  <div className="p-4 bg-cyan-500/30 rounded-2xl group-hover:scale-110 transition-transform">
-                    <BarChart3 className="w-8 h-8 text-cyan-200" />
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-black text-cyan-400/80 uppercase tracking-[3px]">TOTAL</p>
-                  </div>
+            <div className="group relative rounded-2xl overflow-hidden" data-testid="card-total-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600 via-cyan-700 to-cyan-800 opacity-20" />
+              <div className="relative backdrop-blur-xl bg-slate-950/40 border border-cyan-500/30 p-4 md:p-6 rounded-2xl h-full flex flex-col justify-between hover:border-cyan-500/60 transition-all duration-300">
+                <div className="flex items-center justify-between mb-2">
+                  <BarChart3 className="w-5 h-5 text-cyan-400" />
+                  <span className="text-[8px] font-black text-cyan-400/80 uppercase tracking-widest">Total</span>
                 </div>
-                <div className="text-7xl md:text-8xl font-black text-cyan-100 leading-none mb-3" data-testid="text-total-count">{totalSignals}</div>
-                <p className="text-cyan-400/80 font-bold text-sm md:text-base uppercase tracking-widest">All Signals</p>
-                <div className="mt-6 h-1 bg-gradient-to-r from-cyan-500/40 to-transparent rounded-full" />
+                <div>
+                  <div className="text-3xl md:text-4xl font-black text-white leading-none mb-1" data-testid="text-total-count">{totalSignals}</div>
+                  <p className="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">All Executions</p>
+                </div>
               </div>
             </div>
           </div>
