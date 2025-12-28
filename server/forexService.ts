@@ -1206,9 +1206,9 @@ export async function generateSignalAnalysis(
   }
 
   // VOLUME CONFIRMATION BONUS
-  const lastCandle = candles[candles.length - 1];
-  const avgVolume = candles.slice(-20).reduce((sum, c) => sum + (c.volume || 0), 0) / 20;
-  if (lastCandle.volume && lastCandle.volume > avgVolume * 1.5) {
+  const bonusLastCandle = candles[candles.length - 1];
+  const bonusAvgVolume = candles.slice(-20).reduce((sum, c) => sum + (c.volume || 0), 0) / 20;
+  if (bonusLastCandle.volume && bonusLastCandle.volume > bonusAvgVolume * 1.5) {
     confidence += 10;
     reasoning.push(`📊 HIGH VOLUME CONFIRMATION: +10%`);
   }
