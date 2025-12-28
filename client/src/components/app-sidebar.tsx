@@ -76,16 +76,16 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu className="gap-1 sm:gap-2">
+            <SidebarMenu className="gap-2">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <a
                       href={item.url}
-                      className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-all hover-elevate text-sm sm:text-base h-9 sm:h-10"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover-elevate text-sm sm:text-base min-h-12 touch-target"
                       data-testid={`nav-${item.title.toLowerCase().replace(' ', '-')}`}
                     >
-                      <item.icon className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
                       <span className="font-medium truncate">{item.title}</span>
                     </a>
                   </SidebarMenuButton>
@@ -101,10 +101,10 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
               <SidebarMenuButton asChild>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg transition-all text-red-400 hover:text-red-300 hover-elevate text-sm sm:text-base h-9 sm:h-10"
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-red-400 hover:text-red-300 hover-elevate text-sm sm:text-base min-h-12 touch-target"
                   data-testid="button-logout"
                 >
-                  <LogOut className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <LogOut className="h-5 w-5 flex-shrink-0" />
                   <span className="font-medium">Logout</span>
                 </button>
               </SidebarMenuButton>

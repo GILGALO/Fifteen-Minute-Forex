@@ -105,10 +105,10 @@ export default function TradingJournal() {
 
         <Button
           onClick={() => setShowForm(!showForm)}
-          className="mb-6 bg-blue-600 hover:bg-blue-700"
+          className="mb-6 bg-blue-600 hover:bg-blue-700 w-full sm:w-auto min-h-12 text-base sm:text-sm"
           data-testid="button-add-trade"
         >
-          <Plus className="w-4 h-4 mr-2" />
+          <Plus className="w-5 h-5 mr-2" />
           Log Trade
         </Button>
 
@@ -121,11 +121,11 @@ export default function TradingJournal() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-300 mb-2">Pair</label>
+                    <label className="block text-sm sm:text-base font-semibold text-slate-300 mb-2">Pair</label>
                     <select
                       value={formData.pair}
                       onChange={(e) => setFormData({ ...formData, pair: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-md text-white text-base sm:text-sm focus:outline-none focus:border-blue-500 min-h-12"
                       data-testid="select-trade-pair"
                     >
                       {pairs.map((p) => (
@@ -134,11 +134,11 @@ export default function TradingJournal() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-300 mb-2">Outcome</label>
+                    <label className="block text-sm sm:text-base font-semibold text-slate-300 mb-2">Outcome</label>
                     <select
                       value={formData.outcome}
                       onChange={(e) => setFormData({ ...formData, outcome: e.target.value as "won" | "lost" })}
-                      className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-md text-white text-base sm:text-sm focus:outline-none focus:border-blue-500 min-h-12"
                       data-testid="select-trade-outcome"
                     >
                       <option value="won">Won</option>
@@ -151,7 +151,7 @@ export default function TradingJournal() {
                     placeholder="Entry Price"
                     value={formData.entryPrice}
                     onChange={(e) => setFormData({ ...formData, entryPrice: e.target.value })}
-                    className="bg-slate-800/50 border-slate-600 text-white"
+                    className="bg-slate-800/50 border-slate-600 text-white text-base px-4 py-3 min-h-12"
                     data-testid="input-entry-price"
                   />
                   <Input
@@ -160,7 +160,7 @@ export default function TradingJournal() {
                     placeholder="Exit Price"
                     value={formData.exitPrice}
                     onChange={(e) => setFormData({ ...formData, exitPrice: e.target.value })}
-                    className="bg-slate-800/50 border-slate-600 text-white"
+                    className="bg-slate-800/50 border-slate-600 text-white text-base px-4 py-3 min-h-12"
                     data-testid="input-exit-price"
                   />
                   <Input
@@ -168,7 +168,7 @@ export default function TradingJournal() {
                     placeholder="Position Size"
                     value={formData.positionSize}
                     onChange={(e) => setFormData({ ...formData, positionSize: e.target.value })}
-                    className="bg-slate-800/50 border-slate-600 text-white"
+                    className="bg-slate-800/50 border-slate-600 text-white text-base px-4 py-3 min-h-12"
                     data-testid="input-position-size"
                   />
                 </div>
@@ -176,31 +176,31 @@ export default function TradingJournal() {
                   placeholder="Why did you enter this trade?"
                   value={formData.entryReason}
                   onChange={(e) => setFormData({ ...formData, entryReason: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
-                  rows={2}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-md text-white text-base sm:text-sm focus:outline-none focus:border-blue-500"
+                  rows={3}
                   data-testid="textarea-entry-reason"
                 />
                 <textarea
                   placeholder="Why did you exit?"
                   value={formData.exitReason}
                   onChange={(e) => setFormData({ ...formData, exitReason: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
-                  rows={2}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-md text-white text-base sm:text-sm focus:outline-none focus:border-blue-500"
+                  rows={3}
                   data-testid="textarea-exit-reason"
                 />
                 <textarea
                   placeholder="Additional notes (optional)"
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  className="w-full px-3 py-2 bg-slate-800/50 border border-slate-600 rounded-md text-white text-sm focus:outline-none focus:border-blue-500"
-                  rows={2}
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-600 rounded-md text-white text-base sm:text-sm focus:outline-none focus:border-blue-500"
+                  rows={3}
                   data-testid="textarea-notes"
                 />
-                <div className="flex gap-2">
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={createMutation.isPending} data-testid="button-submit-trade">
+                <div className="flex gap-2 flex-col sm:flex-row">
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700 min-h-12 text-base sm:text-sm flex-1 sm:flex-none" disabled={createMutation.isPending} data-testid="button-submit-trade">
                     {createMutation.isPending ? "Logging..." : "Log Trade"}
                   </Button>
-                  <Button type="button" variant="ghost" onClick={() => setShowForm(false)} data-testid="button-cancel-trade">
+                  <Button type="button" variant="ghost" onClick={() => setShowForm(false)} className="min-h-12 text-base sm:text-sm flex-1 sm:flex-none" data-testid="button-cancel-trade">
                     Cancel
                   </Button>
                 </div>
@@ -249,13 +249,12 @@ export default function TradingJournal() {
                   </div>
                 )}
                 <Button
-                  size="sm"
                   variant="ghost"
                   onClick={() => deleteMutation.mutate(trade.id)}
-                  className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                  className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 min-h-10 text-sm"
                   data-testid={`button-delete-trade-${trade.id}`}
                 >
-                  <Trash2 className="w-4 h-4 mr-1" />
+                  <Trash2 className="w-5 h-5 mr-2" />
                   Delete
                 </Button>
               </CardContent>

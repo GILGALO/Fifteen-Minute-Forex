@@ -178,27 +178,27 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             </div>
 
             <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 w-full lg:w-auto">
-              <div className="flex flex-wrap items-center gap-1 sm:gap-2 md:gap-3 justify-start lg:justify-end">
-                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate h-7 sm:h-9 md:h-10 px-2 sm:px-3 md:px-5 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-1 sm:gap-2 hover:bg-white/10 transition-all cursor-pointer flex-shrink-0" />
+              <div className="flex flex-wrap items-center gap-2 justify-start lg:justify-end">
+                <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate min-h-11 px-4 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer flex-shrink-0 text-sm" />
                 <ThemeToggle />
                 {isAdmin && (
                   <Link 
                     href="/admin"
-                    className="h-7 sm:h-9 md:h-10 px-2 sm:px-3 md:px-5 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-1 sm:gap-2 hover:bg-white/10 transition-all cursor-pointer group text-[10px] sm:text-xs md:text-sm"
+                    className="min-h-11 px-4 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group text-sm sm:text-xs"
                     data-testid="link-admin"
                   >
-                    <Settings className="w-3 h-3 sm:w-4 sm:h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500 flex-shrink-0" />
+                    <Settings className="w-5 h-5 text-slate-400 group-hover:rotate-90 transition-transform duration-500 flex-shrink-0" />
                     <span className="font-bold text-slate-200 hidden sm:inline whitespace-nowrap">System Config</span>
                   </Link>
                 )}
                 <Button
                   onClick={handleLogout}
                   variant="ghost"
-                  className="h-7 sm:h-9 md:h-10 px-2 sm:px-3 md:px-5 text-slate-400 hover:text-white hover:bg-rose-500/10 rounded-md sm:rounded-lg transition-all font-bold text-[10px] sm:text-xs md:text-sm"
+                  className="min-h-11 px-4 text-slate-400 hover:text-white hover:bg-rose-500/10 rounded-md sm:rounded-lg transition-all font-bold text-sm sm:text-xs"
                   data-testid="button-logout"
                 >
-                  <LogOut className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                  <span className="hidden sm:inline ml-1 whitespace-nowrap">Exit</span>
+                  <LogOut className="w-5 h-5 flex-shrink-0" />
+                  <span className="hidden sm:inline ml-2 whitespace-nowrap">Exit</span>
                 </Button>
               </div>
 
