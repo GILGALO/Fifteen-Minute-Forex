@@ -132,70 +132,67 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
         </ErrorBoundary>
       </div>
 
-      <main className="container mx-auto px-4 py-6 md:px-6 md:py-8 lg:px-8 relative z-10">
-        <header className="mb-8 md:mb-10">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-primary/20 relative">
-            <div className="absolute -bottom-[1px] left-0 w-full h-[2px] bg-gradient-to-r from-primary via-primary/50 to-transparent" />
-
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center bg-gradient-to-br from-emerald-500/20 via-cyan-500/20 to-blue-500/20 border-2 border-emerald-400/60 rounded-2xl relative overflow-hidden">
-                <TrendingUp className="w-9 h-9 md:w-11 md:h-11 text-emerald-400 relative z-10" />
-              </div>
-
-              <div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-1">
-                  <span className="bg-gradient-to-r from-emerald-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">GILGALO</span>
-                  <span className="text-white ml-2">TRADING</span>
-                </h1>
-                <p className="text-xs md:text-sm text-emerald-400/80 font-semibold tracking-wider uppercase flex items-center gap-2">
-                  <Activity className="w-3 h-3 text-emerald-400" />
-                  <span>Professional Signal Intelligence</span>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {isAdmin && (
-                <Link href="/admin">
-                  <a className="glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2 border border-primary/30 hover-elevate cursor-pointer" data-testid="link-admin">
-                    <Settings className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold text-primary">Admin</span>
-                  </a>
-                </Link>
-              )}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleLogout}
-                className="glass-panel border-rose-500/30 text-rose-400"
-                data-testid="button-logout"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
-              <div className="glass-panel px-5 py-2.5 rounded-xl flex items-center gap-3 border border-emerald-400/30">
-                <Wifi className="w-4 h-4 text-emerald-400" />
-                <span className="text-sm font-semibold text-emerald-400 tracking-wide">LIVE</span>
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              </div>
-
-              <div className="glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2 border border-primary/30">
-                <Calendar className="w-4 h-4 text-cyan-400" />
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground font-medium">
-                    {currentDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                  </span>
-                  <span className="text-xs font-bold text-cyan-400">
-                    {currentDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                  </span>
+      <main className="container mx-auto px-4 py-8 md:px-6 md:py-12 lg:px-8 relative z-10">
+        {/* Premium Hero Section */}
+        <header className="mb-16 md:mb-20">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 pb-10 md:pb-14 border-b border-emerald-500/30 relative">
+            <div className="flex items-center gap-6">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/40 via-cyan-500/30 to-blue-500/40 rounded-3xl blur-2xl" />
+                <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center bg-gradient-to-br from-emerald-600/30 via-cyan-600/20 to-blue-600/30 border-2 border-emerald-400/80 rounded-3xl relative overflow-hidden">
+                  <TrendingUp className="w-12 h-12 md:w-14 md:h-14 text-emerald-300 relative z-10 animate-pulse" />
                 </div>
               </div>
 
-              <div className="glass-panel px-5 py-2.5 rounded-xl flex items-center gap-3 border border-primary/30">
-                <BarChart3 className="w-4 h-4 text-primary" />
-                <div className="flex flex-col">
-                  <span className="text-xs text-muted-foreground font-medium uppercase">Signals</span>
-                  <span className="text-base font-bold text-primary">{totalSignals}</span>
+              <div>
+                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter mb-2 leading-none">
+                  <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-blue-300 bg-clip-text text-transparent">GILGALO</span>
+                </h1>
+                <div className="flex flex-col gap-1">
+                  <p className="text-emerald-400 font-black text-xl md:text-2xl tracking-wide">TRADING CONTROL</p>
+                  <p className="text-emerald-400/70 font-bold tracking-wider uppercase text-sm">Advanced Signal Intelligence Platform</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 w-full lg:w-auto">
+              <div className="flex flex-wrap items-center gap-2">
+                {isAdmin && (
+                  <Link href="/admin">
+                    <a className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-600/20 to-cyan-500/10 border border-cyan-400/60 flex items-center gap-2 hover:border-cyan-400/100 transition-all cursor-pointer hover:shadow-lg hover:shadow-cyan-500/20" data-testid="link-admin">
+                      <Settings className="w-5 h-5 text-cyan-300" />
+                      <span className="text-sm font-bold text-cyan-300">Admin</span>
+                    </a>
+                  </Link>
+                )}
+                <Button
+                  onClick={handleLogout}
+                  className="px-5 py-3 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-bold rounded-xl transition-all flex-1 lg:flex-none"
+                  data-testid="button-logout"
+                >
+                  <LogOut className="w-5 h-5 mr-2" />
+                  Logout
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <div className="px-4 py-3 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 border border-emerald-400/40 flex items-center justify-center gap-2">
+                  <Wifi className="w-5 h-5 text-emerald-300 animate-pulse" />
+                  <span className="text-xs font-bold text-emerald-300">LIVE</span>
+                </div>
+
+                <div className="px-3 py-3 rounded-xl bg-gradient-to-br from-cyan-500/15 to-cyan-600/5 border border-cyan-400/40 flex flex-col items-center justify-center">
+                  <span className="text-xs text-cyan-400/70 font-medium">
+                    {currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                  <span className="text-xs font-black text-cyan-300">
+                    {currentDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+
+                <div className="px-3 py-3 rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-blue-400/40 flex flex-col items-center justify-center">
+                  <span className="text-xs text-blue-400/70 font-medium uppercase">Signals</span>
+                  <span className="text-lg font-black text-blue-300">{totalSignals}</span>
                 </div>
               </div>
             </div>
@@ -258,61 +255,89 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             </div>
           )}
 
-          {/* Premium Stats Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10 mt-8">
-            <div className="group relative rounded-2xl bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 border border-emerald-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-emerald-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20" data-testid="card-active-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-emerald-500/20 rounded-xl">
-                    <Target className="w-6 h-6 text-emerald-300 group-hover:scale-110 transition-transform" />
+          {/* PREMIUM MASSIVE STATS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-8 mb-12 mt-12">
+            {/* ACTIVE SIGNALS CARD */}
+            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-active-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-30" />
+              <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
+              
+              <div className="relative backdrop-blur-xl bg-gradient-to-br from-emerald-600/25 to-emerald-700/10 border-2 border-emerald-400/70 p-8 md:p-10 rounded-3xl h-full">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="p-4 bg-emerald-500/30 rounded-2xl group-hover:scale-110 transition-transform">
+                    <Target className="w-8 h-8 text-emerald-200" />
                   </div>
-                  <span className="text-xs text-emerald-400/80 font-bold uppercase tracking-widest">Active</span>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-emerald-400/80 uppercase tracking-[3px]">ACTIVE</p>
+                  </div>
                 </div>
-                <div className="text-4xl font-black text-emerald-200 mb-2" data-testid="text-active-count">{activeSignals}</div>
-                <div className="text-sm text-emerald-400/70">Running signals</div>
+                <div className="text-7xl md:text-8xl font-black text-emerald-100 leading-none mb-3" data-testid="text-active-count">{activeSignals}</div>
+                <p className="text-emerald-400/80 font-bold text-sm md:text-base uppercase tracking-widest">Signals Running</p>
+                <div className="mt-6 h-1 bg-gradient-to-r from-emerald-500/40 to-transparent rounded-full" />
               </div>
             </div>
 
-            <div className="group relative rounded-2xl bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 border border-emerald-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-emerald-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20" data-testid="card-won-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-emerald-500/20 rounded-xl">
-                    <TrendingUp className="w-6 h-6 text-emerald-300 group-hover:scale-110 transition-transform" />
+            {/* WON SIGNALS CARD */}
+            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-won-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 opacity-30" />
+              <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-emerald-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
+              
+              <div className="relative backdrop-blur-xl bg-gradient-to-br from-emerald-600/25 to-emerald-700/10 border-2 border-emerald-400/70 p-8 md:p-10 rounded-3xl h-full">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="p-4 bg-emerald-500/30 rounded-2xl group-hover:scale-110 transition-transform">
+                    <TrendingUp className="w-8 h-8 text-emerald-200" />
                   </div>
-                  <span className="text-xs text-emerald-400/80 font-bold uppercase tracking-widest">Won</span>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-emerald-400/80 uppercase tracking-[3px]">WON</p>
+                  </div>
                 </div>
-                <div className="text-4xl font-black text-emerald-200 mb-2" data-testid="text-won-count">{wonSignals}</div>
-                <div className="text-sm text-emerald-400/70">Profitable trades</div>
+                <div className="text-7xl md:text-8xl font-black text-emerald-100 leading-none mb-3" data-testid="text-won-count">{wonSignals}</div>
+                <p className="text-emerald-400/80 font-bold text-sm md:text-base uppercase tracking-widest">Profitable Trades</p>
+                <div className="mt-6 h-1 bg-gradient-to-r from-emerald-500/40 to-transparent rounded-full" />
               </div>
             </div>
 
-            <div className="group relative rounded-2xl bg-gradient-to-br from-rose-600/15 to-rose-500/5 border border-rose-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-rose-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-rose-500/20" data-testid="card-lost-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-rose-500/20 rounded-xl">
-                    <TrendingDown className="w-6 h-6 text-rose-300 group-hover:scale-110 transition-transform" />
+            {/* LOST SIGNALS CARD */}
+            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-lost-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-600 via-rose-700 to-rose-800 opacity-30" />
+              <div className="absolute top-0 right-0 w-40 h-40 bg-rose-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-rose-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
+              
+              <div className="relative backdrop-blur-xl bg-gradient-to-br from-rose-600/25 to-rose-700/10 border-2 border-rose-400/70 p-8 md:p-10 rounded-3xl h-full">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="p-4 bg-rose-500/30 rounded-2xl group-hover:scale-110 transition-transform">
+                    <TrendingDown className="w-8 h-8 text-rose-200" />
                   </div>
-                  <span className="text-xs text-rose-400/80 font-bold uppercase tracking-widest">Lost</span>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-rose-400/80 uppercase tracking-[3px]">LOST</p>
+                  </div>
                 </div>
-                <div className="text-4xl font-black text-rose-200 mb-2" data-testid="text-lost-count">{lostSignals}</div>
-                <div className="text-sm text-rose-400/70">Failed trades</div>
+                <div className="text-7xl md:text-8xl font-black text-rose-100 leading-none mb-3" data-testid="text-lost-count">{lostSignals}</div>
+                <p className="text-rose-400/80 font-bold text-sm md:text-base uppercase tracking-widest">Failed Trades</p>
+                <div className="mt-6 h-1 bg-gradient-to-r from-rose-500/40 to-transparent rounded-full" />
               </div>
             </div>
 
-            <div className="group relative rounded-2xl bg-gradient-to-br from-cyan-600/15 to-cyan-500/5 border border-cyan-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-cyan-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20" data-testid="card-total-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-cyan-500/20 rounded-xl">
-                    <BarChart3 className="w-6 h-6 text-cyan-300 group-hover:scale-110 transition-transform" />
+            {/* TOTAL SIGNALS CARD */}
+            <div className="group relative rounded-3xl overflow-hidden" data-testid="card-total-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600 via-cyan-700 to-cyan-800 opacity-30" />
+              <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/30 rounded-full blur-3xl -mr-20 -mt-20 group-hover:scale-125 transition-transform duration-300" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-cyan-600/20 rounded-full blur-3xl -ml-20 -mb-20" />
+              
+              <div className="relative backdrop-blur-xl bg-gradient-to-br from-cyan-600/25 to-cyan-700/10 border-2 border-cyan-400/70 p-8 md:p-10 rounded-3xl h-full">
+                <div className="flex items-start justify-between mb-6">
+                  <div className="p-4 bg-cyan-500/30 rounded-2xl group-hover:scale-110 transition-transform">
+                    <BarChart3 className="w-8 h-8 text-cyan-200" />
                   </div>
-                  <span className="text-xs text-cyan-400/80 font-bold uppercase tracking-widest">Total</span>
+                  <div className="text-right">
+                    <p className="text-xs font-black text-cyan-400/80 uppercase tracking-[3px]">TOTAL</p>
+                  </div>
                 </div>
-                <div className="text-4xl font-black text-cyan-200 mb-2" data-testid="text-total-count">{totalSignals}</div>
-                <div className="text-sm text-cyan-400/70">All signals</div>
+                <div className="text-7xl md:text-8xl font-black text-cyan-100 leading-none mb-3" data-testid="text-total-count">{totalSignals}</div>
+                <p className="text-cyan-400/80 font-bold text-sm md:text-base uppercase tracking-widest">All Signals</p>
+                <div className="mt-6 h-1 bg-gradient-to-r from-cyan-500/40 to-transparent rounded-full" />
               </div>
             </div>
           </div>
