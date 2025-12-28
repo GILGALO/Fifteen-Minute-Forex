@@ -7,7 +7,9 @@ import { randomUUID } from "crypto";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  createUser(user: InsertUser, isAdmin?: boolean): Promise<User>;
+  deleteUser(id: string): Promise<boolean>;
+  listUsers(): Promise<User[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -27,11 +29,19 @@ export class MemStorage implements IStorage {
     );
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async createUser(insertUser: InsertUser, isAdmin = false): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { ...insertUser, id, isAdmin: isAdmin ? "true" : "false" };
     this.users.set(id, user);
     return user;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
+  async listUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
   }
 }
 

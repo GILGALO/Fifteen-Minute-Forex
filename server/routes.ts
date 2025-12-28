@@ -1,6 +1,7 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { insertUserSchema } from "@shared/schema";
 import {
   getForexQuote,
   getForexCandles,
@@ -12,6 +13,7 @@ import {
 } from "./forexService";
 import { sendToTelegram } from "./telegram";
 import { log } from "./index";
+import crypto from "crypto";
 
 const FOREX_PAIRS = [
   "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF",
@@ -398,6 +400,174 @@ export async function registerRoutes(
     log(`[AUTO-SCAN M15] Manual scan triggered`, "auto-scan");
     await runAutoScan();
     res.json({ success: true, message: "Manual scan completed" });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════
+  // USER MANAGEMENT & AUTHENTICATION
+  // ═══════════════════════════════════════════════════════════════════
+
+  // Initialize admin user on startup
+  const initAdmin = async () => {
+    const adminExists = await storage.getUserByUsername("admin");
+    if (!adminExists) {
+      const hashedPassword = crypto.createHash("sha256").update("admin123").digest("hex");
+      await storage.createUser(
+        { username: "admin", password: hashedPassword },
+        true
+      );
+      log("[AUTH] Admin user initialized with default credentials", "auth");
+    }
+  };
+  initAdmin();
+
+  // Login endpoint
+  app.post("/api/auth/login", async (req: any, res: Response) => {
+    try {
+      const { username, password } = req.body;
+      if (!username || !password) {
+        return res.status(400).json({ error: "Username and password required" });
+      }
+
+      const user = await storage.getUserByUsername(username);
+      if (!user) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+      if (user.password !== hashedPassword) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      (req.session as any).userId = user.id;
+      (req.session as any).isAdmin = user.isAdmin === "true";
+
+      res.json({ 
+        success: true, 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          isAdmin: user.isAdmin === "true" 
+        } 
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get current user
+  app.get("/api/auth/me", async (req: any, res: Response) => {
+    try {
+      const userId = (req.session as any)?.userId;
+      if (!userId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.json({ 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          isAdmin: user.isAdmin === "true" 
+        } 
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Logout endpoint
+  app.post("/api/auth/logout", (req: any, res: Response) => {
+    req.session.destroy((err: any) => {
+      if (err) {
+        return res.status(500).json({ error: "Could not logout" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  // Admin: List all users (requires admin)
+  app.get("/api/admin/users", async (req: any, res: Response) => {
+    try {
+      const isAdmin = (req.session as any)?.isAdmin;
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const users = await storage.listUsers();
+      res.json({ 
+        users: users.map(u => ({ 
+          id: u.id, 
+          username: u.username, 
+          isAdmin: u.isAdmin === "true" 
+        })) 
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Admin: Create user (requires admin)
+  app.post("/api/admin/users", async (req: any, res: Response) => {
+    try {
+      const isAdmin = (req.session as any)?.isAdmin;
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const { username, password } = req.body;
+      const validation = insertUserSchema.safeParse({ username, password });
+      if (!validation.success) {
+        return res.status(400).json({ error: "Invalid input" });
+      }
+
+      const existing = await storage.getUserByUsername(username);
+      if (existing) {
+        return res.status(400).json({ error: "Username already exists" });
+      }
+
+      const hashedPassword = crypto.createHash("sha256").update(password).digest("hex");
+      const user = await storage.createUser({ username, password: hashedPassword });
+
+      res.json({ 
+        success: true, 
+        user: { 
+          id: user.id, 
+          username: user.username, 
+          isAdmin: user.isAdmin === "true" 
+        } 
+      });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Admin: Delete user (requires admin)
+  app.delete("/api/admin/users/:id", async (req: any, res: Response) => {
+    try {
+      const isAdmin = (req.session as any)?.isAdmin;
+      if (!isAdmin) {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      const user = await storage.getUser(id);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      if (user.isAdmin === "true") {
+        return res.status(400).json({ error: "Cannot delete admin users" });
+      }
+
+      await storage.deleteUser(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
   app.post("/api/telegram/test", async (req, res) => {
