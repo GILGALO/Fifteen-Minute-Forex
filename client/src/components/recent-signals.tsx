@@ -31,114 +31,85 @@ function RecentSignals({ signals }: RecentSignalsProps) {
   };
 
   return (
-    <Card className="h-full glass-panel border-primary/30 overflow-hidden flex flex-col shadow-2xl">
-      <CardHeader className="py-4 px-5 border-b border-primary/30 shrink-0 bg-gradient-to-r from-primary/10 to-transparent">
-        <CardTitle className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2 mb-3">
-          <Activity className="w-4 h-4 text-primary" />
-          Recent Signals
+    <Card className="h-full bg-slate-900/40 border-white/5 overflow-hidden flex flex-col backdrop-blur-md">
+      <CardHeader className="py-5 px-6 border-b border-white/5 shrink-0">
+        <div className="flex items-center justify-between mb-4">
+          <CardTitle className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] flex items-center gap-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            Live Intelligence
+          </CardTitle>
           {signals.length > 0 && (
-            <span className="ml-auto text-primary font-mono font-black text-sm bg-primary/20 px-2 py-1 rounded-full">
-              {filteredSignals.length}/{signals.length}
-            </span>
+            <div className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 tracking-widest tabular-nums">
+              {filteredSignals.length} / {signals.length}
+            </div>
           )}
-        </CardTitle>
+        </div>
         
         {/* Filter Buttons */}
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFilter('all')}
-            className={`text-xs h-7 ${filter === 'all' ? 'border-primary bg-primary/20 text-primary' : 'glass-panel border-border/30'}`}
-          >
-            All
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFilter('active')}
-            className={`text-xs h-7 ${filter === 'active' ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400' : 'glass-panel border-border/30'}`}
-          >
-            <Timer className="w-3 h-3 mr-1" />
-            Active
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFilter('won')}
-            className={`text-xs h-7 ${filter === 'won' ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400' : 'glass-panel border-border/30'}`}
-          >
-            <CheckCircle2 className="w-3 h-3 mr-1" />
-            Won
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setFilter('lost')}
-            className={`text-xs h-7 ${filter === 'lost' ? 'border-rose-500 bg-rose-500/20 text-rose-400' : 'glass-panel border-border/30'}`}
-          >
-            <XCircle className="w-3 h-3 mr-1" />
-            Lost
-          </Button>
+        <div className="flex gap-2">
+          {['all', 'active', 'won', 'lost'].map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f as any)}
+              className={`px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-wider transition-all border ${
+                filter === f 
+                  ? 'bg-emerald-500 text-slate-900 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]' 
+                  : 'bg-white/5 text-slate-400 border-white/5 hover:bg-white/10'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
         </div>
       </CardHeader>
-      <CardContent className="p-0 flex-1 overflow-y-auto">
+      <CardContent className="p-0 flex-1 overflow-y-auto custom-scrollbar">
         {filteredSignals.length === 0 ? (
-          <div className="p-8 text-center text-muted-foreground">
-            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl glass-panel flex items-center justify-center border border-primary/20">
-              <Clock className="w-7 h-7 text-primary/50" />
+          <div className="p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-[2rem] bg-slate-800 flex items-center justify-center border border-white/5">
+              <Activity className="w-8 h-8 text-slate-600" />
             </div>
-            <p className="text-sm font-semibold">
-              {signals.length === 0 ? 'No signals generated yet' : `No ${filter} signals`}
-            </p>
-            <p className="text-xs mt-1">
-              {signals.length === 0 ? 'Your signals will appear here' : 'Try a different filter'}
-            </p>
+            <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Idle System</p>
           </div>
         ) : (
-          <div className="divide-y divide-border/20 p-2">
+          <div className="p-4 space-y-3">
             {filteredSignals.map((signal, index) => (
               <motion.div
                 key={signal.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center gap-3 p-3 hover:bg-primary/5 transition-all duration-300 rounded-xl my-1 glass-panel border border-transparent hover:border-primary/30 group"
+                className="group relative bg-slate-800/50 border border-white/5 rounded-2xl p-4 hover:bg-slate-800 transition-all duration-300"
               >
-                <div className={`shrink-0 p-3 rounded-xl shadow-lg ${signal.type === "CALL" ? "bg-emerald-500/20 border-2 border-emerald-500/30" : "bg-rose-500/20 border-2 border-rose-500/30"} group-hover:scale-110 transition-transform duration-300`}>
-                  {signal.type === "CALL" ? (
-                    <TrendingUp className="w-5 h-5 text-emerald-500" />
-                  ) : (
-                    <TrendingDown className="w-5 h-5 text-rose-500" />
-                  )}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-bold text-sm">{signal.pair}</span>
-                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${signal.type === "CALL" ? "text-emerald-500 bg-emerald-500/20" : "text-rose-500 bg-rose-500/20"}`}>
-                      {signal.type === "CALL" ? "BUY/CALL" : "SELL/PUT"}
-                    </span>
+                <div className="flex items-center gap-4">
+                  <div className={`shrink-0 w-12 h-12 rounded-xl flex items-center justify-center border ${
+                    signal.type === "CALL" ? "bg-emerald-500/10 border-emerald-500/20" : "bg-rose-500/10 border-rose-500/20"
+                  }`}>
+                    {signal.type === "CALL" ? (
+                      <TrendingUp className="w-6 h-6 text-emerald-500" />
+                    ) : (
+                      <TrendingDown className="w-6 h-6 text-rose-500" />
+                    )}
                   </div>
-                  <div className="text-xs text-muted-foreground whitespace-pre-line font-medium leading-relaxed">
-                    NEW SIGNAL 🤖{"\n"}
-                    ━━━━━━━━━━━━━━{"\n"}
-                    📊 PAIR: {signal.pair}{"\n"}
-                    {signal.type === "CALL" ? "🟢" : "🔴"} DIRECTION: {signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}{"\n"}
-                    ⏱ TIMEFRAME: {signal.timeframe}{"\n"}
-                    🕐 START: {signal.startTime}{"\n"}
-                    🏁 EXPIRY: {signal.endTime}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-black text-white italic tracking-tighter uppercase">{signal.pair}</span>
+                      <span className="text-[10px] font-black text-slate-500 tabular-nums uppercase tracking-widest">{signal.startTime}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                        signal.type === "CALL" ? "text-emerald-500 bg-emerald-500/10" : "text-rose-500 bg-rose-500/10"
+                      }`}>
+                        {signal.type === "CALL" ? "Buy Signal" : "Sell Signal"}
+                      </span>
+                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest italic">{signal.timeframe}</span>
+                    </div>
                   </div>
-                </div>
-                
-                <div className="shrink-0 text-right flex items-center gap-3">
-                  <div className="glass-panel px-3 py-2 rounded-xl border border-primary/20">
-                    <div className="text-sm font-black text-primary">{signal.confidence}%</div>
-                    <div className="text-xs text-muted-foreground font-semibold">{signal.timeframe}</div>
+                  
+                  <div className="shrink-0 text-right">
+                    <div className="text-lg font-black text-white italic leading-none mb-1">{signal.confidence}%</div>
+                    <div className="flex justify-end">{getStatusIcon(signal.status)}</div>
                   </div>
-                  <motion.div whileHover={{ scale: 1.2 }}>
-                    {getStatusIcon(signal.status)}
-                  </motion.div>
                 </div>
               </motion.div>
             ))}

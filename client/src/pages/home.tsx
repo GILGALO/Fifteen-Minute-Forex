@@ -109,18 +109,17 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background text-foreground font-sans selection:bg-primary/20 relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#020817] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-emerald-500/25 via-emerald-500/0 to-transparent rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/25 via-cyan-500/0 to-transparent rounded-full blur-[120px] animate-pulse delay-1000" />
-        <div className="absolute top-1/2 right-1/3 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/15 via-blue-500/0 to-transparent rounded-full blur-[100px]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-emerald-600/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse delay-1000" />
       </div>
 
-      <div className="mb-8">
+      <div className="mb-8 relative z-50">
         {marketStatus && !marketStatus.isOpen && (
-          <div className="bg-rose-500/20 border-y border-rose-500/50 py-3 px-4 flex items-center justify-center gap-3 animate-pulse">
-            <AlertTriangle className="w-5 h-5 text-rose-500" />
-            <span className="text-sm font-black text-rose-400 uppercase tracking-widest">
+          <div className="bg-rose-500/10 border-y border-rose-500/20 py-2 px-4 flex items-center justify-center gap-3">
+            <div className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span className="text-[10px] font-black text-rose-400 uppercase tracking-[0.3em]">
               {marketStatus.reason || "MARKETS CLOSED"}
             </span>
           </div>
@@ -132,67 +131,67 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
         </ErrorBoundary>
       </div>
 
-      <main className="container mx-auto px-4 py-8 md:px-6 md:py-12 lg:px-8 relative z-10">
-        {/* Premium Hero Section */}
-        <header className="mb-16 md:mb-20">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 pb-10 md:pb-14 border-b border-emerald-500/30 relative">
-            <div className="flex items-center gap-6">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/40 via-cyan-500/30 to-blue-500/40 rounded-3xl blur-2xl" />
-                <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center bg-gradient-to-br from-emerald-600/30 via-cyan-600/20 to-blue-600/30 border-2 border-emerald-400/80 rounded-3xl relative overflow-hidden">
-                  <TrendingUp className="w-12 h-12 md:w-14 md:h-14 text-emerald-300 relative z-10 animate-pulse" />
+      <main className="container mx-auto px-4 py-6 md:px-8 relative z-10">
+        <header className="mb-12">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 pb-8 border-b border-white/5 relative">
+            <div className="flex items-center gap-8">
+              <div className="relative group">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-[2rem] blur-2xl group-hover:bg-emerald-500/40 transition-all duration-500" />
+                <div className="w-24 h-24 flex items-center justify-center bg-slate-900 border border-white/10 rounded-[2rem] relative overflow-hidden shadow-2xl">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent" />
+                  <TrendingUp className="w-12 h-12 text-emerald-400 relative z-10" />
                 </div>
               </div>
 
               <div>
-                <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter mb-2 leading-none">
-                  <span className="bg-gradient-to-r from-emerald-300 via-cyan-300 to-blue-300 bg-clip-text text-transparent">GILGALO</span>
+                <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-1 leading-none italic">
+                  <span className="text-white">GIL</span>
+                  <span className="text-emerald-500">GALO</span>
                 </h1>
-                <div className="flex flex-col gap-1">
-                  <p className="text-emerald-400 font-black text-xl md:text-2xl tracking-wide">TRADING CONTROL</p>
-                  <p className="text-emerald-400/70 font-bold tracking-wider uppercase text-sm">Advanced Signal Intelligence Platform</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-[1px] w-12 bg-emerald-500/50" />
+                  <p className="text-slate-400 font-black text-sm tracking-[0.4em] uppercase">Control System v11</p>
                 </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 w-full lg:w-auto">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col gap-4 w-full lg:w-auto">
+              <div className="flex flex-wrap items-center gap-3 justify-start lg:justify-end">
                 {isAdmin && (
                   <Link href="/admin">
-                    <a className="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-600/20 to-cyan-500/10 border border-cyan-400/60 flex items-center gap-2 hover:border-cyan-400/100 transition-all cursor-pointer hover:shadow-lg hover:shadow-cyan-500/20" data-testid="link-admin">
-                      <Settings className="w-5 h-5 text-cyan-300" />
-                      <span className="text-sm font-bold text-cyan-300">Admin</span>
+                    <a className="h-11 px-6 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group" data-testid="link-admin">
+                      <Settings className="w-4 h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500" />
+                      <span className="text-sm font-bold text-slate-200">System Config</span>
                     </a>
                   </Link>
                 )}
                 <Button
                   onClick={handleLogout}
-                  className="px-5 py-3 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-bold rounded-xl transition-all flex-1 lg:flex-none"
+                  variant="ghost"
+                  className="h-11 px-6 text-slate-400 hover:text-white hover:bg-rose-500/10 rounded-xl transition-all font-bold"
                   data-testid="button-logout"
                 >
-                  <LogOut className="w-5 h-5 mr-2" />
-                  Logout
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Terminal Exit
                 </Button>
               </div>
 
-              <div className="grid grid-cols-3 gap-2">
-                <div className="px-4 py-3 rounded-xl bg-gradient-to-br from-emerald-500/15 to-emerald-600/5 border border-emerald-400/40 flex items-center justify-center gap-2">
-                  <Wifi className="w-5 h-5 text-emerald-300 animate-pulse" />
-                  <span className="text-xs font-bold text-emerald-300">LIVE</span>
+              <div className="flex items-center gap-4 bg-white/5 p-1 rounded-2xl border border-white/5">
+                <div className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-black text-emerald-500 tracking-widest">LIVE FEED</span>
                 </div>
 
-                <div className="px-3 py-3 rounded-xl bg-gradient-to-br from-cyan-500/15 to-cyan-600/5 border border-cyan-400/40 flex flex-col items-center justify-center">
-                  <span className="text-xs text-cyan-400/70 font-medium">
-                    {currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </span>
-                  <span className="text-xs font-black text-cyan-300">
-                    {currentDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })}
+                <div className="px-4 py-2 flex flex-col">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter leading-none mb-1">Network Time</span>
+                  <span className="text-xs font-black text-slate-200 tabular-nums">
+                    {currentDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>
 
-                <div className="px-3 py-3 rounded-xl bg-gradient-to-br from-blue-500/15 to-blue-600/5 border border-blue-400/40 flex flex-col items-center justify-center">
-                  <span className="text-xs text-blue-400/70 font-medium uppercase">Signals</span>
-                  <span className="text-lg font-black text-blue-300">{totalSignals}</span>
+                <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/5">
+                  <span className="text-lg font-black text-emerald-400 tabular-nums leading-none">{totalSignals}</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase ml-2 tracking-widest">Signals</span>
                 </div>
               </div>
             </div>
