@@ -319,36 +319,45 @@ export async function sendToTelegram(
     console.log(`[TELEGRAM] Sending to chat_id: ${TELEGRAM_CHAT_ID}`);
     console.log(`[TELEGRAM] Bot token (first 10 chars): ${TELEGRAM_BOT_TOKEN.substring(0, 10)}...`);
     
-    const response = await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: TELEGRAM_CHAT_ID,
-          text: message,
-          parse_mode: "HTML",
-        }),
-      }
-    );
+    let result: any = { ok: false };
+    let retryCount = 0;
+    const maxRetries = 3;
 
-    const result = await response.json();
-    console.log(`[TELEGRAM] Response status: ${response.status}`);
-    console.log(`[TELEGRAM] Response body:`, JSON.stringify(result, null, 2));
-    
-    if (!result.ok) {
-      console.error("[TELEGRAM ERROR] Failed to send message");
-      console.error("[TELEGRAM ERROR] Error code:", result.error_code);
-      console.error("[TELEGRAM ERROR] Description:", result.description);
-      
-      if (result.error_code === 400) {
-        console.error("[TELEGRAM ERROR] This is likely a chat_id or permissions issue");
-        console.error("[TELEGRAM ERROR] Make sure:");
-        console.error("[TELEGRAM ERROR] 1. The bot is added to the channel");
-        console.error("[TELEGRAM ERROR] 2. The bot is an admin with 'Post Messages' permission");
-        console.error("[TELEGRAM ERROR] 3. The chat_id is correct (should start with -100 for channels)");
+    while (retryCount < maxRetries && !result.ok) {
+      try {
+        const response = await fetch(
+          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              chat_id: TELEGRAM_CHAT_ID,
+              text: message,
+              parse_mode: "HTML",
+            }),
+          }
+        );
+
+        result = await response.json();
+        console.log(`[TELEGRAM] Attempt ${retryCount + 1} - Response status: ${response.status}`);
+        
+        if (result.ok) break;
+
+        if (result.error_code === 429) { // Rate limited
+          const retryAfter = (result.parameters?.retry_after || 5) * 1000;
+          console.warn(`[TELEGRAM] Rate limited. Retrying after ${retryAfter}ms`);
+          await new Promise(resolve => setTimeout(resolve, retryAfter));
+        } else {
+          console.error(`[TELEGRAM ERROR] ${result.description}`);
+          break; // Don't retry for other errors (like 400 Bad Request)
+        }
+      } catch (err) {
+        console.error(`[TELEGRAM EXCEPTION] Attempt ${retryCount + 1}:`, err);
       }
+      retryCount++;
+      if (!result.ok && retryCount < maxRetries) await new Promise(resolve => setTimeout(resolve, 2000));
     }
+
     return result.ok;
   } catch (error: any) {
     console.error("[TELEGRAM EXCEPTION]", error.message);

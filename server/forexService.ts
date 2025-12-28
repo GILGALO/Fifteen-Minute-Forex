@@ -426,13 +426,15 @@ function hasThreeConsecutiveTrendCandles(candles: CandleData[], direction: "BULL
   const prev = candles[candles.length - 2];
   const prev2 = candles[candles.length - 3];
 
+  const getBodyRatio = (c: CandleData) => Math.abs(c.close - c.open) / (c.high - c.low || 1);
+
   if (direction === "BULLISH") {
     // Check for strong bullish candles (close > open) and size
-    const isStrong = (c: CandleData) => c.close > c.open && (c.close - c.open) > (c.high - c.low) * 0.4;
+    const isStrong = (c: CandleData) => c.close > c.open && getBodyRatio(c) > 0.5;
     return isStrong(last) && isStrong(prev) && isStrong(prev2);
   } else {
     // Check for strong bearish candles (open > close) and size
-    const isStrong = (c: CandleData) => c.open > c.close && (c.open - c.close) > (c.high - c.low) * 0.4;
+    const isStrong = (c: CandleData) => c.open > c.close && getBodyRatio(c) > 0.5;
     return isStrong(last) && isStrong(prev) && isStrong(prev2);
   }
 }
@@ -1189,8 +1191,27 @@ export async function generateSignalAnalysis(
     reasoning.push(`⚠️ HTF MISALIGNMENT PENALTY: -5%`);
   }
 
-  // Bonus for strong momentum
-  if (technicals.momentum === "STRONG") confidence += 10;
+  // Bonus for strong momentum & ADX Trend Strength
+  if (technicals.momentum === "STRONG") {
+    confidence += 10;
+    reasoning.push(`🚀 STRONG MOMENTUM BONUS: +10%`);
+  }
+  
+  if (technicals.adx > 35) {
+    confidence += 12;
+    reasoning.push(`⚡ ULTRA-STRONG TREND (ADX > 35): +12%`);
+  } else if (technicals.adx > 25) {
+    confidence += 7;
+    reasoning.push(`📈 STRONG TREND (ADX > 25): +7%`);
+  }
+
+  // VOLUME CONFIRMATION BONUS
+  const lastCandle = candles[candles.length - 1];
+  const avgVolume = candles.slice(-20).reduce((sum, c) => sum + (c.volume || 0), 0) / 20;
+  if (lastCandle.volume && lastCandle.volume > avgVolume * 1.5) {
+    confidence += 10;
+    reasoning.push(`📊 HIGH VOLUME CONFIRMATION: +10%`);
+  }
 
   // MULTI-INDICATOR ALIGNMENT (2 out of 3 is now acceptable)
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m15Trend);
