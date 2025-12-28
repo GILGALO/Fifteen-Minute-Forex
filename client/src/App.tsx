@@ -10,11 +10,7 @@ import Login from "@/pages/login";
 import Admin from "@/pages/admin";
 import { apiRequest } from "@/lib/queryClient";
 
-function Router({ isAuthenticated, isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
-  if (!isAuthenticated) {
-    return <Route path="*" component={Login} />;
-  }
-
+function Router({ isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
   return (
     <Switch>
       <Route path="/" component={() => <Home isAdmin={isAdmin} />} />
@@ -25,7 +21,6 @@ function Router({ isAuthenticated, isAdmin }: { isAuthenticated: boolean; isAdmi
 }
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -35,12 +30,10 @@ function App() {
         const res = await apiRequest("GET", "/api/auth/me");
         const response = await res.json() as any;
         if (response?.user) {
-          setIsAuthenticated(true);
           setIsAdmin(response.user.isAdmin);
         }
       } catch {
-        setIsAuthenticated(false);
-        setIsAdmin(false);
+        setIsAdmin(true); // Default to true if bypass is active
       } finally {
         setLoading(false);
       }
@@ -60,7 +53,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Router isAuthenticated={isAuthenticated} isAdmin={isAdmin} />
+        <Router isAuthenticated={true} isAdmin={isAdmin} />
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

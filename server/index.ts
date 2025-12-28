@@ -116,15 +116,16 @@ app.use((req, res, next) => {
     // Importantly only setup vite in development and after
     // setting up all the other routes so the catch-all route
     // doesn't interfere with the other routes
-    // RENDER BYPASS: Disable auth check in production
+    // RENDER BYPASS: Disable auth check in ALL environments for now
+    log("Temporary mode: Bypassing authentication requirements for all environments", "auth");
+    app.use((req: any, _res, next) => {
+      // Mock admin session for all requests
+      req.session.userId = "admin-bypass";
+      req.session.isAdmin = true;
+      next();
+    });
+
     if (process.env.NODE_ENV === "production") {
-      log("Production mode: Bypassing authentication requirements", "auth");
-      app.use((req: any, _res, next) => {
-        // Mock admin session for all requests in production
-        req.session.userId = "admin-bypass";
-        req.session.isAdmin = true;
-        next();
-      });
       serveStatic(app);
     } else {
       const { setupVite } = await import("./vite");
