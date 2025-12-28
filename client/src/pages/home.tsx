@@ -3,13 +3,14 @@ import { Link } from "wouter";
 import { type Signal } from "@/lib/constants";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar, AlertTriangle, TrendingUp as Goal, AlertCircle, Settings } from "lucide-react";
+import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar, AlertTriangle, TrendingUp as Goal, AlertCircle, Settings, LogOut } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorBoundary from "@/components/error-boundary";
 import AnalyticsDashboard from "@/components/analytics-dashboard";
 import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
@@ -30,6 +31,15 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
   const [activePair, setActivePair] = useState("EUR/USD");
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  const handleLogout = async () => {
+    try {
+      await apiRequest("POST", "/api/auth/logout");
+      window.location.href = "/";
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
   const { data: quotesData } = useQuery<{ quotes: any; marketStatus: { isOpen: boolean; reason?: string } }>({
     queryKey: ["/api/forex/quotes"],
@@ -153,6 +163,16 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                   </a>
                 </Link>
               )}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={handleLogout}
+                className="glass-panel border-rose-500/30 text-rose-400"
+                data-testid="button-logout"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
               <div className="glass-panel px-5 py-2.5 rounded-xl flex items-center gap-3 border border-emerald-400/30">
                 <Wifi className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm font-semibold text-emerald-400 tracking-wide">LIVE</span>
