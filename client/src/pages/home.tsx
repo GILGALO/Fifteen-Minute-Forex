@@ -16,6 +16,7 @@ const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
 const RecentSignals = lazy(() => import("@/components/recent-signals"));
 const TradingChart = lazy(() => import("@/components/trading-chart"));
+const TradingSchedule = lazy(() => import("@/components/trading-schedule"));
 
 interface SessionStats {
   pnl: { profit: number; loss: number; net: number; basisPoints: number };
@@ -386,12 +387,21 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
           <div className="lg:col-span-12 space-y-4 sm:space-y-6">
-            <div className="max-h-[500px] lg:max-h-[600px]">
-              <ErrorBoundary>
-                <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                  <RecentSignals signals={signals} />
-                </Suspense>
-              </ErrorBoundary>
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+              <div className="xl:col-span-8">
+                <ErrorBoundary>
+                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                    <RecentSignals signals={signals} />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
+              <div className="xl:col-span-4">
+                <ErrorBoundary>
+                  <Suspense fallback={<Skeleton className="h-[400px] w-full" />}>
+                    <TradingSchedule />
+                  </Suspense>
+                </ErrorBoundary>
+              </div>
             </div>
           </div>
 
