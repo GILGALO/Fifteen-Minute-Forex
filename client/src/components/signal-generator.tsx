@@ -221,8 +221,8 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
       // Round to exact minute (remove seconds)
       startTimeDate.setSeconds(0, 0);
       
-    const endTimeDate = addMinutes(startTimeDate, intervalMinutes);
-    const dayName = format(startTimeDate, "eee");
+    const kenyaTime = new Date(startTimeDate.getTime());
+    const dayName = format(kenyaTime, "eee");
 
     const signal: Signal = {
       id: Math.random().toString(36).substring(7),
@@ -488,7 +488,53 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
 
+function SignalCard({ lastSignal, lastAnalysis, telegramConfigured, MIN_CONFIDENCE_THRESHOLD }: { lastSignal: Signal, lastAnalysis: any, telegramConfigured: boolean, MIN_CONFIDENCE_THRESHOLD: number }) {
+    const { toast } = useToast();
+    const copyToClipboard = () => {
+      const text = `NEW SIGNAL 🤖
+━━━━━━━━━━━━━━━━━━━━━
+
+📊 PAIR: ${lastSignal?.pair}
+${lastSignal?.type === "CALL" ? "🟢" : "🔴"} DIRECTION: ${lastSignal?.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}
+⏱ TIMEFRAME: ${lastSignal?.timeframe}✅
+
+🕐 START TIME: ${lastSignal?.startTime} EAT (${lastSignal?.dayName || "Today"})
+🏁 EXPIRY TIME: ${lastSignal?.endTime} EAT`;
+
+      navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied!",
+        description: "Signal text copied to clipboard",
+      });
+    };
+
+    const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+    useEffect(() => {
+      if (!lastSignal || lastSignal.status !== 'active') return;
+      
+      const updateTimer = () => {
+        const [hours, minutes] = lastSignal.endTime.split(':').map(Number);
+        const now = new Date();
+        const KENYA_OFFSET_MS = 3 * 60 * 60 * 1000;
+        const nowKenya = new Date(now.getTime() + KENYA_OFFSET_MS);
+        
+        const expiryDate = new Date(nowKenya);
+        expiryDate.setHours(hours, minutes, 0, 0);
+        
+        const diff = Math.floor((expiryDate.getTime() - nowKenya.getTime()) / 1000);
+        setSecondsLeft(diff > 0 ? diff : 0);
+      };
+
+      updateTimer();
+      const interval = setInterval(updateTimer, 1000);
+      return () => clearInterval(interval);
+    }, [lastSignal]);
+
+    return (
       <AnimatePresence mode="wait">
         {lastSignal && (
           <motion.div
@@ -498,6 +544,14 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
             transition={{ duration: 0.4, type: "spring" }}
           >
             <Card className={`border-2 overflow-hidden shadow-2xl relative ${lastSignal.type === "CALL" ? "border-emerald-500/60 bg-gradient-to-br from-emerald-950/30 to-emerald-900/10" : "border-rose-500/60 bg-gradient-to-br from-rose-950/30 to-rose-900/10"}`}>
+              {lastSignal.confidence >= 85 && (
+                <div className="absolute top-4 right-4 z-20">
+                  <div className="bg-yellow-500 text-black font-black animate-pulse border-none shadow-lg px-3 py-1 text-[10px] uppercase tracking-tighter rounded-md flex items-center">
+                    <Sparkles className="w-3 h-3 mr-1" />
+                    High Probability 🔥
+                  </div>
+                </div>
+              )}
               <div className={`absolute top-0 left-0 w-full h-1 ${lastSignal.type === "CALL" ? "bg-gradient-to-r from-emerald-500 to-emerald-600" : "bg-gradient-to-r from-rose-500 to-rose-600"}`} />
               <CardContent className="p-5 relative">
                 <div className="flex items-start justify-between gap-4 mb-5">
@@ -531,6 +585,14 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                 <div className="flex items-center gap-2 mb-4 text-xs font-mono text-muted-foreground glass-panel p-3 rounded-xl">
                   <Clock className="w-3 h-3 text-primary" />
                   <span className="font-semibold">{lastSignal.startTime} - {lastSignal.endTime}</span>
+                  {secondsLeft !== null && secondsLeft > 0 && (
+                    <>
+                      <span className="text-border">|</span>
+                      <span className="text-primary font-bold animate-pulse">
+                        Expires in: {Math.floor(secondsLeft / 60)}:{(secondsLeft % 60).toString().padStart(2, '0')}
+                      </span>
+                    </>
+                  )}
                   <span className="text-border">|</span>
                   <span className="font-semibold">{lastSignal.timeframe}</span>
                   <span className="text-border">|</span>
@@ -545,7 +607,7 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                 </div>
 
                 {/* Telegram Mini Style */}
-                <div className="glass-panel p-4 rounded-xl border border-primary/20 bg-background/40 font-mono text-sm space-y-1 mb-5">
+                <div className="glass-panel p-4 rounded-xl border border-primary/20 bg-background/40 font-mono text-sm space-y-1 mb-5 relative group/mini">
                   <div className="text-foreground/90 font-bold">📊 PAIR: {lastSignal.pair}</div>
                   <div className="flex items-center gap-1 text-foreground/90 font-bold">
                     {lastSignal.type === "CALL" ? "🟢" : "🔴"} DIRECTION: {lastSignal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}
@@ -553,6 +615,16 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                   <div className="text-foreground/90 font-bold">⏱ TIMEFRAME: {lastSignal.timeframe}✅</div>
                   <div className="mt-2 text-foreground/90 font-bold">🕐 START TIME: {lastSignal.startTime} EAT ({lastSignal.dayName || "Today"})</div>
                   <div className="text-foreground/90 font-bold">🏁 EXPIRY TIME: {lastSignal.endTime} EAT</div>
+
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    className="absolute bottom-2 right-2 h-7 text-[10px] gap-1 opacity-0 group-hover/mini:opacity-100 transition-opacity"
+                    onClick={copyToClipboard}
+                  >
+                    <Download className="w-3 h-3" />
+                    Copy Text
+                  </Button>
                 </div>
 
                 {lastAnalysis && (
@@ -598,7 +670,7 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                       Analysis Breakdown
                     </div>
                     <div className="space-y-2">
-                      {lastAnalysis.reasoning.slice(0, 3).map((reason, i) => (
+                      {lastAnalysis.reasoning.slice(0, 3).map((reason: string, i: number) => (
                         <motion.div
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
@@ -640,6 +712,5 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
+    );
 }
