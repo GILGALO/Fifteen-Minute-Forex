@@ -49,21 +49,21 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
   ];
 
   return (
-    <Sidebar className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-slate-700/50">
+    <Sidebar className="bg-card border-r border-white/5">
       <SidebarContent>
         <SidebarGroup>
-          <div className="flex items-center justify-center p-4 mb-4">
+          <div className="flex items-center justify-center p-6">
             <img
               src={gilgaloLogo}
               alt="GILGALO"
-              className="h-16 w-auto"
+              className="h-14 w-auto"
               data-testid="logo-gilgalo"
             />
           </div>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
             Navigation
           </SidebarGroupLabel>
           <SidebarGroupContent>
@@ -73,7 +73,7 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
                   <SidebarMenuButton asChild>
                     <a
                       href={item.url}
-                      className="flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all hover-elevate"
+                      className="flex items-center gap-3 px-4 py-2 rounded-md transition-colors hover:bg-white/5 text-foreground hover:text-primary"
                       data-testid={`nav-${item.title.toLowerCase().replace(' ', '-')}`}
                     >
                       <item.icon className="h-5 w-5" />
@@ -92,7 +92,7 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
               <SidebarMenuButton asChild>
                 <button
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-red-400 hover:text-red-300 hover-elevate"
+                  className="w-full flex items-center gap-3 px-4 py-2 rounded-md transition-colors text-destructive hover:bg-destructive/10"
                   data-testid="button-logout"
                 >
                   <LogOut className="h-5 w-5" />
