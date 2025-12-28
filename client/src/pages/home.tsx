@@ -131,44 +131,44 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
         </ErrorBoundary>
       </div>
 
-      <main className="container mx-auto px-4 py-6 md:px-8 relative z-10">
-        <header className="mb-12">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 pb-8 border-b border-white/5 relative">
-            <div className="flex items-center gap-8">
-              <div className="relative group">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-[2rem] blur-2xl group-hover:bg-emerald-500/40 transition-all duration-500" />
-                <div className="w-24 h-24 flex items-center justify-center bg-slate-900 border border-white/10 rounded-[2rem] relative overflow-hidden shadow-2xl">
+      <main className="container mx-auto px-4 py-4 md:px-8 relative z-10">
+        <header className="mb-8 md:mb-12">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 md:gap-8 pb-6 md:pb-8 border-b border-white/5 relative">
+            <div className="flex items-center gap-4 md:gap-8">
+              <div className="relative group shrink-0">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl md:rounded-[2rem] blur-xl md:blur-2xl group-hover:bg-emerald-500/40 transition-all duration-500" />
+                <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-slate-900 border border-white/10 rounded-2xl md:rounded-[2rem] relative overflow-hidden shadow-2xl">
                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent" />
-                  <TrendingUp className="w-12 h-12 text-emerald-400 relative z-10" />
+                  <TrendingUp className="w-8 h-8 md:w-12 md:h-12 text-emerald-400 relative z-10" />
                 </div>
               </div>
 
               <div>
-                <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-1 leading-none italic">
+                <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter mb-1 leading-none italic flex flex-wrap gap-x-2">
                   <span className="text-white uppercase">GILGALO</span>
                   <span className="text-emerald-500 uppercase">TRADING</span>
                 </h1>
-                <div className="flex items-center gap-3">
-                  <div className="h-[1px] w-12 bg-emerald-500/50" />
-                  <p className="text-slate-400 font-black text-sm tracking-[0.2em] uppercase">Professional Signal Intelligence</p>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="h-[1px] w-8 md:w-12 bg-emerald-500/50" />
+                  <p className="text-slate-400 font-black text-[10px] md:text-sm tracking-[0.1em] md:tracking-[0.2em] uppercase">Professional Signal Intelligence</p>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col gap-4 w-full lg:w-auto">
-              <div className="flex flex-wrap items-center gap-3 justify-start lg:justify-end">
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 justify-start lg:justify-end">
                 {isAdmin && (
                   <Link href="/admin">
-                    <a className="h-11 px-6 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group" data-testid="link-admin">
+                    <a className="h-10 md:h-11 px-4 md:px-6 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group" data-testid="link-admin">
                       <Settings className="w-4 h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500" />
-                      <span className="text-sm font-bold text-slate-200">System Config</span>
+                      <span className="text-xs md:text-sm font-bold text-slate-200">System Config</span>
                     </a>
                   </Link>
                 )}
                 <Button
                   onClick={handleLogout}
                   variant="ghost"
-                  className="h-11 px-6 text-slate-400 hover:text-white hover:bg-rose-500/10 rounded-xl transition-all font-bold"
+                  className="h-10 md:h-11 px-4 md:px-6 text-slate-400 hover:text-white hover:bg-rose-500/10 rounded-xl transition-all font-bold text-xs md:text-sm"
                   data-testid="button-logout"
                 >
                   <LogOut className="w-4 h-4 mr-2" />
@@ -176,22 +176,22 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                 </Button>
               </div>
 
-              <div className="flex items-center gap-4 bg-white/5 p-1 rounded-2xl border border-white/5">
-                <div className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-2">
+              <div className="flex items-center justify-between lg:justify-start gap-2 md:gap-4 bg-white/5 p-1 rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
+                <div className="px-3 md:px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5 md:gap-2 shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-black text-emerald-500 tracking-widest">LIVE FEED</span>
+                  <span className="text-[9px] md:text-[10px] font-black text-emerald-500 tracking-widest uppercase">LIVE</span>
                 </div>
 
-                <div className="px-4 py-2 flex flex-col">
-                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter leading-none mb-1">Network Time</span>
-                  <span className="text-xs font-black text-slate-200 tabular-nums">
+                <div className="px-3 md:px-4 py-1.5 md:py-2 flex flex-col shrink-0 border-x border-white/5">
+                  <span className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-tighter leading-none mb-0.5 md:mb-1">Network Time</span>
+                  <span className="text-[10px] md:text-xs font-black text-slate-200 tabular-nums">
                     {currentDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                   </span>
                 </div>
 
-                <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/5">
-                  <span className="text-lg font-black text-emerald-400 tabular-nums leading-none">{totalSignals}</span>
-                  <span className="text-[10px] text-slate-500 font-bold uppercase ml-2 tracking-widest">Signals</span>
+                <div className="px-3 md:px-4 py-1.5 md:py-2 bg-white/5 rounded-xl border border-white/5 flex items-center gap-2 shrink-0">
+                  <span className="text-base md:text-lg font-black text-emerald-400 tabular-nums leading-none">{totalSignals}</span>
+                  <span className="text-[8px] md:text-[10px] text-slate-500 font-bold uppercase tracking-widest">Signals</span>
                 </div>
               </div>
             </div>
