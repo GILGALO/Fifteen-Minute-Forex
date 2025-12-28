@@ -14,6 +14,7 @@ import RiskCalculator from "@/pages/risk-calculator";
 import TradeAlerts from "@/pages/trade-alerts";
 import TradingJournal from "@/pages/trading-journal";
 import TradingSchedulePage from "@/pages/trading-schedule";
+import TradeHistory from "@/pages/trade-history";
 import { apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -21,6 +22,7 @@ function Router({ isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
   return (
     <Switch>
       <Route path="/" component={() => <Home isAdmin={isAdmin} />} />
+      <Route path="/trade-history" component={TradeHistory} />
       <Route path="/trading-journal" component={TradingJournal} />
       <Route path="/trading-schedule" component={TradingSchedulePage} />
       <Route path="/risk-calculator" component={RiskCalculator} />
