@@ -18,9 +18,7 @@ const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
 const RecentSignals = lazy(() => import("@/components/recent-signals"));
 const TradingChart = lazy(() => import("@/components/trading-chart"));
-const TradingSchedule = lazy(() => import("@/components/trading-schedule"));
-
-interface SessionStats {
+    <div className="min-h-screen bg-[#020617] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden pb-12 sm:pb-20">
   pnl: { profit: number; loss: number; net: number; basisPoints: number };
   goalProgress: number;
   hasReachedGoal: boolean;
