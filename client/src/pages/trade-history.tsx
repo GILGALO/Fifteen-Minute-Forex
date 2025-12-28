@@ -1,20 +1,19 @@
-import { Activity } from "lucide-react";
+import { Activity, TrendingUp, TrendingDown, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { Signal } from "@/lib/constants";
+import { Trade } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import ErrorBoundary from "@/components/error-boundary";
 import { Suspense } from "react";
 
 export default function TradeHistory() {
-  const { data: signals = [] } = useQuery<Signal[]>({
-    queryKey: ["/api/forex/signals"], // Assuming there is an endpoint or we use the home logic
-    enabled: false, // For now we'll just show the UI as the requirement is to move it
+  const { data: trades = [] } = useQuery<Trade[]>({
+    queryKey: ["/api/trades"],
   });
 
-  // Note: In a real app, this would fetch from the database
-  // For this quick edit, we'll keep the same UI structure but in its own page
-  const trades = signals.filter(s => s.status !== 'active');
+  const wonTrades = trades.filter(t => t.outcome === 'win').length;
+  const lostTrades = trades.filter(t => t.outcome === 'loss').length;
+  const winRate = trades.length > 0 ? (wonTrades / trades.length) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-50 font-sans p-4 sm:p-8">
@@ -27,6 +26,36 @@ export default function TradeHistory() {
             Performance & Signal Analytics
           </p>
         </header>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <Card className="glass-panel border-emerald-500/30 bg-emerald-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <TrendingUp className="w-5 h-5 text-emerald-400" />
+                <span className="text-xs font-black uppercase tracking-widest text-emerald-400/60">Win Rate</span>
+              </div>
+              <div className="text-3xl font-black text-emerald-400">{winRate.toFixed(1)}%</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-panel border-cyan-500/30 bg-cyan-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <Target className="w-5 h-5 text-cyan-400" />
+                <span className="text-xs font-black uppercase tracking-widest text-cyan-400/60">Total Trades</span>
+              </div>
+              <div className="text-3xl font-black text-white">{trades.length}</div>
+            </CardContent>
+          </Card>
+          <Card className="glass-panel border-rose-500/30 bg-rose-500/5">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <TrendingDown className="w-5 h-5 text-rose-400" />
+                <span className="text-xs font-black uppercase tracking-widest text-rose-400/60">Losses</span>
+              </div>
+              <div className="text-3xl font-black text-rose-400">{lostTrades}</div>
+            </CardContent>
+          </Card>
+        </div>
 
         <ErrorBoundary>
           <Suspense fallback={<Skeleton className="h-64 w-full" />}>

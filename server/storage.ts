@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Trade, type InsertTrade } from "@shared/schema";
+import { type User, type InsertUser, type Trade, type InsertTrade, type Alert, type InsertAlert } from "@shared/schema";
 import crypto from "node:crypto";
 
 export interface IStorage {
@@ -11,15 +11,20 @@ export interface IStorage {
   createTrade(trade: InsertTrade): Promise<Trade>;
   listTrades(): Promise<Trade[]>;
   deleteTrade(id: string): Promise<boolean>;
+  createAlert(alert: InsertAlert): Promise<Alert>;
+  listAlerts(): Promise<Alert[]>;
+  deleteAlert(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private trades: Map<string, Trade>;
+  private alerts: Map<string, Alert>;
 
   constructor() {
     this.users = new Map();
     this.trades = new Map();
+    this.alerts = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -77,6 +82,27 @@ export class MemStorage implements IStorage {
 
   async deleteTrade(id: string): Promise<boolean> {
     return this.trades.delete(id);
+  }
+
+  async createAlert(insertAlert: InsertAlert): Promise<Alert> {
+    const id = crypto.randomUUID();
+    const alert: Alert = {
+      ...insertAlert,
+      id,
+      timestamp: new Date(),
+    } as Alert;
+    this.alerts.set(id, alert);
+    return alert;
+  }
+
+  async listAlerts(): Promise<Alert[]> {
+    return Array.from(this.alerts.values()).sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }
+
+  async deleteAlert(id: string): Promise<boolean> {
+    return this.alerts.delete(id);
   }
 }
 

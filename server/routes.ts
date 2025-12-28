@@ -54,6 +54,42 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/trades", async (req, res) => {
+    try {
+      const trades = await storage.listTrades();
+      res.json(trades);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/alerts", async (req, res) => {
+    try {
+      const alerts = await storage.listAlerts();
+      res.json(alerts);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/alerts", async (req, res) => {
+    try {
+      const alert = await storage.createAlert(req.body);
+      res.json(alert);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.delete("/api/alerts/:id", async (req, res) => {
+    try {
+      await storage.deleteAlert(req.params.id);
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   app.get("/api/forex/candles/:pair", async (req, res) => {
     try {
       const pair = decodeURIComponent(req.params.pair);
