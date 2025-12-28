@@ -4,9 +4,10 @@ import { BarChart3 } from "lucide-react";
 
 interface TradingChartProps {
   pair: string;
+  theme?: "light" | "dark";
 }
 
-function TradingChart({ pair }: TradingChartProps) {
+function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -46,7 +47,7 @@ function TradingChart({ pair }: TradingChartProps) {
           symbol: `FX:${symbol}`,
           interval: "5",
           timezone: "Etc/UTC",
-          theme: "dark",
+          theme: theme,
           style: "1",
           locale: "en",
           allow_symbol_change: true,
