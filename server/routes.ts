@@ -282,16 +282,38 @@ export async function registerRoutes(
     return kenyaTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' EAT';
   }
 
-  // AUTO-SCANNER: Run frequently, but ONLY dispatch signals at M5 candle opens
-  const AUTO_SCAN_INTERVAL_MS = 60 * 1000; // Scan every 60 seconds
+  // AUTO-SCANNER: Run frequently to detect early signals
+  const AUTO_SCAN_INTERVAL_MS = 30 * 1000; // Check every 30 seconds
   let autoScanEnabled = true;
   let lastSignalDispatchTime = 0;
-  const MIN_DISPATCH_INTERVAL = 2 * 60 * 1000; // 2 min cooldown
+  const MIN_DISPATCH_INTERVAL = 3 * 60 * 1000; // 3 min cooldown
 
   async function runAutoScan() {
     if (!autoScanEnabled) return;
     
     try {
+      const now = Date.now();
+      const kenyaOffset = 3 * 60 * 60 * 1000;
+      const nowKenya = new Date(now + kenyaOffset);
+      
+      const currentMinutes = nowKenya.getMinutes();
+      const currentSeconds = nowKenya.getSeconds();
+      const candleInterval = 5;
+      
+      const minutesIntoCandle = currentMinutes % candleInterval;
+      // We want to send signals 3 minutes before the NEXT candle starts
+      // Next candle starts when minutesIntoCandle reaches 0 (at minute % 5 === 0)
+      // So if minutesIntoCandle is 2, it's 3 minutes before the next candle
+      const isEarlyWarningTime = minutesIntoCandle === 2;
+
+      if (!isEarlyWarningTime) {
+        // Only log once per minute to avoid spam
+        if (currentSeconds < 30) {
+          log(`[TIMING GATE] Waiting for 3-minute early warning window (current: :${currentMinutes % 5})`, "timing-gate");
+        }
+        return;
+      }
+
       const signals = await Promise.all(
         FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M5", apiKey))
       );
@@ -299,43 +321,18 @@ export async function registerRoutes(
       const validSignals = signals.filter(s => s.confidence >= 60);
       const highProbSignals = signals.filter(s => s.confidence >= 65 && s.signalGrade !== "SKIPPED");
       
-      log(`[AUTO-SCAN M15] Scan complete - ${validSignals.length} valid, ${highProbSignals.length} high-prob | Signals queued for dispatch`, "auto-scan");
+      log(`[AUTO-SCAN] 3-Minute Early Warning: Found ${highProbSignals.length} high-prob signals for the next candle`, "auto-scan");
       
-      // ══════════════════════════════════════════════════════════════════════
-      // HARD TIMING GATE: Only dispatch at M5 candle opens
-      // ══════════════════════════════════════════════════════════════════════
-      const now = Date.now();
       const timeSinceLastDispatch = now - lastSignalDispatchTime;
-      
-      if (!isValidM5CandleOpenTime()) {
-        log(`[TIMING GATE] ❌ NOT at M5 candle open - signals BLOCKED (next valid: ${getM5CandleOpenTimeEAT()})`, "timing-gate");
-        return; // Do NOT send signals
-      }
-      
       if (timeSinceLastDispatch < MIN_DISPATCH_INTERVAL) {
-        log(`[TIMING GATE] ⚠️ Last dispatch ${Math.floor(timeSinceLastDispatch / 1000)}s ago - prevent duplicates`, "timing-gate");
-        return; // Prevent duplicate signals
+        return; // Prevent duplicate signals in the same window
       }
       
-      // Dispatch signals
-      log(`[TIMING GATE] ✅ M5 CANDLE OPEN CONFIRMED (${getM5CandleOpenTimeEAT()}) - DISPATCHING SIGNALS`, "timing-gate");
       lastSignalDispatchTime = now;
       
       for (const signal of highProbSignals) {
-        const kenyaOffset = 3 * 60 * 60 * 1000;
-        const nowKenya = new Date(now + kenyaOffset);
-        
-        const candleInterval = 5;
-        const currentMinutes = nowKenya.getMinutes();
-        const currentSeconds = nowKenya.getSeconds();
-        
-        const minutesSinceLast = currentMinutes % candleInterval;
-        let minutesToNext = candleInterval - minutesSinceLast;
-        
-        // Ensure at least 90s buffer for delivery
-        if (minutesToNext < 1 || (minutesToNext === 1 && currentSeconds > 30)) {
-          minutesToNext += candleInterval;
-        }
+        // Calculate the NEXT candle start time (which is in 3 minutes)
+        const minutesToNext = candleInterval - minutesIntoCandle;
         
         const startTimeDate = new Date(nowKenya.getTime() + (minutesToNext * 60000));
         startTimeDate.setSeconds(0, 0);
@@ -363,7 +360,7 @@ export async function registerRoutes(
           status: "active" as const
         };
         
-        log(`[DISPATCH] ${signal.pair} ${signal.signalType} | Grade ${signal.signalGrade} | Entry: ${signal.entry}`, "dispatch");
+        log(`[DISPATCH] 3-MIN WARNING: ${signal.pair} ${signal.signalType} starting at ${startTime}`, "dispatch");
         await sendToTelegram(signalData, signal, true);
       }
       
