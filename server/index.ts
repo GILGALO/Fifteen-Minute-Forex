@@ -1,5 +1,7 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
+import MemoryStore from "memorystore";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -13,6 +15,8 @@ declare module "http" {
   }
 }
 
+const SessionStore = MemoryStore(session) as any;
+
 app.use(
   express.json({
     verify: (req, _res, buf) => {
@@ -22,6 +26,21 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+
+app.use(
+  session({
+    store: new SessionStore(),
+    secret: process.env.SESSION_SECRET || "your-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
+  }),
+);
 
 export function log(message: string, source = "app") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
