@@ -377,8 +377,15 @@ export function isMarketOpen(): boolean {
 
 function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" {
   if (exhausted) return "C";
-  if (adx > 30 && (volatility === "MEDIUM" || volatility === "HIGH") && macdAligned && supertrendAligned && htfAligned) return "A";
-  if (adx >= 25 && (macdAligned || supertrendAligned) && htfAligned) return "B";
+  
+  // High-Accuracy "A" Grade for Pocket Option:
+  // Requires 100% indicator alignment (MACD + Supertrend) + HTF trend confirmation
+  if (adx > 28 && macdAligned && supertrendAligned && htfAligned) return "A";
+  
+  // Opportunistic "B" Grade:
+  // Good for 5-min scalps even if HTF is neutral or slightly conflicting
+  if (adx >= 22 && (macdAligned || supertrendAligned)) return "B";
+  
   return "C";
 }
 
@@ -407,8 +414,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   reasoning.push(`📊 HIGH-OPPORTUNITY MODE: Active (Threshold: ${sessionThreshold}%)`);
 
   const lastCandle = candles[candles.length - 1], avgVol = candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
-  const volOk = !lastCandle.volume || lastCandle.volume > avgVol * 0.5;
-  if (!volOk) reasoning.push(`⚠️ VOLUME LOW`); else reasoning.push(`✅ VOLUME OK`);
+  const volumeConfirmed = !lastCandle.volume || lastCandle.volume > avgVol * 0.5;
+  if (!volumeConfirmed) reasoning.push(`⚠️ VOLUME LOW`); else reasoning.push(`✅ VOLUME OK`);
 
   const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD"];
   if (majorPairs.includes(pair)) {
@@ -446,8 +453,15 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   if (technicals.adx > 30) confidence += 10; else if (technicals.adx < 20) confidence -= 12;
+  // GRADE A+ WIN-RATE VERIFICATION
+  // For binary options, we need extreme precision on the highest grade signals
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
-  confidence += indicatorCheck.count >= 2 ? 10 : -5;
+  const isPerfectAlignment = indicatorCheck.count === 4; // RSI, Stoch, Supertrend, MACD all agree
+  
+  if (isPerfectAlignment && htfAligned && volumeConfirmed) {
+    confidence = Math.max(88, confidence + 15);
+    reasoning.push(`💎 GRADE A+ CONFLUENCE: Institutional alignment detected!`);
+  }
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   if (signalGrade === "C" && !candleConfirmed) {

@@ -97,7 +97,7 @@ export async function registerRoutes(
       log(`[SCAN] Starting smart rescan for ${FOREX_PAIRS.length} pairs (maxRescans: ${maxRescans}, minThreshold: ${minConfidenceThreshold}%)`, "scan");
       
       const signals = await Promise.all(
-        FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, tf, apiKey, maxRescans, minConfidenceThreshold))
+        FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M5", apiKey))
       );
       
       const sortedSignals = signals.sort((a, b) => b.confidence - a.confidence);
@@ -294,7 +294,7 @@ export async function registerRoutes(
     
     try {
       const signals = await Promise.all(
-        FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M5", apiKey, 5, 60))
+        FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M5", apiKey))
       );
       
       const validSignals = signals.filter(s => s.confidence >= 60);
