@@ -407,6 +407,16 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
+          <div className="lg:col-span-12 space-y-4 sm:space-y-6">
+            <div className="max-h-[500px] lg:max-h-[600px]">
+              <ErrorBoundary>
+                <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                  <RecentSignals signals={signals} />
+                </Suspense>
+              </ErrorBoundary>
+            </div>
+          </div>
+
           <div className="lg:col-span-5 xl:col-span-4 space-y-4 sm:space-y-6">
             <ErrorBoundary>
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
@@ -425,14 +435,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                   </Suspense>
                 </ErrorBoundary>
               </div>
-            </div>
-
-            <div className="max-h-[300px] sm:max-h-[350px] lg:max-h-[400px]">
-              <ErrorBoundary>
-                <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                  <RecentSignals signals={signals} />
-                </Suspense>
-              </ErrorBoundary>
             </div>
           </div>
 
