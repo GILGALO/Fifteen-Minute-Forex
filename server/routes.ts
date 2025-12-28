@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertTradeSchema } from "@shared/schema";
+import { insertUserSchema } from "@shared/schema";
 import {
   getForexQuote,
   getForexCandles,

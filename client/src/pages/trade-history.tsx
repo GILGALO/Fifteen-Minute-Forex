@@ -67,50 +67,40 @@ export default function TradeHistory() {
                     <h3 className="text-lg font-black uppercase tracking-widest">Completed Trades</h3>
                   </div>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-white/5">
-                        <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Pair</th>
-                        <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Type</th>
-                        <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Time</th>
-                        <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                        <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Result</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                      {trades.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="py-8 text-center text-slate-500 text-xs font-bold uppercase tracking-widest">
-                            No trades recorded yet
-                          </td>
-                        </tr>
-                      ) : (
-                        trades.map((trade) => (
-                          <tr key={trade.id} className="group hover:bg-white/[0.02] transition-colors">
-                            <td className="py-4 font-black text-xs text-slate-200">{trade.pair}</td>
-                            <td className="py-4 font-black text-xs">
-                              <span className={trade.type === 'CALL' ? 'text-emerald-400' : 'text-rose-400'}>
-                                {trade.type}
-                              </span>
-                            </td>
-                            <td className="py-4 text-xs text-slate-400 font-mono">{trade.startTime}</td>
-                            <td className="py-4 uppercase tracking-tighter text-[10px] font-black text-slate-500">
-                              Completed
-                            </td>
-                            <td className="py-4">
-                              <span className={`text-[10px] font-black uppercase px-2 py-1 rounded ${
-                                trade.status === 'won' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-                              }`}>
-                                {trade.status}
-                              </span>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
+                          <tbody className="divide-y divide-white/5">
+                            {trades.length === 0 ? (
+                              <tr>
+                                <td colSpan={5} className="py-8 text-center text-slate-500 text-xs font-bold uppercase tracking-widest">
+                                  No trades recorded yet
+                                </td>
+                              </tr>
+                            ) : (
+                              trades.map((trade) => (
+                                <tr key={trade.id} className="group hover:bg-white/[0.02] transition-colors">
+                                  <td className="py-4 font-black text-xs text-slate-200">{trade.pair}</td>
+                                  <td className="py-4 font-black text-xs">
+                                    <span className={trade.outcome === 'win' ? 'text-emerald-400' : 'text-rose-400'}>
+                                      {trade.outcome.toUpperCase()}
+                                    </span>
+                                  </td>
+                                  <td className="py-4 text-xs text-slate-400 font-mono">
+                                    {new Date(trade.timestamp).toLocaleString()}
+                                  </td>
+                                  <td className="py-4 uppercase tracking-tighter text-[10px] font-black text-slate-500">
+                                    {trade.entryPrice} → {trade.exitPrice}
+                                  </td>
+                                  <td className="py-4">
+                                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded ${
+                                      trade.outcome === 'win' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                                    }`}>
+                                      {trade.outcome === 'win' ? '+ PROFIT' : '- LOSS'}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+
               </CardContent>
             </Card>
           </Suspense>
