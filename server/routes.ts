@@ -18,7 +18,8 @@ import crypto from "crypto";
 const FOREX_PAIRS = [
   "EUR/USD", "GBP/USD", "USD/JPY", "USD/CHF",
   "AUD/USD", "USD/CAD", "NZD/USD", "EUR/GBP",
-  "EUR/JPY", "GBP/JPY", "AUD/JPY", "EUR/AUD"
+  "EUR/JPY", "GBP/JPY", "AUD/JPY", "EUR/AUD",
+  "EUR/CAD", "GBP/AUD", "AUD/CAD", "CAD/JPY"
 ];
 
 
@@ -266,23 +267,7 @@ export async function registerRoutes(
    * BLOCKS signals during minutes 1-4 (mid-candle)
    */
   function isValidM5CandleOpenTime(): boolean {
-    const now = new Date();
-    const minute = now.getMinutes();
-    const second = now.getSeconds();
-    
-    // Valid M5 opens: minute % 5 === 0 AND within first 1 second
-    const isM5Open = minute % 5 === 0;
-    const isFirstSecond = second <= 1;
-    
-    if (!isM5Open) {
-      return false; // Mid-candle (minutes 1-4 are BLOCKED)
-    }
-    
-    if (!isFirstSecond) {
-      return false; // Too late in the candle open
-    }
-    
-    return true;
+    return true; // Opportunistic Mode: Allow signals any time
   }
 
   /**
@@ -299,21 +284,21 @@ export async function registerRoutes(
   }
 
   // AUTO-SCANNER: Run frequently, but ONLY dispatch signals at M5 candle opens
-  const AUTO_SCAN_INTERVAL_MS = 30 * 1000; // Check every 30 seconds for candle opens
+  const AUTO_SCAN_INTERVAL_MS = 60 * 1000; // Scan every 60 seconds
   let autoScanEnabled = true;
   let lastSignalDispatchTime = 0;
-  const MIN_DISPATCH_INTERVAL = 5 * 60 * 1000; // Prevent duplicate signals within 5 minutes
+  const MIN_DISPATCH_INTERVAL = 2 * 60 * 1000; // 2 min cooldown
 
   async function runAutoScan() {
     if (!autoScanEnabled) return;
     
     try {
       const signals = await Promise.all(
-        FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M15", apiKey, 5, 75))
+        FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M5", apiKey, 5, 60))
       );
       
-      const validSignals = signals.filter(s => s.confidence >= 75);
-      const highProbSignals = signals.filter(s => s.confidence >= 85 && s.signalGrade !== "SKIPPED");
+      const validSignals = signals.filter(s => s.confidence >= 60);
+      const highProbSignals = signals.filter(s => s.confidence >= 65 && s.signalGrade !== "SKIPPED");
       
       log(`[AUTO-SCAN M15] Scan complete - ${validSignals.length} valid, ${highProbSignals.length} high-prob | Signals queued for dispatch`, "auto-scan");
       
