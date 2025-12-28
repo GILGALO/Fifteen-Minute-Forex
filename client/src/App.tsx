@@ -17,7 +17,7 @@ function Router({ isAuthenticated, isAdmin }: { isAuthenticated: boolean; isAdmi
 
   return (
     <Switch>
-      <Route path="/" component={Home} />
+      <Route path="/" component={() => <Home isAdmin={isAdmin} />} />
       {isAdmin && <Route path="/admin" component={Admin} />}
       <Route component={NotFound} />
     </Switch>

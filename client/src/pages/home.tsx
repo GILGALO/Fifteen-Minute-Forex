@@ -1,8 +1,9 @@
 import { useState, useEffect, lazy, Suspense } from "react";
+import { Link } from "wouter";
 import { type Signal } from "@/lib/constants";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/hooks/use-toast";
-import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar, AlertTriangle, TrendingUp as Goal, AlertCircle } from "lucide-react";
+import { Activity, Wifi, TrendingUp, Zap, BarChart3, Target, TrendingDown, Award, Clock, Calendar, AlertTriangle, TrendingUp as Goal, AlertCircle, Settings } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,7 +25,7 @@ interface SessionStats {
   drawdownThreshold: number;
 }
 
-export default function Home() {
+export default function Home({ isAdmin }: { isAdmin?: boolean }) {
   const [signals, setSignals] = useState<Signal[]>([]);
   const [activePair, setActivePair] = useState("EUR/USD");
   const { toast } = useToast();
@@ -144,6 +145,14 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
+              {isAdmin && (
+                <Link href="/admin">
+                  <a className="glass-panel px-4 py-2.5 rounded-xl flex items-center gap-2 border border-primary/30 hover-elevate cursor-pointer" data-testid="link-admin">
+                    <Settings className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Admin</span>
+                  </a>
+                </Link>
+              )}
               <div className="glass-panel px-5 py-2.5 rounded-xl flex items-center gap-3 border border-emerald-400/30">
                 <Wifi className="w-4 h-4 text-emerald-400" />
                 <span className="text-sm font-semibold text-emerald-400 tracking-wide">LIVE</span>
