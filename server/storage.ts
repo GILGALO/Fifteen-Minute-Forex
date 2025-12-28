@@ -1,5 +1,6 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type User, type InsertUser, users as usersTable } from "@shared/schema";
+import { eq } from "drizzle-orm";
+import { db } from "./db";
 
 // modify the interface with any CRUD methods
 // you might need
@@ -13,45 +14,44 @@ export interface IStorage {
   updateUserPassword(id: string, hashedPassword: string): Promise<boolean>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const result = await db.select().from(usersTable).where(eq(usersTable.id, id));
+    return result[0];
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const result = await db.select().from(usersTable).where(eq(usersTable.username, username));
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser, isAdmin = false): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id, isAdmin: isAdmin ? "true" : "false" };
-    this.users.set(id, user);
-    return user;
+    const result = await db
+      .insert(usersTable)
+      .values({
+        ...insertUser,
+        isAdmin: isAdmin ? "true" : "false",
+      })
+      .returning();
+    return result[0];
   }
 
   async deleteUser(id: string): Promise<boolean> {
-    return this.users.delete(id);
+    const result = await db.delete(usersTable).where(eq(usersTable.id, id));
+    return result.rowCount > 0;
   }
 
   async listUsers(): Promise<User[]> {
-    return Array.from(this.users.values());
+    return db.select().from(usersTable);
   }
 
   async updateUserPassword(id: string, hashedPassword: string): Promise<boolean> {
-    const user = this.users.get(id);
-    if (!user) return false;
-    user.password = hashedPassword;
-    this.users.set(id, user);
-    return true;
+    const result = await db
+      .update(usersTable)
+      .set({ password: hashedPassword })
+      .where(eq(usersTable.id, id));
+    return result.rowCount > 0;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
