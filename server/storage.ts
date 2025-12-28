@@ -1,5 +1,5 @@
 import { type User, type InsertUser } from "@shared/schema";
-import { crypto } from "node:crypto";
+import crypto from "node:crypto";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
