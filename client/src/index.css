@@ -50,7 +50,52 @@
 }
 
 :root {
-  /* Modern Professional Trading Theme */
+  /* Modern Professional Trading Theme - Light */
+  --background: 210 40% 98%;
+  --foreground: 220 27% 8%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 220 27% 8%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 27% 8%;
+
+  --primary: 158 64% 52%;
+  --primary-foreground: 220 27% 8%;
+
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 220 27% 8%;
+
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 40%;
+
+  --accent: 189 94% 43%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 158 64% 52%;
+
+  --success: 142 76% 45%;
+  --success-foreground: 210 40% 98%;
+
+  --warning: 38 92% 50%;
+  --warning-foreground: 220 27% 8%;
+
+  --radius: 0.75rem;
+
+  --chart-1: 158 64% 52%;
+  --chart-2: 189 94% 43%;
+  --chart-3: 200 80% 60%;
+  --chart-4: 142 76% 45%;
+  --chart-5: 170 70% 50%;
+}
+
+.dark {
+  /* Modern Professional Trading Theme - Dark */
   --background: 220 27% 8%;
   --foreground: 210 40% 98%;
 
@@ -84,14 +129,6 @@
 
   --warning: 38 92% 50%;
   --warning-foreground: 220 27% 8%;
-
-  --radius: 0.75rem;
-
-  --chart-1: 158 64% 52%;
-  --chart-2: 189 94% 43%;
-  --chart-3: 200 80% 60%;
-  --chart-4: 142 76% 45%;
-  --chart-5: 170 70% 50%;
 }
 
 @layer base {
@@ -106,7 +143,7 @@
       radial-gradient(ellipse at 20% 20%, hsl(158 64% 52% / 0.08), transparent 40%),
       radial-gradient(ellipse at 80% 80%, hsl(189 94% 43% / 0.08), transparent 40%),
       radial-gradient(circle at 50% 50%, hsl(200 80% 60% / 0.03), transparent 70%),
-      linear-gradient(135deg, hsl(220 27% 8%), hsl(220 27% 6%));
+      linear-gradient(135deg, hsl(var(--background)), hsl(var(--background)));
     background-attachment: scroll;
     background-size: 100% 100%, 100% 100%, 120% 120%, 100% 100%;
     -webkit-overflow-scrolling: touch;

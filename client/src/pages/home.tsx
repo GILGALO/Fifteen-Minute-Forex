@@ -12,6 +12,8 @@ import AnalyticsDashboard from "@/components/analytics-dashboard";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 
+import { useTheme } from "next-themes";
+
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
 const RecentSignals = lazy(() => import("@/components/recent-signals"));
@@ -32,6 +34,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
   const [activePair, setActivePair] = useState("EUR/USD");
   const { toast } = useToast();
   const [currentDate, setCurrentDate] = useState(new Date());
+  const { theme, setTheme } = useTheme();
 
   const handleLogout = async () => {
     try {
@@ -182,14 +185,14 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
             <div className="flex flex-col gap-4 w-full lg:w-auto">
               <div className="flex flex-wrap items-center gap-2 md:gap-3 justify-start lg:justify-end">
-                {isAdmin && (
-                  <Link href="/admin">
-                    <a className="h-10 md:h-11 px-4 md:px-6 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group" data-testid="link-admin">
-                      <Settings className="w-4 h-4 text-slate-400 group-hover:rotate-90 transition-transform duration-500" />
-                      <span className="text-xs md:text-sm font-bold text-slate-200">System Config</span>
-                    </a>
-                  </Link>
-                )}
+                <Button
+                  onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                  variant="ghost"
+                  className="h-10 md:h-11 px-4 md:px-6 text-slate-400 hover:text-foreground hover:bg-slate-500/10 rounded-xl transition-all font-bold text-xs md:text-sm"
+                >
+                  {theme === "dark" ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                  Theme Sync
+                </Button>
                 <Button
                   onClick={handleLogout}
                   variant="ghost"
