@@ -454,20 +454,16 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   if (technicals.adx > 30) confidence += 10; else if (technicals.adx < 20) confidence -= 12;
   // GRADE A+ WIN-RATE VERIFICATION (INSTITUTIONAL PRECISION)
-  // For binary options, we need extreme precision on the highest grade signals
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
-  const isPerfectAlignment = indicatorCheck.count === 4; // RSI, Stoch, Supertrend, MACD all agree
-  
-  // High-Probability Confirmation logic:
-  // Requires: Perfect Indicators + Trend Alignment + Institutional Volume + Market Correlation
+  const isPerfectAlignment = indicatorCheck.count === 4; 
   const correlationAligned = reasoning.includes(`✅ FULL CORRELATION`) || reasoning.includes(`✅ PARTIAL CORRELATION`);
   const institutionalQuality = isPerfectAlignment && htfAligned && volumeConfirmed && correlationAligned;
 
   if (institutionalQuality) {
-    confidence = Math.max(92, confidence + 18);
+    confidence = Math.min(98, Math.max(94, confidence + 20));
     reasoning.push(`💎 INSTITUTIONAL GRADE A+: Triple-Verified Winning Setup!`);
   } else if (isPerfectAlignment && htfAligned) {
-    confidence = Math.max(88, confidence + 10);
+    confidence = Math.min(92, Math.max(88, confidence + 12));
     reasoning.push(`✨ HIGH-QUALITY GRADE A: Trend & Indicator Alignment`);
   }
 
