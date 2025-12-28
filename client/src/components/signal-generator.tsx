@@ -198,30 +198,30 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
       if (timeframe.startsWith('M')) intervalMinutes = parseInt(timeframe.substring(1));
       else if (timeframe.startsWith('H')) intervalMinutes = parseInt(timeframe.substring(1)) * 60;
 
-      // Calculate the next proper candle start time aligned to clock intervals
-      // For M5: candles start at :00, :05, :10, :15, :20, :25, :30, :35, :40, :45, :50, :55
+      // Calculate the next proper candle start time aligned to 5-minute intervals (00, 05, 10, ...)
       const currentMinutes = nowKenya.getMinutes();
       const currentSeconds = nowKenya.getSeconds();
       
-      // Find the next candle boundary
-      const minutesSinceLastCandle = currentMinutes % intervalMinutes;
-      let minutesToNextCandle = intervalMinutes - minutesSinceLastCandle;
+      // Fixed 5-minute interval
+      const candleInterval = 5;
       
-      // If we're at exactly the start of a candle, go to the next one
-      if (minutesSinceLastCandle === 0 && currentSeconds < 30) {
-        minutesToNextCandle = intervalMinutes; // Skip current candle, go to next
-      }
+      // Calculate minutes to the start of the next 5-minute candle
+      // If we are at 22:02, minutesSinceLast = 2, minutesToNext = 3 (Next is 22:05)
+      // If we are at 22:04:45, we should probably wait for the one after (22:10) to give the user time
+      const minutesSinceLastCandle = currentMinutes % candleInterval;
+      let minutesToNextCandle = candleInterval - minutesSinceLastCandle;
       
-      // Add lead time - ensure at least 2-3 minutes before candle starts
-      if (minutesToNextCandle < 2) {
-        minutesToNextCandle += intervalMinutes; // Skip to the candle after
+      // Buffer: If less than 90 seconds to the next candle, skip to the one after
+      // This ensures the user has time to see the signal and prepare
+      if (minutesToNextCandle < 1 || (minutesToNextCandle === 1 && currentSeconds > 30)) {
+        minutesToNextCandle += candleInterval;
       }
 
       const startTimeDate = addMinutes(nowKenya, minutesToNextCandle);
-      // Round to exact minute (remove seconds)
       startTimeDate.setSeconds(0, 0);
       
-      const endTimeDate = addMinutes(startTimeDate, intervalMinutes);
+      // End time is exactly 5 minutes after start time
+      const endTimeDate = addMinutes(startTimeDate, candleInterval);
       endTimeDate.setSeconds(0, 0);
       
       const kenyaTime = new Date(startTimeDate.getTime());

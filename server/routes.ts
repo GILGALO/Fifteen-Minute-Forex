@@ -339,9 +339,30 @@ export async function registerRoutes(
       
       for (const signal of highProbSignals) {
         const kenyaOffset = 3 * 60 * 60 * 1000;
-        const kenyaTime = new Date(now + kenyaOffset);
-        const startTime = kenyaTime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-        const endTime = new Date(kenyaTime.getTime() + 5 * 60 * 1000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const nowKenya = new Date(now + kenyaOffset);
+        
+        const candleInterval = 5;
+        const currentMinutes = nowKenya.getMinutes();
+        const currentSeconds = nowKenya.getSeconds();
+        
+        const minutesSinceLast = currentMinutes % candleInterval;
+        let minutesToNext = candleInterval - minutesSinceLast;
+        
+        // Ensure at least 90s buffer for delivery
+        if (minutesToNext < 1 || (minutesToNext === 1 && currentSeconds > 30)) {
+          minutesToNext += candleInterval;
+        }
+        
+        const startTimeDate = new Date(nowKenya.getTime() + (minutesToNext * 60000));
+        startTimeDate.setSeconds(0, 0);
+        startTimeDate.setMilliseconds(0);
+        
+        const endTimeDate = new Date(startTimeDate.getTime() + (candleInterval * 60000));
+        endTimeDate.setSeconds(0, 0);
+        endTimeDate.setMilliseconds(0);
+
+        const startTime = startTimeDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        const endTime = endTimeDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         
         const signalData = {
           id: `auto-${Date.now()}-${signal.pair.replace('/', '')}`,
