@@ -117,21 +117,17 @@ function RecentSignals({ signals }: RecentSignalsProps) {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-bold text-sm">{signal.pair}</span>
                     <span className={`text-xs font-black px-2 py-0.5 rounded-full ${signal.type === "CALL" ? "text-emerald-500 bg-emerald-500/20" : "text-rose-500 bg-rose-500/20"}`}>
-                      {signal.type}
+                      {signal.type === "CALL" ? "BUY/CALL" : "SELL/PUT"}
                     </span>
                   </div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-2 font-medium">
-                    <span>{format(signal.timestamp, "HH:mm")}</span>
-                    <span className="text-border">•</span>
-                    <span>{signal.startTime}-{signal.endTime}</span>
-                    {signal.martingale && (
-                      <>
-                        <span className="text-border">•</span>
-                        <span className="text-primary font-bold bg-primary/20 px-1.5 py-0.5 rounded">
-                          M{signal.martingale.entryNumber}
-                        </span>
-                      </>
-                    )}
+                  <div className="text-xs text-muted-foreground whitespace-pre-line font-medium leading-relaxed">
+                    NEW SIGNAL 🤖{"\n"}
+                    ━━━━━━━━━━━━━━{"\n"}
+                    📊 PAIR: {signal.pair}{"\n"}
+                    {signal.type === "CALL" ? "🟢" : "🔴"} DIRECTION: {signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}{"\n"}
+                    ⏱ TIMEFRAME: {signal.timeframe}{"\n"}
+                    🕐 START: {signal.startTime}{"\n"}
+                    🏁 EXPIRY: {signal.endTime}
                   </div>
                 </div>
                 

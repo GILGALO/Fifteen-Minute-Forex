@@ -425,31 +425,39 @@ function hasThreeConsecutiveTrendCandles(candles: CandleData[], direction: "BULL
   const prev2 = candles[candles.length - 3];
 
   if (direction === "BULLISH") {
-    return isBullishCandle(last) && isBullishCandle(prev) && isBullishCandle(prev2) &&
-           !isIndecisionCandle(last) && !isIndecisionCandle(prev) && !isIndecisionCandle(prev2);
+    // Check for strong bullish candles (close > open) and size
+    const isStrong = (c: CandleData) => c.close > c.open && (c.close - c.open) > (c.high - c.low) * 0.4;
+    return isStrong(last) && isStrong(prev) && isStrong(prev2);
   } else {
-    return isBearishCandle(last) && isBearishCandle(prev) && isBearishCandle(prev2) &&
-           !isIndecisionCandle(last) && !isIndecisionCandle(prev) && !isIndecisionCandle(prev2);
+    // Check for strong bearish candles (open > close) and size
+    const isStrong = (c: CandleData) => c.open > c.close && (c.open - c.close) > (c.high - c.low) * 0.4;
+    return isStrong(last) && isStrong(prev) && isStrong(prev2);
   }
 }
 
 /**
  * Check if RSI, MACD, and Supertrend align
- * Returns alignment count: 3 = perfect, 2 = good, 1 = weak
- * More signals: 2/3 alignment is acceptable with slight penalty
  */
 function checkMultiIndicatorAlignment(technicals: TechnicalAnalysis, direction: "BULLISH" | "BEARISH"): { count: number; aligned: boolean } {
-  const rsiAligned = direction === "BULLISH" ? technicals.rsi < 70 : technicals.rsi > 30;
-  const macdAligned = direction === "BULLISH" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0;
+  // BUY: RSI 30-85, Stoch < 90, M5/M15/H1 Bullish
+  // SELL: RSI 15-70, Stoch > 10, M5/M15/H1 Bearish
+  const rsiOk = direction === "BULLISH" 
+    ? (technicals.rsi >= 30 && technicals.rsi <= 85)
+    : (technicals.rsi >= 15 && technicals.rsi <= 70);
+    
+  const stochOk = direction === "BULLISH"
+    ? technicals.stochastic.k < 90
+    : technicals.stochastic.k > 10;
+
   const supertrendAligned = technicals.supertrend.direction === direction;
+  const macdAligned = direction === "BULLISH" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0;
   
-  const count = (rsiAligned ? 1 : 0) + (macdAligned ? 1 : 0) + (supertrendAligned ? 1 : 0);
+  const count = (rsiOk ? 1 : 0) + (stochOk ? 1 : 0) + (supertrendAligned ? 1 : 0) + (macdAligned ? 1 : 0);
   
-  // Allow 2/3 or 3/3 alignment for more signal frequency
-  return {
-    count,
-    aligned: count >= 2  // Changed from 3 to 2 for more signals
-  };
+  // Rule: RSI and Stoch MUST be safe, plus Supertrend or MACD for confluence
+  const aligned = rsiOk && stochOk && (supertrendAligned || macdAligned);
+  
+  return { count, aligned };
 }
 
 /**

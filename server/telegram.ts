@@ -131,19 +131,19 @@ export async function sendToTelegram(
     }
 
     // Build comprehensive message
-    let message = `🚀 <b>NEW SIGNAL ${modeLabel === "AUTO" ? "🤖" : "👤"}</b>\n`;
+    let message = `NEW SIGNAL 🤖\n`;
     message += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-    // Core Signal Info with enhanced visuals
-    message += `📊 <b>PAIR:</b> ${signal.pair}\n`;
-    message += `${signal.type === "CALL" ? "🟢" : "🔴"} <b>DIRECTION:</b> ${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}\n`;
-    message += `⏱ <b>TIMEFRAME:</b> M15 (15-Minute) ✅\n\n`;
+    // Core Signal Info
+    message += `📊 PAIR: ${signal.pair}\n`;
+    message += `${signal.type === "CALL" ? "🟢" : "🔴"} DIRECTION: ${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}\n`;
+    message += `⏱ TIMEFRAME: ${signal.timeframe}\n\n`;
 
-    // Kenya Time with day info - startTime and endTime are already formatted strings
+    // Kenya Time
     const kenyaStart = getKenyaTime();
     const dayName = kenyaStart.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Africa/Nairobi' });
-    message += `🕐 <b>START TIME:</b> ${signal.startTime} EAT (${dayName})\n`;
-    message += `🏁 <b>EXPIRY TIME:</b> ${signal.endTime} EAT\n\n`;
+    message += `🕐 START TIME: ${signal.startTime} EAT (${dayName})\n`;
+    message += `🏁 EXPIRY TIME: ${signal.endTime} EAT\n`;
 
     // Multi-Timeframe Alignment (CRITICAL)
     message += `━━━━━━━━━━━━━━━━━━━━━\n`;
