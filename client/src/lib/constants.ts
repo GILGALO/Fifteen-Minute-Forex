@@ -36,6 +36,7 @@ export interface Signal {
   startTime: string;
   endTime: string;
   status: "active" | "won" | "lost";
+  dayName?: string;
   martingale?: {
     entryNumber: number; // 1, 2, or 3
     canEnterNext: boolean; // Can enter next candle

@@ -221,22 +221,24 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
       // Round to exact minute (remove seconds)
       startTimeDate.setSeconds(0, 0);
       
-      const endTimeDate = addMinutes(startTimeDate, intervalMinutes);
+    const endTimeDate = addMinutes(startTimeDate, intervalMinutes);
+    const dayName = format(startTimeDate, "eee");
 
-      const signal: Signal = {
-        id: Math.random().toString(36).substring(7),
-        pair: analysisResult.pair,
-        timeframe,
-        type: analysisResult.signalType,
-        entry: analysisResult.entry,
-        stopLoss: analysisResult.stopLoss,
-        takeProfit: analysisResult.takeProfit,
-        confidence: analysisResult.confidence,
-        timestamp: Date.now(),
-        startTime: format(startTimeDate, "HH:mm"),
-        endTime: format(endTimeDate, "HH:mm"),
-        status: "active"
-      };
+    const signal: Signal = {
+      id: Math.random().toString(36).substring(7),
+      pair: analysisResult.pair,
+      timeframe,
+      type: analysisResult.signalType,
+      entry: analysisResult.entry,
+      stopLoss: analysisResult.stopLoss,
+      takeProfit: analysisResult.takeProfit,
+      confidence: analysisResult.confidence,
+      timestamp: Date.now(),
+      startTime: format(startTimeDate, "HH:mm"),
+      endTime: format(endTimeDate, "HH:mm"),
+      dayName: dayName,
+      status: "active"
+    };
 
       setLastSignal(signal);
       onSignalGenerated(signal);
@@ -540,6 +542,17 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                       <Send className="w-3 h-3 text-emerald-500" />
                     </>
                   )}
+                </div>
+
+                {/* Telegram Mini Style */}
+                <div className="glass-panel p-4 rounded-xl border border-primary/20 bg-background/40 font-mono text-sm space-y-1 mb-5">
+                  <div className="text-foreground/90 font-bold">📊 PAIR: {lastSignal.pair}</div>
+                  <div className="flex items-center gap-1 text-foreground/90 font-bold">
+                    {lastSignal.type === "CALL" ? "🟢" : "🔴"} DIRECTION: {lastSignal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}
+                  </div>
+                  <div className="text-foreground/90 font-bold">⏱ TIMEFRAME: {lastSignal.timeframe}✅</div>
+                  <div className="mt-2 text-foreground/90 font-bold">🕐 START TIME: {lastSignal.startTime} EAT ({lastSignal.dayName || "Today"})</div>
+                  <div className="text-foreground/90 font-bold">🏁 EXPIRY TIME: {lastSignal.endTime} EAT</div>
                 </div>
 
                 {lastAnalysis && (
