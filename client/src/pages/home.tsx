@@ -164,7 +164,7 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
               </div>
 
               <div className="flex-1">
-                <h1 className="text-lg sm:text-2xl md:text-4xl lg:text-6xl xl:text-8xl font-black tracking-tighter mb-0.5 sm:mb-1 leading-tight sm:leading-none italic flex flex-wrap gap-x-1 sm:gap-x-2">
+                <h1 className="text-lg sm:text-2xl md:text-4xl lg:text-6xl xl:text-8xl font-black tracking-normal mb-0.5 sm:mb-1 leading-tight sm:leading-snug italic flex flex-wrap gap-x-2 sm:gap-x-3 md:gap-x-4">
                   <span className="bg-gradient-to-r from-white via-slate-100 to-white bg-clip-text text-transparent uppercase">GILGALO</span>
                   <span className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-cyan-400 bg-clip-text text-transparent uppercase">TRADING</span>
                 </h1>
