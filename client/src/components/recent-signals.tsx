@@ -75,40 +75,54 @@ function RecentSignals({ signals }: RecentSignalsProps) {
             {filteredSignals.map((signal, index) => (
               <motion.div
                 key={signal.id}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="group relative bg-slate-800/50 border border-white/5 rounded-xl md:rounded-2xl p-3 md:p-4 hover:bg-slate-800 transition-all duration-300"
+                className="group relative bg-slate-800/80 border-2 border-white/5 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-300"
               >
-                <div className="flex items-center gap-3 md:gap-4">
-                  <div className={`shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center border ${
-                    signal.type === "CALL" ? "bg-emerald-500/10 border-emerald-500/20" : "bg-rose-500/10 border-rose-500/20"
-                  }`}>
-                    {signal.type === "CALL" ? (
-                      <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-emerald-500" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5 md:w-6 md:h-6 text-rose-500" />
-                    )}
+                <div className="space-y-3 font-mono">
+                  <div className="flex justify-between items-center border-b border-white/5 pb-2 mb-2">
+                    <span className="text-emerald-400 font-black tracking-tighter uppercase text-sm">NEW SIGNAL ALERT 🚀</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-slate-500 font-bold tabular-nums">{signal.confidence}%</span>
+                      {getStatusIcon(signal.status)}
+                    </div>
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5 md:mb-1">
-                      <span className="text-xs md:text-sm font-black text-white italic tracking-tighter uppercase truncate mr-2">{signal.pair}</span>
-                      <span className="text-[8px] md:text-[10px] font-black text-slate-500 tabular-nums uppercase tracking-widest shrink-0">{signal.startTime}</span>
+                  <div className="grid grid-cols-1 gap-1.5 text-xs sm:text-sm">
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-slate-500 w-24 tracking-tight">📊 Pair:</span>
+                      <span className="font-black uppercase tracking-wider">{signal.pair}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 md:gap-2">
-                      <span className={`text-[8px] md:text-[9px] font-black px-1 md:px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0 ${
-                        signal.type === "CALL" ? "text-emerald-500 bg-emerald-500/10" : "text-rose-500 bg-rose-500/10"
+                    
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-slate-500 w-24 tracking-tight">⚡ Type:</span>
+                      <span className={`font-black flex items-center gap-1.5 ${
+                        signal.type === "CALL" ? "text-emerald-400" : "text-rose-400"
                       }`}>
-                        {signal.type === "CALL" ? "Buy" : "Sell"}
+                        {signal.type === "CALL" ? "🟢 BUY/CALL" : "🔴 SELL/PUT"}
                       </span>
-                      <span className="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase tracking-widest italic truncate">{signal.timeframe}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-slate-500 w-24 tracking-tight">⏱ Timeframe:</span>
+                      <span className="font-bold">{signal.timeframe}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-slate-500 w-24 tracking-tight">⏰ Start Time:</span>
+                      <span className="font-bold tabular-nums">{signal.startTime}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-white">
+                      <span className="text-slate-500 w-24 tracking-tight">🏁 End Time:</span>
+                      <span className="font-bold tabular-nums">{signal.endTime}</span>
                     </div>
                   </div>
-                  
-                  <div className="shrink-0 text-right">
-                    <div className="text-sm md:text-lg font-black text-white italic leading-none mb-0.5 md:mb-1">{signal.confidence}%</div>
-                    <div className="flex justify-end scale-75 md:scale-100">{getStatusIcon(signal.status)}</div>
+
+                  <div className="pt-2 mt-2 border-t border-white/5 flex justify-between items-center opacity-60">
+                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">System Confirmed</span>
+                    <span className="text-[9px] text-emerald-500/70 font-black uppercase tracking-widest">Verified ⚡</span>
                   </div>
                 </div>
               </motion.div>
