@@ -109,11 +109,11 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 relative overflow-x-hidden">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
-        <div className="absolute top-20 left-20 w-[400px] h-[400px] bg-emerald-500/15 rounded-full blur-[100px]" />
-        <div className="absolute top-1/3 right-20 w-[350px] h-[350px] bg-cyan-500/15 rounded-full blur-[90px]" />
-        <div className="absolute bottom-20 left-1/3 w-[450px] h-[450px] bg-blue-500/10 rounded-full blur-[110px]" />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-background text-foreground font-sans selection:bg-primary/20 relative overflow-x-hidden">
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-emerald-500/25 via-emerald-500/0 to-transparent rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-gradient-to-tr from-cyan-500/25 via-cyan-500/0 to-transparent rounded-full blur-[120px] animate-pulse delay-1000" />
+        <div className="absolute top-1/2 right-1/3 w-[500px] h-[500px] bg-gradient-to-br from-blue-500/15 via-blue-500/0 to-transparent rounded-full blur-[100px]" />
       </div>
 
       <div className="mb-8">
@@ -259,54 +259,62 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
           )}
 
           {/* Premium Stats Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-8 mt-6">
-            <Card className="glass-panel border-emerald-500/40 overflow-hidden relative group" data-testid="card-active-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CardContent className="p-5 relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <Target className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Active</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10 mt-8">
+            <div className="group relative rounded-2xl bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 border border-emerald-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-emerald-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20" data-testid="card-active-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-emerald-500/20 rounded-xl">
+                    <Target className="w-6 h-6 text-emerald-300 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <span className="text-xs text-emerald-400/80 font-bold uppercase tracking-widest">Active</span>
                 </div>
-                <div className="text-3xl font-black text-emerald-400" data-testid="text-active-count">{activeSignals}</div>
-                <div className="text-xs text-emerald-400/60 mt-2">Running now</div>
-              </CardContent>
-            </Card>
+                <div className="text-4xl font-black text-emerald-200 mb-2" data-testid="text-active-count">{activeSignals}</div>
+                <div className="text-sm text-emerald-400/70">Running signals</div>
+              </div>
+            </div>
 
-            <Card className="glass-panel border-emerald-500/40 overflow-hidden relative group" data-testid="card-won-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CardContent className="p-5 relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <TrendingUp className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Won</span>
+            <div className="group relative rounded-2xl bg-gradient-to-br from-emerald-600/15 to-emerald-500/5 border border-emerald-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-emerald-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20" data-testid="card-won-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-emerald-500/20 rounded-xl">
+                    <TrendingUp className="w-6 h-6 text-emerald-300 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <span className="text-xs text-emerald-400/80 font-bold uppercase tracking-widest">Won</span>
                 </div>
-                <div className="text-3xl font-black text-emerald-400" data-testid="text-won-count">{wonSignals}</div>
-                <div className="text-xs text-emerald-400/60 mt-2">Successful trades</div>
-              </CardContent>
-            </Card>
+                <div className="text-4xl font-black text-emerald-200 mb-2" data-testid="text-won-count">{wonSignals}</div>
+                <div className="text-sm text-emerald-400/70">Profitable trades</div>
+              </div>
+            </div>
 
-            <Card className="glass-panel border-rose-500/40 overflow-hidden relative group" data-testid="card-lost-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CardContent className="p-5 relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <TrendingDown className="w-5 h-5 text-rose-400 group-hover:scale-110 transition-transform" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Lost</span>
+            <div className="group relative rounded-2xl bg-gradient-to-br from-rose-600/15 to-rose-500/5 border border-rose-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-rose-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-rose-500/20" data-testid="card-lost-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-rose-500/20 rounded-xl">
+                    <TrendingDown className="w-6 h-6 text-rose-300 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <span className="text-xs text-rose-400/80 font-bold uppercase tracking-widest">Lost</span>
                 </div>
-                <div className="text-3xl font-black text-rose-400" data-testid="text-lost-count">{lostSignals}</div>
-                <div className="text-xs text-rose-400/60 mt-2">Failed trades</div>
-              </CardContent>
-            </Card>
+                <div className="text-4xl font-black text-rose-200 mb-2" data-testid="text-lost-count">{lostSignals}</div>
+                <div className="text-sm text-rose-400/70">Failed trades</div>
+              </div>
+            </div>
 
-            <Card className="glass-panel border-primary/40 overflow-hidden relative group" data-testid="card-total-signals">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <CardContent className="p-5 relative z-10">
-                <div className="flex items-center justify-between mb-3">
-                  <BarChart3 className="w-5 h-5 text-primary group-hover:scale-110 transition-transform" />
-                  <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Total</span>
+            <div className="group relative rounded-2xl bg-gradient-to-br from-cyan-600/15 to-cyan-500/5 border border-cyan-400/50 p-7 overflow-hidden backdrop-blur-md hover:border-cyan-400/80 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/20" data-testid="card-total-signals">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-cyan-500/20 rounded-xl">
+                    <BarChart3 className="w-6 h-6 text-cyan-300 group-hover:scale-110 transition-transform" />
+                  </div>
+                  <span className="text-xs text-cyan-400/80 font-bold uppercase tracking-widest">Total</span>
                 </div>
-                <div className="text-3xl font-black text-primary" data-testid="text-total-count">{totalSignals}</div>
-                <div className="text-xs text-primary/60 mt-2">All signals generated</div>
-              </CardContent>
-            </Card>
+                <div className="text-4xl font-black text-cyan-200 mb-2" data-testid="text-total-count">{totalSignals}</div>
+                <div className="text-sm text-cyan-400/70">All signals</div>
+              </div>
+            </div>
           </div>
 
           {/* Analytics Dashboard */}
