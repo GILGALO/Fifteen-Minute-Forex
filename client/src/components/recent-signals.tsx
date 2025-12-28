@@ -31,12 +31,12 @@ function RecentSignals({ signals }: RecentSignalsProps) {
   };
 
   return (
-    <Card className="h-full bg-slate-900/40 border-white/5 overflow-hidden flex flex-col backdrop-blur-md">
-      <CardHeader className="py-4 md:py-5 px-4 md:px-6 border-b border-white/5 shrink-0">
-        <div className="flex items-center justify-between mb-3 md:mb-4">
-          <CardTitle className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] md:tracking-[0.3em] flex items-center gap-1.5 md:gap-2">
-            <div className="w-1 h-1 md:w-1.5 md:h-1.5 rounded-full bg-emerald-500" />
-            Live Intel
+    <Card className="h-full bg-slate-950/40 border-emerald-500/10 overflow-hidden flex flex-col backdrop-blur-xl shadow-[0_0_50px_rgba(0,0,0,0.3)] ring-1 ring-white/5">
+      <CardHeader className="py-5 md:py-6 px-5 md:px-8 border-b border-white/5 shrink-0 bg-white/5">
+        <div className="flex items-center justify-between mb-4 md:mb-6">
+          <CardTitle className="text-[10px] md:text-xs font-black text-emerald-400 uppercase tracking-[0.4em] flex items-center gap-2 md:gap-3">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
+            Live Intel Signal Feed
           </CardTitle>
           {signals.length > 0 && (
             <div className="text-[9px] md:text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-1.5 md:px-2 py-0.5 rounded border border-emerald-500/20 tracking-widest tabular-nums">
@@ -75,17 +75,29 @@ function RecentSignals({ signals }: RecentSignalsProps) {
             {filteredSignals.map((signal, index) => (
               <motion.div
                 key={signal.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="group relative bg-slate-800/80 border-2 border-white/5 rounded-2xl p-5 hover:border-emerald-500/30 transition-all duration-300"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="group relative bg-slate-900/60 border border-white/10 rounded-3xl p-6 hover:border-emerald-500/40 transition-all duration-500 hover:shadow-[0_0_30px_rgba(16,185,129,0.1)] hover:-translate-y-1"
               >
-                <div className="space-y-3 font-mono">
-                  <div className="flex justify-between items-center border-b border-white/5 pb-2 mb-2">
-                    <span className="text-emerald-400 font-black tracking-tighter uppercase text-[10px] sm:text-sm">NEW SIGNAL ALERT 🚀</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] sm:text-[10px] text-slate-500 font-bold tabular-nums">{signal.confidence}%</span>
-                      {getStatusIcon(signal.status)}
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl" />
+                <div className="space-y-4 font-mono relative z-10">
+                  <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
+                    <div className="flex flex-col">
+                      <span className="text-emerald-400 font-black tracking-tighter uppercase text-[11px] sm:text-sm flex items-center gap-2">
+                        <Zap className="w-3 h-3 fill-emerald-400" />
+                        NEW SIGNAL ALERT
+                      </span>
+                      <span className="text-[8px] text-slate-500 uppercase tracking-widest mt-0.5">Verified Execution ⚡</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] sm:text-xs text-white font-black tabular-nums tracking-wider">{signal.confidence}%</span>
+                        <span className="text-[7px] text-slate-500 uppercase">Confidence</span>
+                      </div>
+                      <div className="p-2 bg-white/5 rounded-xl border border-white/10 group-hover:border-emerald-500/30 transition-colors">
+                        {getStatusIcon(signal.status)}
+                      </div>
                     </div>
                   </div>
                   

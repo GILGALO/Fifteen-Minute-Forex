@@ -127,10 +127,13 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#020817] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden">
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] bg-emerald-600/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse delay-1000" />
+    <div className="min-h-screen bg-[#020617] text-slate-50 font-sans selection:bg-emerald-500/30 relative overflow-x-hidden pb-20">
+      {/* Dynamic Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-20%] right-[-10%] w-[1000px] h-[1000px] bg-emerald-600/10 rounded-full blur-[150px] animate-pulse opacity-50" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[1000px] h-[1000px] bg-blue-600/10 rounded-full blur-[150px] animate-pulse delay-1000 opacity-50" />
+        <div className="absolute top-[40%] left-[30%] w-[600px] h-[600px] bg-indigo-600/5 rounded-full blur-[120px] animate-pulse delay-700" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
       </div>
 
       <div className="mb-4 md:mb-8 relative z-50">
@@ -151,13 +154,13 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
 
       <main className="container mx-auto px-4 py-4 md:px-8 relative z-10">
         <header className="mb-8 md:mb-12">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 md:gap-8 pb-6 md:pb-8 border-b border-white/5 relative">
-            <div className="flex items-center gap-4 md:gap-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 pb-10 border-b border-white/10 relative">
+            <div className="flex items-center gap-6 md:gap-10">
               <div className="relative group shrink-0">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl md:rounded-[2rem] blur-xl md:blur-2xl group-hover:bg-emerald-500/40 transition-all duration-500" />
-                <div className="w-16 h-16 md:w-24 md:h-24 flex items-center justify-center bg-slate-900 border border-white/10 rounded-2xl md:rounded-[2rem] relative overflow-hidden shadow-2xl">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent" />
-                  <TrendingUp className="w-8 h-8 md:w-12 md:h-12 text-emerald-400 relative z-10" />
+                <div className="absolute inset-0 bg-emerald-500/30 rounded-[2.5rem] blur-3xl group-hover:bg-emerald-500/50 transition-all duration-700 animate-pulse" />
+                <div className="w-20 h-20 md:w-28 md:h-28 flex items-center justify-center bg-slate-950 border border-emerald-500/30 rounded-[2.5rem] relative overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.2)] group-hover:border-emerald-500/60 transition-colors duration-500">
+                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/20 via-transparent to-transparent" />
+                  <TrendingUp className="w-10 h-10 md:w-14 md:h-14 text-emerald-400 relative z-10 group-hover:scale-110 transition-transform duration-500" />
                 </div>
               </div>
 
