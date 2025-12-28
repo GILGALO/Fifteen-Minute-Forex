@@ -26,12 +26,13 @@
    - [ ] Win rate, risk/reward ratio, Sharpe ratio calculations
    - [ ] Performance heatmaps by day/hour/pair
 
-💡 Quick Wins (Completed This Week)
+💡 Quick Wins (Completed Dec 28, 2025)
 - [x] TradingView Chart Integration - Instantly makes it more professional
 - [x] Trade History & Statistics - Basic analytics everyone wants
 - [x] Dark/Light Theme Toggle - Functional with localStorage persistence
 - [x] Trading Schedule - Moved to dedicated navigation only
-- [x] Price Level Notifications - Basic visual indicators in UI
+- [x] Price Level Notifications - Functional "Watchtower" system added
+- [x] Technical Indicators UI - SMA, RSI, Trend, and Momentum data added to Engine
 
 ---
 🎯 Current Status: Foundation set. TradingView charts and History UI are live. Theme persistence fixed.

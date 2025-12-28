@@ -18,6 +18,7 @@ const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
 const RecentSignals = lazy(() => import("@/components/recent-signals"));
 const TradingChart = lazy(() => import("@/components/trading-chart"));
+const PriceAlerts = lazy(() => import("@/components/price-alerts"));
 
 interface SessionStats {
   pnl: { profit: number; loss: number; net: number; basisPoints: number };
@@ -461,6 +462,11 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
           </div>
 
           <div className="lg:col-span-5 xl:col-span-4 space-y-4 sm:space-y-6">
+            <ErrorBoundary>
+              <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+                <PriceAlerts currentQuotes={quotesData?.quotes || []} />
+              </Suspense>
+            </ErrorBoundary>
             <ErrorBoundary>
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
                 <SignalGenerator onSignalGenerated={handleSignalGenerated} onPairChange={setActivePair} />

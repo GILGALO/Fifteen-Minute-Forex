@@ -653,22 +653,37 @@ ${lastSignal?.type === "CALL" ? "🟢" : "🔴"} DIRECTION: ${lastSignal?.type =
                 </div>
 
                 {lastAnalysis && (
-                  <div className="grid grid-cols-3 gap-3 mb-5 p-4 glass-panel rounded-xl text-center border border-primary/20">
-                    <div>
-                      <div className="text-xs text-muted-foreground uppercase mb-2 font-bold">RSI</div>
-                      <div className={`font-mono font-black text-lg ${lastAnalysis.technicals.rsi < 30 ? "text-emerald-400" : lastAnalysis.technicals.rsi > 70 ? "text-rose-400" : "text-foreground"}`}>
-                        {lastAnalysis.technicals.rsi.toFixed(1)}
+                  <div className="grid grid-cols-2 gap-3 mb-5">
+                    <div className="grid grid-cols-3 gap-3 col-span-2 mb-2 p-4 glass-panel rounded-xl text-center border border-primary/20">
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase mb-1 font-bold">RSI</div>
+                        <div className={`font-mono font-black text-base ${lastAnalysis.technicals.rsi < 30 ? "text-emerald-400" : lastAnalysis.technicals.rsi > 70 ? "text-rose-400" : "text-foreground"}`}>
+                          {lastAnalysis.technicals.rsi.toFixed(1)}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase mb-1 font-bold">SMA 20/50</div>
+                        <div className="font-bold text-xs text-primary flex flex-col">
+                          <span>{lastAnalysis.technicals.sma20.toFixed(5)}</span>
+                          <span className="opacity-50">{lastAnalysis.technicals.sma50.toFixed(5)}</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-muted-foreground uppercase mb-1 font-bold">Momentum</div>
+                        <div className="font-bold text-xs text-primary">{lastAnalysis.technicals.momentum}</div>
                       </div>
                     </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground uppercase mb-2 font-bold">Trend</div>
-                      <div className={`font-bold ${lastAnalysis.technicals.trend === "BULLISH" ? "text-emerald-400" : lastAnalysis.technicals.trend === "BEARISH" ? "text-rose-400" : "text-yellow-400"}`}>
+                    <div className="col-span-2 p-3 glass-panel rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Activity className="w-3 h-3 text-emerald-400" />
+                        <span className="text-[10px] font-black uppercase text-emerald-400">Trend Status</span>
+                      </div>
+                      <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded ${
+                        lastAnalysis.technicals.trend === "BULLISH" ? "bg-emerald-500 text-slate-950" : 
+                        lastAnalysis.technicals.trend === "BEARISH" ? "bg-rose-500 text-white" : "bg-yellow-500 text-black"
+                      }`}>
                         {lastAnalysis.technicals.trend}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-muted-foreground uppercase mb-2 font-bold">Momentum</div>
-                      <div className="font-bold text-primary">{lastAnalysis.technicals.momentum}</div>
+                      </span>
                     </div>
                   </div>
                 )}
