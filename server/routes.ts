@@ -12,7 +12,24 @@ import {
   type SignalAnalysis,
 } from "./forexService";
 import { sendToTelegram } from "./telegram";
-import { log } from "./index";
+import { sendPushNotification } from "./pushService";
+
+// ... inside registerRoutes
+
+  app.post("/api/push/subscribe", async (req, res) => {
+    try {
+      const { subscription } = req.body;
+      if (!subscription) return res.status(400).json({ error: "Missing subscription" });
+      await storage.addPushSubscription({ subscription });
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update sendToTelegram to also send push
+  const originalSendToTelegram = sendToTelegram;
+  // We'll wrap it or just call push separately in runAutoScan
 import crypto from "crypto";
 
 const FOREX_PAIRS = [
@@ -386,6 +403,12 @@ export async function registerRoutes(
         
         log(`[DISPATCH] 3-MIN WARNING: ${signal.pair} ${signal.signalType} starting at ${startTime}`, "dispatch");
         await sendToTelegram(signalData, signal, true);
+        
+        // Add Push Notification
+        await sendPushNotification(
+          `🚀 SIGNAL: ${signal.pair} ${signal.signalType}`,
+          `Confidence: ${signal.confidence}% | Entry: ${startTime} EAT`
+        );
       }
       
       // Log all signals for review

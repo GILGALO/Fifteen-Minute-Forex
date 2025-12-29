@@ -1,4 +1,4 @@
-import { type User, type InsertUser, trades as tradesTable, type ScannerState, type InsertScannerState } from "@shared/schema";
+import { type User, type InsertUser, trades as tradesTable, type ScannerState, type InsertScannerState, type PushSubscription, type InsertPushSubscription } from "@shared/schema";
 import crypto from "node:crypto";
 
 export type Trade = typeof tradesTable.$inferSelect;
@@ -16,16 +16,21 @@ export interface IStorage {
   deleteTrade(id: string): Promise<boolean>;
   getScannerState(): Promise<ScannerState>;
   updateScannerState(state: Partial<InsertScannerState>): Promise<ScannerState>;
+  addPushSubscription(sub: InsertPushSubscription): Promise<PushSubscription>;
+  getAllPushSubscriptions(): Promise<PushSubscription[]>;
+  removePushSubscription(endpoint: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private trades: Map<string, Trade>;
   private scannerState: ScannerState;
+  private pushSubscriptions: Map<string, PushSubscription>;
 
   constructor() {
     this.users = new Map();
     this.trades = new Map();
+    this.pushSubscriptions = new Map();
     this.scannerState = {
       id: "current",
       autoMode: "false",
@@ -35,6 +40,30 @@ export class MemStorage implements IStorage {
       lastUpdated: new Date()
     };
   }
+
+  // ... (existing methods)
+
+  async addPushSubscription(insertSub: InsertPushSubscription): Promise<PushSubscription> {
+    const id = crypto.randomUUID();
+    const sub: PushSubscription = {
+      id,
+      subscription: insertSub.subscription,
+      createdAt: new Date()
+    };
+    // Use subscription endpoint as key for uniqueness
+    const endpoint = JSON.parse(insertSub.subscription).endpoint;
+    this.pushSubscriptions.set(endpoint, sub);
+    return sub;
+  }
+
+  async getAllPushSubscriptions(): Promise<PushSubscription[]> {
+    return Array.from(this.pushSubscriptions.values());
+  }
+
+  async removePushSubscription(endpoint: string): Promise<void> {
+    this.pushSubscriptions.delete(endpoint);
+  }
+}
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);

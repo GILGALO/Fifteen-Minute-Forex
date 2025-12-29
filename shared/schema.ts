@@ -49,4 +49,16 @@ export const insertScannerStateSchema = createInsertSchema(scannerState).omit({
 });
 
 export type ScannerState = typeof scannerState.$inferSelect;
-export type InsertScannerState = z.infer<typeof insertScannerStateSchema>;
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  subscription: text("subscription").notNull(),
+  createdAt: timestamp("created_at").notNull().default(sql`NOW()`),
+});
+
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
