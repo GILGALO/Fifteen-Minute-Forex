@@ -474,18 +474,9 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                 <SignalGenerator onSignalGenerated={handleSignalGenerated} onPairChange={setActivePair} />
               </Suspense>
             </ErrorBoundary>
-            <div className="block lg:hidden">
-              <div className="h-[350px] sm:h-[400px] md:h-[450px]">
-                <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
-                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                    <TradingChart pair={activePair} theme={theme} />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            </div>
           </div>
 
-          <div className="hidden lg:block lg:col-span-7 xl:col-span-8">
+          <div className="lg:col-span-7 xl:col-span-8">
             <div className="h-[650px] lg:h-[700px] xl:h-[750px] sticky top-4">
               <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
                 <Suspense fallback={<Skeleton className="h-96 w-full" />}>
