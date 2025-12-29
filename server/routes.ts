@@ -752,5 +752,52 @@ export async function registerRoutes(
     }
   });
 
+  // Record trade outcome and update session stats
+  app.post("/api/trades/record", async (req, res) => {
+    try {
+      const { won, profitLoss = 1, pair, entryPrice, exitPrice, positionSize, entryReason, exitReason, notes } = req.body;
+      
+      if (won === undefined) {
+        return res.status(400).json({ error: "Missing 'won' parameter (boolean)" });
+      }
+
+      // Update session tracker with the trade result
+      const { sessionTracker } = await import("./sessionTracker");
+      sessionTracker.recordTrade(won, profitLoss);
+      
+      // Optionally save trade details to storage if all required fields provided
+      if (pair && entryPrice && exitPrice && positionSize && entryReason && exitReason) {
+        const tradeData = {
+          pair,
+          entryPrice: String(entryPrice),
+          exitPrice: String(exitPrice),
+          positionSize: String(positionSize),
+          outcome: won ? "WIN" : "LOSS",
+          entryReason,
+          exitReason,
+          notes
+        };
+        await storage.createTrade(tradeData);
+      }
+
+      const stats = sessionTracker.getStats();
+      const pnl = sessionTracker.getDailyPnL();
+      
+      log(`[TRADE RECORDED] ${won ? "WIN ✅" : "LOSS ❌"} | Profit/Loss: ${profitLoss} | ${pair || "Manual Entry"}`, "trade-record");
+      
+      res.json({ 
+        success: true, 
+        message: `Trade recorded: ${won ? "WIN" : "LOSS"}`,
+        stats,
+        pnl,
+        goalProgress: sessionTracker.getGoalProgress(),
+        hasReachedGoal: sessionTracker.hasReachedDailyGoal(),
+        hasExceededDrawdown: sessionTracker.hasExceededMaxDrawdown()
+      });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
   return httpServer;
 }
