@@ -1,9 +1,10 @@
-import { Home, Settings, Users, LogOut, BarChart3, Calculator, Bell, BookOpen, Clock } from "lucide-react";
+import { Home, Settings, Users, LogOut, BarChart3, Calculator, Bell, BookOpen, Clock, Shield } from "lucide-react";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { motion, AnimatePresence } from "framer-motion";
 
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 

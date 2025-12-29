@@ -537,26 +537,6 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                 {availablePairs.length} ASSETS ONLINE
               </div>
             </div>
-
-            {/* News Event Countdown */}
-            {scanStatus.includes("NEWS EVENT BLOCK") && (
-              <motion.div 
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center justify-between px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-xl"
-              >
-                <div className="flex items-center gap-2">
-                  <Shield className="w-3 h-3 text-red-400 animate-pulse" />
-                  <span className="text-[10px] font-black text-red-400 uppercase tracking-wider">Safety Block Active</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3 h-3 text-red-400" />
-                  <span className="text-[10px] font-mono font-black text-red-400">
-                    {scanStatus.match(/\((\d+)m left\)/)?.[1] ? `${scanStatus.match(/\((\d+)m left\)/)?.[1]} min remaining` : "Auto-lifting shortly..."}
-                  </span>
-                </div>
-              </motion.div>
-            )}
           </div>
 
           <div className="grid grid-cols-2 gap-6">
