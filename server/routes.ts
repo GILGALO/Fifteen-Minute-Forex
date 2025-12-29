@@ -2,15 +2,8 @@ import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertTradeSchema } from "@shared/schema";
-import {
-  getForexQuote,
-  getForexCandles,
-  getAllQuotes,
-  generateSignalAnalysis,
-  analyzeTechnicals,
-  isMarketOpen,
-  type SignalAnalysis,
-} from "./forexService";
+import { getForexQuote, getForexCandles, getAllQuotes, generateSignalAnalysis, analyzeTechnicals, isMarketOpen, type SignalAnalysis } from "./forexService";
+import { isNewsEventTime } from "./newsEvents";
 import { sendToTelegram } from "./telegram";
 import { log } from "./index";
 import crypto from "crypto";
@@ -54,12 +47,14 @@ export async function registerRoutes(
     try {
       const quotes = await getAllQuotes(FOREX_PAIRS, apiKey);
       const { isOpen, nextAction } = isMarketOpen();
+      const newsStatus = isNewsEventTime();
       res.json({ 
         quotes, 
         marketStatus: { 
           isOpen, 
           reason: isOpen ? "MARKETS OPEN" : `MARKETS CLOSED (REOPENS: ${nextAction})` 
-        } 
+        },
+        newsStatus
       });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -508,6 +503,7 @@ export async function registerRoutes(
           confidence: signal.confidence,
           timestamp: Date.now(),
           startTime,
+          endTime: "", // Added to fix LSP error
           status: "active" as const
         };
         

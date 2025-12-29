@@ -14,9 +14,34 @@ import RiskCalculator from "@/pages/risk-calculator";
 import TradeAlerts from "@/pages/trade-alerts";
 import TradingJournal from "@/pages/trading-journal";
 import TradingSchedulePage from "@/pages/trading-schedule";
+import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
+import { AlertCircle, Clock } from "lucide-react";
+
+function NewsCountdown() {
+  const { data } = useQuery<any>({
+    queryKey: ["/api/forex/quotes"],
+    refetchInterval: 30000,
+  });
+
+  if (!data?.newsStatus?.blocked) return null;
+
+  return (
+    <div className="flex items-center gap-2 px-3 py-1 bg-destructive/10 border border-destructive/20 rounded-full animate-pulse">
+      <AlertCircle className="w-3.5 h-3.5 text-destructive" />
+      <div className="flex flex-col">
+        <span className="text-[10px] font-black text-destructive uppercase tracking-tighter leading-none">
+          News Block: {data.newsStatus.event?.name}
+        </span>
+        <span className="text-[9px] font-bold text-destructive/80 tabular-nums">
+          {data.newsStatus.remainingMinutes}m remaining
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function Router({ isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
   return (
@@ -75,8 +100,9 @@ function App() {
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
               <header className="flex items-center justify-between p-2 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-50">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
                   <SidebarTrigger data-testid="button-sidebar-toggle" />
+                  <NewsCountdown />
                 </div>
                 <div className="flex items-center gap-2">
                   <PushNotificationToggle />
