@@ -446,11 +446,11 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const candleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
   ruleChecklist.candleConfirmation = candleConfirmed;
   
-  // Strict overbought/oversold filters to prevent losses in extreme zones
-  // BULLISH: RSI must stay below 70 (avoid overbought reversals), Stochastic K below 75
-  // BEARISH: RSI must stay above 30 (avoid oversold reversals), Stochastic K above 25
-  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 30 && technicals.rsi <= 70) : (technicals.rsi >= 30 && technicals.rsi <= 70);
-  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 75 : technicals.stochastic.k > 25;
+  // Relaxed overbought/oversold filters for higher signal frequency
+  // BULLISH: RSI must stay below 85 (avoid extreme overbought), Stochastic K below 90
+  // BEARISH: RSI must stay above 15 (avoid extreme oversold), Stochastic K above 10
+  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 15 && technicals.rsi <= 85) : (technicals.rsi >= 15 && technicals.rsi <= 85);
+  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 90 : technicals.stochastic.k > 10;
   if (!rsiOk || !stochOk) {
     reasoning.push(`❌ MOMENTUM UNSAFE (RSI/STOCH EXTREME)`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
@@ -462,7 +462,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
-  if (technicals.adx > 30) confidence += 10; else if (technicals.adx < 20) confidence -= 12;
+  if (technicals.adx > 25) confidence += 10; else if (technicals.adx < 15) confidence -= 12;
   // GRADE A+ WIN-RATE VERIFICATION (INSTITUTIONAL PRECISION)
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
   const isPerfectAlignment = indicatorCheck.count === 4; 
