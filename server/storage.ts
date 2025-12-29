@@ -1,5 +1,8 @@
-import { type User, type InsertUser, type Trade, type InsertTrade, type ScannerState, type InsertScannerState } from "@shared/schema";
+import { type User, type InsertUser, trades as tradesTable, type ScannerState, type InsertScannerState } from "@shared/schema";
 import crypto from "node:crypto";
+
+export type Trade = typeof tradesTable.$inferSelect;
+export type InsertTrade = typeof tradesTable.$inferInsert;
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
