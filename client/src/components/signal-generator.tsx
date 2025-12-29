@@ -100,12 +100,49 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
   const [scanStatus, setScanStatus] = useState<string>("Initializing...");
   const [scanAttempts, setScanAttempts] = useState(0);
 
+  // Sync scanner state with backend
+  useEffect(() => {
+    const syncState = async () => {
+      try {
+        const res = await fetch("/api/scanner/state");
+        if (res.ok) {
+          const state = await res.json();
+          setAutoMode(state.autoMode === "true");
+          setScanMode(state.scanMode === "true");
+          setScanStatus(state.scanStatus);
+          if (state.nextSignalTime) {
+            setNextSignalTime(parseInt(state.nextSignalTime));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to sync scanner state:", err);
+      }
+    };
+    syncState();
+    const interval = setInterval(syncState, 10000); // Poll every 10s for cross-device sync
+    return () => clearInterval(interval);
+  }, []);
+
+  const updateRemoteState = async (updates: any) => {
+    try {
+      await fetch("/api/scanner/state", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+    } catch (err) {
+      console.error("Failed to update remote scanner state:", err);
+    }
+  };
+
   const generateSignal = async (isAuto = false) => {
     setIsAnalyzing(true);
     setLastSignal(null);
     setLastAnalysis(null);
     setScanAttempts(0);
-    setScanStatus("Scanning markets...");
+    const initialStatus = "Scanning markets...";
+    setScanStatus(initialStatus);
+    updateRemoteState({ scanStatus: initialStatus });
 
     try {
       let analysisResult: SignalAnalysisResponse | undefined;
@@ -118,7 +155,9 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
       while (localScanAttempts < MAX_RESCAN_ATTEMPTS && !foundGoodSignal) {
         localScanAttempts++;
         setScanAttempts(localScanAttempts);
-        setScanStatus(`Scanning Round ${localScanAttempts}/${MAX_RESCAN_ATTEMPTS}...`);
+        const roundStatus = `Scanning Round ${localScanAttempts}/${MAX_RESCAN_ATTEMPTS}...`;
+        setScanStatus(roundStatus);
+        updateRemoteState({ scanStatus: roundStatus });
         console.log(`Scan attempt: ${localScanAttempts}`);
 
         if (shouldScan) {
@@ -132,23 +171,30 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           
           // Check if we got any valid signals
           if (!scanData.bestSignal || scanData.bestSignal.confidence === 0) {
-            setScanStatus(`Round ${localScanAttempts} Complete: No signal found`);
+            const noSignalStatus = `Round ${localScanAttempts} Complete: No signal found`;
+            setScanStatus(noSignalStatus);
+            updateRemoteState({ scanStatus: noSignalStatus });
             console.log(`Rescan ${localScanAttempts}/${MAX_RESCAN_ATTEMPTS}: No valid signals found`);
             
             if (localScanAttempts >= MAX_RESCAN_ATTEMPTS) {
-              setScanStatus("Scan finished: No high-probability setups");
+              const finishedStatus = "Scan finished: No high-probability setups";
+              setScanStatus(finishedStatus);
+              updateRemoteState({ scanStatus: finishedStatus });
               console.log('Max rescans reached, scheduling next attempt');
               // Keep timer running
               if (isAuto) {
                 const nextScan = Date.now() + (7 * 60 * 1000);
                 setNextSignalTime(nextScan);
+                updateRemoteState({ nextSignalTime: nextScan.toString() });
               }
               setIsAnalyzing(false);
               return; // Exit gracefully
             }
             
             // Wait before next rescan
-            setScanStatus(`Rescanning markets (${localScanAttempts + 1}/${MAX_RESCAN_ATTEMPTS})...`);
+            const rescanningStatus = `Rescanning markets (${localScanAttempts + 1}/${MAX_RESCAN_ATTEMPTS})...`;
+            setScanStatus(rescanningStatus);
+            updateRemoteState({ scanStatus: rescanningStatus });
             await new Promise(resolve => setTimeout(resolve, 2000));
             continue;
           }
@@ -158,7 +204,9 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           setSelectedPair(currentPair);
           onPairChange(currentPair);
         } else {
-          setScanStatus(`Analyzing ${currentPair}...`);
+          const analyzingStatus = `Analyzing ${currentPair}...`;
+          setScanStatus(analyzingStatus);
+          updateRemoteState({ scanStatus: analyzingStatus });
           const response = await fetch('/api/forex/signal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -174,16 +222,23 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
 
         if (analysisResult && analysisResult.confidence >= MIN_CONFIDENCE_THRESHOLD) {
           foundGoodSignal = true;
-          setScanStatus("Signal Verified!");
+          const verifiedStatus = "Signal Verified!";
+          setScanStatus(verifiedStatus);
+          updateRemoteState({ scanStatus: verifiedStatus });
         } else {
-          setScanStatus(`Low confidence (${analysisResult?.confidence || 0}%), retrying...`);
+          const retryStatus = `Low confidence (${analysisResult?.confidence || 0}%), retrying...`;
+          setScanStatus(retryStatus);
+          updateRemoteState({ scanStatus: retryStatus });
           console.log(`Low confidence (${analysisResult?.confidence || 0}%), rescanning...`);
           if (localScanAttempts >= MAX_RESCAN_ATTEMPTS) {
-            setScanStatus("Scan finished: No high-probability setups");
+            const finishedStatus = "Scan finished: No high-probability setups";
+            setScanStatus(finishedStatus);
+            updateRemoteState({ scanStatus: finishedStatus });
             // Keep timer running instead of exiting
             if (isAuto) {
               const nextScan = Date.now() + (7 * 60 * 1000);
               setNextSignalTime(nextScan);
+              updateRemoteState({ nextSignalTime: nextScan.toString() });
             }
             break; // Exit rescan loop but continue execution
           }
@@ -198,6 +253,7 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
         if (isAuto) {
           const nextScan = Date.now() + (7 * 60 * 1000);
           setNextSignalTime(nextScan);
+          updateRemoteState({ nextSignalTime: nextScan.toString() });
         }
         
         setIsAnalyzing(false);
@@ -370,7 +426,10 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                 </div>
                 <div className="flex items-center gap-4">
                   {autoMode && <Countdown />}
-                  <Switch id="auto-mode" checked={autoMode} onCheckedChange={setAutoMode} className="data-[state=checked]:bg-emerald-500" />
+                  <Switch id="auto-mode" checked={autoMode} onCheckedChange={(checked) => {
+                    setAutoMode(checked);
+                    updateRemoteState({ autoMode: checked.toString() });
+                  }} className="data-[state=checked]:bg-emerald-500" />
                 </div>
               </div>
             </motion.div>
@@ -391,7 +450,10 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
                     Global Asset Scanner
                   </Label>
                 </div>
-                <Switch id="scan-mode" checked={scanMode} onCheckedChange={setScanMode} className="scale-90 data-[state=checked]:bg-emerald-500" />
+                <Switch id="scan-mode" checked={scanMode} onCheckedChange={(checked) => {
+                  setScanMode(checked);
+                  updateRemoteState({ scanMode: checked.toString() });
+                }} className="scale-90 data-[state=checked]:bg-emerald-500" />
               </motion.div>
             )}
           </AnimatePresence>

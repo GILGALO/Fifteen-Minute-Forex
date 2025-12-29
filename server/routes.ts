@@ -81,6 +81,24 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/scanner/state", async (req, res) => {
+    try {
+      const state = await storage.getScannerState();
+      res.json(state);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/scanner/state", async (req, res) => {
+    try {
+      const state = await storage.updateScannerState(req.body);
+      res.json(state);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/forex/signal", async (req, res) => {
     try {
       const { pair, timeframe } = req.body;

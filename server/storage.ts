@@ -1,6 +1,9 @@
 import { type User, type InsertUser, type Trade, type InsertTrade } from "@shared/schema";
 import crypto from "node:crypto";
 
+import { type User, type InsertUser, type Trade, type InsertTrade, type ScannerState, type InsertScannerState } from "@shared/schema";
+import crypto from "node:crypto";
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -11,16 +14,43 @@ export interface IStorage {
   createTrade(trade: InsertTrade): Promise<Trade>;
   listTrades(): Promise<Trade[]>;
   deleteTrade(id: string): Promise<boolean>;
+  getScannerState(): Promise<ScannerState>;
+  updateScannerState(state: Partial<InsertScannerState>): Promise<ScannerState>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private trades: Map<string, Trade>;
+  private scannerState: ScannerState;
 
   constructor() {
     this.users = new Map();
     this.trades = new Map();
+    this.scannerState = {
+      id: "current",
+      autoMode: "false",
+      scanMode: "true",
+      nextSignalTime: null,
+      scanStatus: "Initializing...",
+      lastUpdated: new Date()
+    };
   }
+
+  // ... (existing methods)
+
+  async getScannerState(): Promise<ScannerState> {
+    return this.scannerState;
+  }
+
+  async updateScannerState(state: Partial<InsertScannerState>): Promise<ScannerState> {
+    this.scannerState = {
+      ...this.scannerState,
+      ...state,
+      lastUpdated: new Date()
+    } as ScannerState;
+    return this.scannerState;
+  }
+}
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);

@@ -35,5 +35,18 @@ export const insertTradeSchema = createInsertSchema(trades).omit({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
-export type InsertTrade = z.infer<typeof insertTradeSchema>;
-export type Trade = typeof trades.$inferSelect;
+export const scannerState = pgTable("scanner_state", {
+  id: varchar("id").primaryKey().default("current"),
+  autoMode: text("auto_mode").notNull().default("false"),
+  scanMode: text("scan_mode").notNull().default("true"),
+  nextSignalTime: numeric("next_signal_time"),
+  scanStatus: text("scan_status").notNull().default("Initializing..."),
+  lastUpdated: timestamp("last_updated").notNull().default(sql`NOW()`),
+});
+
+export const insertScannerStateSchema = createInsertSchema(scannerState).omit({
+  lastUpdated: true,
+});
+
+export type ScannerState = typeof scannerState.$inferSelect;
+export type InsertScannerState = z.infer<typeof insertScannerStateSchema>;
