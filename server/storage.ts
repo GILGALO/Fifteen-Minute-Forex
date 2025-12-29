@@ -1,6 +1,3 @@
-import { type User, type InsertUser, type Trade, type InsertTrade } from "@shared/schema";
-import crypto from "node:crypto";
-
 import { type User, type InsertUser, type Trade, type InsertTrade, type ScannerState, type InsertScannerState } from "@shared/schema";
 import crypto from "node:crypto";
 
@@ -35,22 +32,6 @@ export class MemStorage implements IStorage {
       lastUpdated: new Date()
     };
   }
-
-  // ... (existing methods)
-
-  async getScannerState(): Promise<ScannerState> {
-    return this.scannerState;
-  }
-
-  async updateScannerState(state: Partial<InsertScannerState>): Promise<ScannerState> {
-    this.scannerState = {
-      ...this.scannerState,
-      ...state,
-      lastUpdated: new Date()
-    } as ScannerState;
-    return this.scannerState;
-  }
-}
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
@@ -107,6 +88,19 @@ export class MemStorage implements IStorage {
 
   async deleteTrade(id: string): Promise<boolean> {
     return this.trades.delete(id);
+  }
+
+  async getScannerState(): Promise<ScannerState> {
+    return this.scannerState;
+  }
+
+  async updateScannerState(state: Partial<InsertScannerState>): Promise<ScannerState> {
+    this.scannerState = {
+      ...this.scannerState,
+      ...state,
+      lastUpdated: new Date()
+    } as ScannerState;
+    return this.scannerState;
   }
 }
 
