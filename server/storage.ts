@@ -41,30 +41,6 @@ export class MemStorage implements IStorage {
     };
   }
 
-  // ... (existing methods)
-
-  async addPushSubscription(insertSub: InsertPushSubscription): Promise<PushSubscription> {
-    const id = crypto.randomUUID();
-    const sub: PushSubscription = {
-      id,
-      subscription: insertSub.subscription,
-      createdAt: new Date()
-    };
-    // Use subscription endpoint as key for uniqueness
-    const endpoint = JSON.parse(insertSub.subscription).endpoint;
-    this.pushSubscriptions.set(endpoint, sub);
-    return sub;
-  }
-
-  async getAllPushSubscriptions(): Promise<PushSubscription[]> {
-    return Array.from(this.pushSubscriptions.values());
-  }
-
-  async removePushSubscription(endpoint: string): Promise<void> {
-    this.pushSubscriptions.delete(endpoint);
-  }
-}
-
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
   }
@@ -133,6 +109,31 @@ export class MemStorage implements IStorage {
       lastUpdated: new Date()
     } as ScannerState;
     return this.scannerState;
+  }
+
+  async addPushSubscription(insertSub: InsertPushSubscription): Promise<PushSubscription> {
+    const id = crypto.randomUUID();
+    const sub: PushSubscription = {
+      id,
+      subscription: insertSub.subscription,
+      createdAt: new Date()
+    };
+    try {
+      const parsed = JSON.parse(insertSub.subscription);
+      const endpoint = parsed.endpoint;
+      this.pushSubscriptions.set(endpoint, sub);
+    } catch (e) {
+      this.pushSubscriptions.set(id, sub);
+    }
+    return sub;
+  }
+
+  async getAllPushSubscriptions(): Promise<PushSubscription[]> {
+    return Array.from(this.pushSubscriptions.values());
+  }
+
+  async removePushSubscription(endpoint: string): Promise<void> {
+    this.pushSubscriptions.delete(endpoint);
   }
 }
 

@@ -16,6 +16,7 @@ import TradingJournal from "@/pages/trading-journal";
 import TradingSchedulePage from "@/pages/trading-schedule";
 import { apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PushNotificationToggle } from "@/components/push-notification-toggle";
 
 function Router({ isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
   return (
@@ -73,6 +74,15 @@ function App() {
           <div className="flex h-screen w-full overflow-hidden">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
+              <header className="flex items-center justify-between p-2 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-50">
+                <div className="flex items-center gap-2">
+                  <SidebarTrigger data-testid="button-sidebar-toggle" />
+                </div>
+                <div className="flex items-center gap-2">
+                  <PushNotificationToggle />
+                  <ThemeToggle />
+                </div>
+              </header>
               <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
                 <Router isAuthenticated={true} isAdmin={isAdmin} />
               </main>

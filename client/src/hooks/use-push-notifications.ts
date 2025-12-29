@@ -6,7 +6,7 @@ const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "BNvXf9_8-T-R_
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
-  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -17,15 +17,20 @@ export function usePushNotifications() {
   }, []);
 
   async function checkSubscription() {
-    const registration = await navigator.serviceWorker.ready;
-    const sub = await registration.pushManager.getSubscription();
-    setSubscription(sub);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.getSubscription();
+      setIsSubscribed(!!sub);
+    } catch (error) {
+      console.error('Error checking push subscription:', error);
+    }
   }
 
   async function subscribe() {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
+      // Register service worker if not already registered
+      await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.ready;
 
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
@@ -36,7 +41,7 @@ export function usePushNotifications() {
         subscription: JSON.stringify(sub)
       });
 
-      setSubscription(sub);
+      setIsSubscribed(true);
       toast({
         title: "Notifications Enabled",
         description: "You will now receive signal alerts on your device."
@@ -52,12 +57,21 @@ export function usePushNotifications() {
   }
 
   async function unsubscribe() {
-    if (subscription) {
-      await subscription.unsubscribe();
-      setSubscription(null);
-      // Optional: Inform backend
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.getSubscription();
+      if (sub) {
+        await sub.unsubscribe();
+        setIsSubscribed(false);
+        toast({
+          title: "Notifications Disabled",
+          description: "You will no longer receive signal alerts."
+        });
+      }
+    } catch (error) {
+      console.error('Push unsubscribe failed:', error);
     }
   }
 
-  return { isSupported, isSubscribed: !!subscription, subscribe, unsubscribe };
+  return { isSupported, isSubscribed, subscribe, unsubscribe };
 }
