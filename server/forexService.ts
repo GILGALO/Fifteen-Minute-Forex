@@ -2,6 +2,8 @@ import { log } from "./index";
 import { logTrade, getPerformanceStats, getBestPerformingSetups } from "./tradeLog";
 import { isNewsEventTime } from "./newsEvents";
 import { sessionTracker } from "./sessionTracker";
+import { detectPatterns, type PatternScore } from "./ml/patternRecognizer";
+import { analyzeSentiment, getSentimentExplanation, type SentimentScore } from "./ml/sentimentAnalyzer";
 
 export interface ForexQuote {
   pair: string;
@@ -116,6 +118,9 @@ export interface SignalAnalysis {
   technicals: TechnicalAnalysis;
   reasoning: string[];
   ruleChecklist: RuleChecklist;
+  mlPatternScore?: PatternScore;
+  sentimentScore?: SentimentScore;
+  mlConfidenceBoost?: number;
 }
 
 interface RuleChecklist {
@@ -487,11 +492,29 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const stopLoss = signalType === "CALL" ? currentPrice - slPips : currentPrice + slPips;
   const takeProfit = signalType === "CALL" ? currentPrice + slPips * 1.5 : currentPrice - slPips * 1.5;
 
-  confidence = Math.min(95, Math.max(0, confidence));
+  // ===== ML & SENTIMENT ANALYSIS =====
+  const mlPatternScore = detectPatterns(candles);
+  const sentimentScore = analyzeSentiment(technicals);
+  
+  // Calculate ML confidence boost
+  const patternBias = mlPatternScore.direction === m5Trend ? Math.abs(mlPatternScore.overallScore) / 10 : -Math.abs(mlPatternScore.overallScore) / 10;
+  const sentimentBias = sentimentScore.overallSentiment > 0 && signalType === "CALL" ? Math.abs(sentimentScore.overallSentiment) / 10 : sentimentScore.overallSentiment < 0 && signalType === "PUT" ? Math.abs(sentimentScore.overallSentiment) / 10 : -10;
+  const mlConfidenceBoost = Math.round((patternBias + sentimentBias) / 2);
+  
+  // Add ML insights to reasoning
+  if (mlPatternScore.direction === m5Trend) {
+    reasoning.push(`✅ ML PATTERN: ${mlPatternScore.direction} (Score: ${mlPatternScore.overallScore})`);
+  } else {
+    reasoning.push(`⚠️ ML PATTERN DIVERGENCE: ${mlPatternScore.direction} vs Trend`);
+  }
+  reasoning.push(`📊 SENTIMENT: ${getSentimentExplanation(sentimentScore).split(" - ")[0]}`);
+  
+  // Apply ML boost to confidence
+  confidence = Math.min(98, Math.max(0, confidence + mlConfidenceBoost));
   if (confidence < sessionThreshold) confidence = Math.max(sessionThreshold - 5, confidence);
-  reasoning.push(`Grade ${signalGrade} | Confidence: ${confidence}%`);
+  reasoning.push(`Grade ${signalGrade} | ML Confidence: ${confidence}%`);
 
-  return { pair, currentPrice, signalType, confidence, signalGrade, entry: currentPrice, stopLoss, takeProfit, technicals, reasoning, ruleChecklist };
+  return { pair, currentPrice, signalType, confidence, signalGrade, entry: currentPrice, stopLoss, takeProfit, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
 }
 
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
