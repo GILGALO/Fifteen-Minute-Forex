@@ -38,3 +38,9 @@ externalPort = 80
 deploymentTarget = "autoscale"
 run = ["node", "./dist/index.cjs"]
 build = ["npm", "run", "build"]
+
+[userenv]
+
+[userenv.shared]
+VAPID_PRIVATE_KEY = "Nva93hmk6AZqkgwYTr2bckKsHS1Bl3dQkDwHM5kzWpc"
+VITE_VAPID_PUBLIC_KEY = "BGiM1pgb9sb7pOCtbY2OuEfNWIjyOT6xH7xCxCERnuSuwx4lDevoDAab-V6N8yLy1XAJYOWVVxe8y4H98PgJYl0"
