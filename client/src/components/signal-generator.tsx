@@ -24,6 +24,30 @@ interface TechnicalAnalysis {
   momentum: "STRONG" | "MODERATE" | "WEAK";
 }
 
+interface PatternScore {
+  bullishEngulfing: number;
+  bearishEngulfing: number;
+  morningDoji: number;
+  eveningDoji: number;
+  hammerPattern: number;
+  hangingMan: number;
+  threeSoldiers: number;
+  threeCrows: number;
+  overallScore: number;
+  direction: "BULLISH" | "BEARISH" | "NEUTRAL";
+}
+
+interface SentimentScore {
+  rsiSentiment: number;
+  macdSentiment: number;
+  stochasticSentiment: number;
+  trendSentiment: number;
+  volatilitySentiment: number;
+  momentumSentiment: number;
+  adxStrength: number;
+  overallSentiment: number;
+}
+
 interface SignalAnalysisResponse {
   pair: string;
   currentPrice: number;
@@ -34,6 +58,9 @@ interface SignalAnalysisResponse {
   takeProfit: number;
   technicals: TechnicalAnalysis;
   reasoning: string[];
+  mlPatternScore?: PatternScore;
+  sentimentScore?: SentimentScore;
+  mlConfidenceBoost?: number;
 }
 
 export default function SignalGenerator({ onSignalGenerated, onPairChange }: SignalGeneratorProps) {

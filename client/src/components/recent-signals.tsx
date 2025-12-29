@@ -2,17 +2,49 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Signal } from "@/lib/constants";
 import { format } from "date-fns";
-import { TrendingUp, TrendingDown, Clock, CheckCircle2, XCircle, Timer, Activity, Filter, Zap } from "lucide-react";
-import { motion } from "framer-motion";
+import { TrendingUp, TrendingDown, Clock, CheckCircle2, XCircle, Timer, Activity, Filter, Zap, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import MLConfidenceBreakdown from "./ml-confidence-breakdown";
+
+interface PatternScore {
+  bullishEngulfing: number;
+  bearishEngulfing: number;
+  morningDoji: number;
+  eveningDoji: number;
+  hammerPattern: number;
+  hangingMan: number;
+  threeSoldiers: number;
+  threeCrows: number;
+  overallScore: number;
+  direction: "BULLISH" | "BEARISH" | "NEUTRAL";
+}
+
+interface SentimentScore {
+  rsiSentiment: number;
+  macdSentiment: number;
+  stochasticSentiment: number;
+  trendSentiment: number;
+  volatilitySentiment: number;
+  momentumSentiment: number;
+  adxStrength: number;
+  overallSentiment: number;
+}
+
+interface SignalWithML extends Signal {
+  mlPatternScore?: PatternScore;
+  sentimentScore?: SentimentScore;
+  mlConfidenceBoost?: number;
+}
 
 interface RecentSignalsProps {
-  signals: Signal[];
+  signals: SignalWithML[];
 }
 
 function RecentSignals({ signals }: RecentSignalsProps) {
   const [filter, setFilter] = useState<'all' | 'active' | 'won' | 'lost'>('all');
+  const [expandedSignal, setExpandedSignal] = useState<string | null>(null);
 
   const filteredSignals = signals.filter(signal => {
     if (filter === 'all') return true;
@@ -126,10 +158,49 @@ function RecentSignals({ signals }: RecentSignalsProps) {
                     </div>
                   </div>
 
-                  <div className="pt-3 mt-2 border-t border-white/5 flex justify-between items-center opacity-60">
-                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Confidence: {signal.confidence}%</span>
-                    <span className="text-[9px] text-emerald-500/70 font-black uppercase tracking-widest">Verified ⚡</span>
+                  <div className="pt-3 mt-2 border-t border-white/5 space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Confidence: {signal.confidence}%</span>
+                      <span className="text-[9px] text-emerald-500/70 font-black uppercase tracking-widest">Verified ⚡</span>
+                    </div>
+
+                    {/* ML Insights Button */}
+                    {signal.mlPatternScore && signal.sentimentScore && (
+                      <motion.button
+                        onClick={() => setExpandedSignal(expandedSignal === signal.id ? null : signal.id)}
+                        className="w-full flex items-center justify-between text-[9px] font-black text-purple-400 uppercase tracking-wider hover:text-purple-300 transition-colors pt-1"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <span>ML Analysis Breakdown</span>
+                        <motion.div
+                          animate={{ rotate: expandedSignal === signal.id ? 180 : 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </motion.div>
+                      </motion.button>
+                    )}
                   </div>
+
+                  {/* ML Confidence Breakdown */}
+                  <AnimatePresence>
+                    {expandedSignal === signal.id && signal.mlPatternScore && signal.sentimentScore && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="pt-3 mt-3 border-t border-white/10"
+                      >
+                        <MLConfidenceBreakdown
+                          patternScore={signal.mlPatternScore}
+                          sentimentScore={signal.sentimentScore}
+                          mlConfidenceBoost={signal.mlConfidenceBoost}
+                          signalType={signal.type}
+                        />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </motion.div>
             ))}
