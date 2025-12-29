@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "BNvXf9_8-T-R_0G5Z-Jv1jW-C_uO_t-E_t-Q_t-Q_t-Q_t-Q_t-Q_t-Q_t-Q_t-Q_t-Q_t-Q_t-Q";
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || "BGiM1pgb9sb7pOCtbY2OuEfNWIjyOT6xH7xCxCERnuSuwx4lDevoDAab-V6N8yLy1XAJYOWVVxe8y4H98PgJYl0";
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
