@@ -18,6 +18,9 @@ A professional rule-based Forex trading signal system for 5-minute trades with M
   - Stochastic Oscillator
   - ADX (Average Directional Index)
   - ATR (Average True Range)
+  - Williams %R
+  - Ichimoku Cloud Components
+  - Parabolic SAR
 - **Candle Pattern Detection**: Engulfing, Doji, Hammer, Shooting Star, etc.
 - **Telegram Integration**: Sends detailed signals to Telegram channel
 
@@ -31,6 +34,7 @@ A professional rule-based Forex trading signal system for 5-minute trades with M
 - **Benefit**: Filters weak signals but allows good opportunities (2x more signals)
 - **Previous**: Required all 3 (3/3 only) → Now allows 2/3 and 3/3
 - **Expected Impact**: 2-3x more signals, maintains 80-85% accuracy
+- **Expanded Indicators**: Now aligns over 20+ technical indicators including Williams %R and Parabolic SAR.
 
 ### 2. **Session-Based Confidence Thresholds** (Adaptive Filtering)
 - **MORNING (7-12 EAT)**: Minimum 65% confidence → Most signals, best accuracy
