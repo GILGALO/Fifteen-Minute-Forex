@@ -97,22 +97,29 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
     }
   };
 
+  const [scanStatus, setScanStatus] = useState<string>("Initializing...");
+  const [scanAttempts, setScanAttempts] = useState(0);
+
   const generateSignal = async (isAuto = false) => {
     setIsAnalyzing(true);
     setLastSignal(null);
     setLastAnalysis(null);
+    setScanAttempts(0);
+    setScanStatus("Scanning markets...");
 
     try {
       let analysisResult: SignalAnalysisResponse | undefined;
       let currentPair = selectedPair;
-      let scanAttempts = 0;
+      let localScanAttempts = 0;
       let foundGoodSignal = false;
 
       const shouldScan = isAuto ? scanMode : !manualMode;
 
-      while (scanAttempts < MAX_RESCAN_ATTEMPTS && !foundGoodSignal) {
-        scanAttempts++;
-        console.log(`Scan attempt: ${scanAttempts}`);
+      while (localScanAttempts < MAX_RESCAN_ATTEMPTS && !foundGoodSignal) {
+        localScanAttempts++;
+        setScanAttempts(localScanAttempts);
+        setScanStatus(`Scanning Round ${localScanAttempts}/${MAX_RESCAN_ATTEMPTS}...`);
+        console.log(`Scan attempt: ${localScanAttempts}`);
 
         if (shouldScan) {
           const scanResponse = await fetch('/api/forex/scan', {
@@ -125,9 +132,11 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           
           // Check if we got any valid signals
           if (!scanData.bestSignal || scanData.bestSignal.confidence === 0) {
-            console.log(`Rescan ${scanAttempts}/${MAX_RESCAN_ATTEMPTS}: No valid signals found`);
+            setScanStatus(`Round ${localScanAttempts} Complete: No signal found`);
+            console.log(`Rescan ${localScanAttempts}/${MAX_RESCAN_ATTEMPTS}: No valid signals found`);
             
-            if (scanAttempts >= MAX_RESCAN_ATTEMPTS) {
+            if (localScanAttempts >= MAX_RESCAN_ATTEMPTS) {
+              setScanStatus("Scan finished: No high-probability setups");
               console.log('Max rescans reached, scheduling next attempt');
               // Keep timer running
               if (isAuto) {
@@ -139,6 +148,7 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
             }
             
             // Wait before next rescan
+            setScanStatus(`Rescanning markets (${localScanAttempts + 1}/${MAX_RESCAN_ATTEMPTS})...`);
             await new Promise(resolve => setTimeout(resolve, 2000));
             continue;
           }
@@ -148,6 +158,7 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           setSelectedPair(currentPair);
           onPairChange(currentPair);
         } else {
+          setScanStatus(`Analyzing ${currentPair}...`);
           const response = await fetch('/api/forex/signal', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -163,9 +174,12 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
 
         if (analysisResult && analysisResult.confidence >= MIN_CONFIDENCE_THRESHOLD) {
           foundGoodSignal = true;
+          setScanStatus("Signal Verified!");
         } else {
+          setScanStatus(`Low confidence (${analysisResult?.confidence || 0}%), retrying...`);
           console.log(`Low confidence (${analysisResult?.confidence || 0}%), rescanning...`);
-          if (scanAttempts >= MAX_RESCAN_ATTEMPTS) {
+          if (localScanAttempts >= MAX_RESCAN_ATTEMPTS) {
+            setScanStatus("Scan finished: No high-probability setups");
             // Keep timer running instead of exiting
             if (isAuto) {
               const nextScan = Date.now() + (7 * 60 * 1000);
@@ -454,10 +468,15 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
             >
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
               {isAnalyzing ? (
-                <span className="flex items-center gap-3 relative z-10">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  NEURAL ANALYSIS IN PROGRESS...
-                </span>
+                <div className="flex flex-col items-center gap-1 relative z-10">
+                  <span className="flex items-center gap-3">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    ANALYZING...
+                  </span>
+                  <span className="text-[9px] font-bold text-slate-950/70 tracking-tighter">
+                    {scanStatus}
+                  </span>
+                </div>
               ) : autoMode ? (
                 <span className="flex items-center gap-3 relative z-10">
                   <Zap className="w-6 h-6 fill-slate-950" />
