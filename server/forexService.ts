@@ -71,8 +71,8 @@ const SESSION_PAIRS = {
   LONDON_NY_OVERLAP: ["GBP/USD", "EUR/USD", "GBP/JPY", "EUR/JPY"]
 };
 
-const HIGH_ACCURACY_PAIRS = ["GBP/USD", "EUR/JPY", "USD/JPY", "USD/CAD", "GBP/JPY"];
-const MEDIUM_ACCURACY_PAIRS = ["EUR/USD", "AUD/USD", "EUR/AUD", "EUR/GBP"];
+const HIGH_ACCURACY_PAIRS = ["GBP/USD", "EUR/JPY", "USD/JPY", "USD/CAD", "GBP/JPY", "CAD/JPY"];
+const MEDIUM_ACCURACY_PAIRS = ["EUR/USD", "AUD/USD", "EUR/AUD", "EUR/GBP", "EUR/CAD"];
 const LOW_ACCURACY_PAIRS = ["USD/CHF", "AUD/JPY", "NZD/USD"];
 
 const TIMEFRAME = "5min";
@@ -146,6 +146,8 @@ const FOREX_PAIR_MAP: Record<string, { from: string; to: string }> = {
   "GBP/JPY": { from: "GBP", to: "JPY" },
   "AUD/JPY": { from: "AUD", to: "JPY" },
   "EUR/AUD": { from: "EUR", to: "AUD" },
+  "CAD/JPY": { from: "CAD", to: "JPY" },
+  "EUR/CAD": { from: "EUR", to: "CAD" },
 };
 
 const priceCache: Map<string, { data: ForexQuote; timestamp: number }> = new Map();
@@ -221,7 +223,7 @@ export async function getForexCandles(pair: string, interval: string = "5min", a
 }
 
 function getBasePriceForPair(pair: string): number {
-  const basePrices: Record<string, number> = { "EUR/USD": 1.0850, "GBP/USD": 1.2650, "USD/JPY": 149.50, "USD/CHF": 0.8850, "AUD/USD": 0.6550, "USD/CAD": 1.3650, "NZD/USD": 0.6050, "EUR/GBP": 0.8580, "EUR/JPY": 162.20, "GBP/JPY": 189.10, "AUD/JPY": 97.90, "EUR/AUD": 1.6560 };
+  const basePrices: Record<string, number> = { "EUR/USD": 1.0850, "GBP/USD": 1.2650, "USD/JPY": 149.50, "USD/CHF": 0.8850, "AUD/USD": 0.6550, "USD/CAD": 1.3650, "NZD/USD": 0.6050, "EUR/GBP": 0.8580, "EUR/JPY": 162.20, "GBP/JPY": 189.10, "AUD/JPY": 97.90, "EUR/AUD": 1.6560, "CAD/JPY": 109.50, "EUR/CAD": 1.4850 };
   return basePrices[pair] || 1.0;
 }
 
