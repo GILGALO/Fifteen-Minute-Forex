@@ -2,6 +2,11 @@ import { Home, Settings, Users, LogOut, BarChart3, Calculator, Bell, BookOpen, C
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { lazy, Suspense } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const MarketTicker = lazy(() => import("@/components/market-ticker"));
+
 import {
   Sidebar,
   SidebarContent,
@@ -70,6 +75,12 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
   return (
     <Sidebar className="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-r border-slate-700/50 z-40">
       <SidebarContent className="flex flex-col h-full">
+        <div className="sm:hidden mt-2 px-2">
+          <Suspense fallback={<Skeleton className="h-8 w-full" />}>
+            <MarketTicker />
+          </Suspense>
+        </div>
+
         <SidebarGroup>
           <div className="flex items-center justify-center p-3 mb-2">
             <span className="text-xl sm:text-2xl font-bold text-white text-center" data-testid="logo-gilgalo">GILGALO</span>
