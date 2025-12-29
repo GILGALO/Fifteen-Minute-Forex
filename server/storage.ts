@@ -33,10 +33,10 @@ export class MemStorage implements IStorage {
     this.pushSubscriptions = new Map();
     this.scannerState = {
       id: "current",
-      autoMode: "false",
+      autoMode: "true",
       scanMode: "true",
       nextSignalTime: null,
-      scanStatus: "Initializing...",
+      scanStatus: "Active: Watching Markets...",
       lastUpdated: new Date()
     };
   }
