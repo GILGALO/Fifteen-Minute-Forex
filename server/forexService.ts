@@ -447,12 +447,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   ruleChecklist.candleConfirmation = candleConfirmed;
   
   // Strict overbought/oversold filters to prevent losses in extreme zones
-  // BULLISH: RSI must stay below 75 (avoid overbought reversals), Stochastic K below 80
-  // BEARISH: RSI must stay above 25 (avoid oversold reversals), Stochastic K above 20
-  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 25 && technicals.rsi <= 75) : (technicals.rsi >= 25 && technicals.rsi <= 75);
-  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 80 : technicals.stochastic.k > 20;
+  // BULLISH: RSI must stay below 70 (avoid overbought reversals), Stochastic K below 75
+  // BEARISH: RSI must stay above 30 (avoid oversold reversals), Stochastic K above 25
+  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 30 && technicals.rsi <= 70) : (technicals.rsi >= 30 && technicals.rsi <= 70);
+  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 75 : technicals.stochastic.k > 25;
   if (!rsiOk || !stochOk) {
-    reasoning.push(`❌ MOMENTUM UNSAFE`);
+    reasoning.push(`❌ MOMENTUM UNSAFE (RSI/STOCH EXTREME)`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
