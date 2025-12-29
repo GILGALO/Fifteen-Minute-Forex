@@ -126,6 +126,7 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
 
   const [scanStatus, setScanStatus] = useState<string>("Initializing...");
   const [scanAttempts, setScanAttempts] = useState(0);
+  const [newsBlockInfo, setNewsBlockInfo] = useState<{ name: string; remainingMinutes: number } | null>(null);
 
   // Sync scanner state with backend
   useEffect(() => {
@@ -139,6 +140,21 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           setScanStatus(state.scanStatus);
           if (state.nextSignalTime) {
             setNextSignalTime(parseInt(state.nextSignalTime));
+          }
+          
+          // Capture news block info from scan status or reasoning if available
+          if (state.scanStatus?.includes("NEWS EVENT BLOCK")) {
+            const match = state.scanStatus.match(/BLOCK: (.*)/);
+            if (match) {
+              // We'll calculate remaining time on the backend soon, 
+              // for now we'll just show the name and let the interval handle updates
+              setNewsBlockInfo(prev => ({ 
+                name: match[1], 
+                remainingMinutes: prev?.remainingMinutes || 30 
+              }));
+            }
+          } else {
+            setNewsBlockInfo(null);
           }
         }
       } catch (err) {
@@ -509,16 +525,38 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
             </motion.div>
           )}
 
-          <div className="glass-panel p-4 rounded-[1.25rem] border border-emerald-500/30 flex items-center justify-between shadow-xl bg-gradient-to-r from-emerald-500/10 to-transparent">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <Globe className="w-4 h-4 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+          <div className="glass-panel p-4 rounded-[1.25rem] border border-emerald-500/30 flex flex-col gap-3 shadow-xl bg-gradient-to-r from-emerald-500/10 to-transparent">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-emerald-500/20 rounded-lg">
+                  <Globe className="w-4 h-4 text-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.5)]" />
+                </div>
+                <span className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">{currentSession.name} MARKET ACTIVE</span>
               </div>
-              <span className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em]">{currentSession.name} MARKET ACTIVE</span>
+              <div className="text-[10px] text-slate-300 font-black uppercase tracking-widest bg-emerald-500/20 px-4 py-1.5 rounded-full border border-emerald-500/30">
+                {availablePairs.length} ASSETS ONLINE
+              </div>
             </div>
-            <div className="text-[10px] text-slate-300 font-black uppercase tracking-widest bg-emerald-500/20 px-4 py-1.5 rounded-full border border-emerald-500/30">
-              {availablePairs.length} ASSETS ONLINE
-            </div>
+
+            {/* News Event Countdown */}
+            {scanStatus.includes("NEWS EVENT BLOCK") && (
+              <motion.div 
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between px-3 py-2 bg-red-500/10 border border-red-500/30 rounded-xl"
+              >
+                <div className="flex items-center gap-2">
+                  <Shield className="w-3 h-3 text-red-400 animate-pulse" />
+                  <span className="text-[10px] font-black text-red-400 uppercase tracking-wider">Safety Block Active</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="w-3 h-3 text-red-400" />
+                  <span className="text-[10px] font-mono font-black text-red-400">
+                    {scanStatus.match(/\((\d+)m left\)/)?.[1] ? `${scanStatus.match(/\((\d+)m left\)/)?.[1]} min remaining` : "Auto-lifting shortly..."}
+                  </span>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-6">

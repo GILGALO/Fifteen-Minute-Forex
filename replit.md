@@ -78,6 +78,7 @@ Gilgalo Trading is an advanced forex trading signal generator with machine learn
 - [x] Daily Profit/Loss & Drawdown Halted Trading
 - [x] Session-Aware Confidence Thresholds
 - [x] Telegram Signal Formatting & Dispatch
+- [x] News Event Countdown Timer (Real-time tracking)
 - [ ] Broker API Integration (Pocket Option/OANDA)
 - [ ] Multi-channel Alerts (SMS/Email)
 

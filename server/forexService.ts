@@ -409,9 +409,10 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: sessionForPair !== null, marketRegime: false, trendExhaustion: true };
   const reasoning: string[] = [];
 
-  const { blocked, event } = isNewsEventTime();
+  const { blocked, event, remainingMinutes } = isNewsEventTime();
   if (blocked) {
-    reasoning.push(`🚫 NEWS EVENT BLOCK: ${event?.name}`);
+    const remainingText = remainingMinutes ? ` (${remainingMinutes}m left)` : "";
+    reasoning.push(`🚫 NEWS EVENT BLOCK: ${event?.name}${remainingText}`);
     return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
   }
 
