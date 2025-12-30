@@ -392,19 +392,12 @@ export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
 
 function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" {
   if (exhausted) return "C";
-  
-  // High-Accuracy "A" Grade for Pocket Option:
-  // Requires high momentum (ADX > 28) + 100% indicator alignment (MACD + Supertrend) + HTF trend confirmation
   if (adx > 28 && macdAligned && supertrendAligned && htfAligned) return "A";
-  
-  // Opportunistic "B" Grade:
-  // Good for 5-min scalps if momentum is sufficient, even with slight misalignment
   if (adx >= 24 && (macdAligned || supertrendAligned)) return "B";
-  
   return "C";
 }
 
-function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
+export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
   if (candles.length === 0) return {} as any;
   const prices = candles.map(c => c.close);
   const rsi = calculateRSI(prices);
@@ -428,7 +421,8 @@ function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
 
   return {
     rsi, macd, sma20, sma50, sma200, ema12, ema26,
-    bollingerBands, stochastic, atr, adx, supertrend,
+    bollingerBands: { ...bollingerBands, breakout: prices[prices.length - 1] > bollingerBands.upper || prices[prices.length - 1] < bollingerBands.lower },
+    stochastic, atr, adx, supertrend,
     candlePattern, trend, momentum, volatility, marketRegime
   };
 }
@@ -575,9 +569,9 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const atrPips = technicals.atr / pipValue;
   const slPips = Math.max(atrPips * 1.5, 10); // Minimum 10 pips SL
   const tpPips = slPips * 1.5; // Fixed 1:1.5 Risk/Reward
-  
-  const stopLoss = signalType === "CALL" ? currentPrice - (slPips * pipValue) : currentPrice + (slPips * pipValue);
-  const takeProfit = signalType === "CALL" ? currentPrice + (tpPips * pipValue) : currentPrice - (tpPips * pipValue);
+
+  const stopLossFinal = signalType === "CALL" ? currentPrice - (slPips * pipValue) : currentPrice + (slPips * pipValue);
+  const takeProfitFinal = signalType === "CALL" ? currentPrice + (tpPips * pipValue) : currentPrice - (tpPips * pipValue);
   
   const riskReward = "1:1.5";
   const confluenceScore = Math.min(95, confidence);
@@ -603,19 +597,19 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   reasoning.push(`📊 SENTIMENT: ${getSentimentExplanation(sentimentScore).split(" - ")[0]}`);
   
   // Apply ML boost to confidence
-  confidence = Math.min(98, Math.max(0, confidence + mlConfidenceBoost));
-  if (confidence < sessionThreshold) confidence = Math.max(sessionThreshold - 5, confidence);
-  reasoning.push(`Grade ${signalGrade} | ML Confidence: ${confidence}%`);
+  let finalConfidence = Math.min(98, Math.max(0, confidence + mlConfidenceBoost));
+  if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
+  reasoning.push(`Grade ${signalGrade} | ML Confidence: ${finalConfidence}%`);
 
   return {
     pair,
     currentPrice,
     signalType,
-    confidence,
+    confidence: finalConfidence,
     signalGrade,
     entry: currentPrice,
-    stopLoss,
-    takeProfit,
+    stopLoss: stopLossFinal,
+    takeProfit: takeProfitFinal,
     technicals,
     reasoning,
     ruleChecklist,
@@ -625,19 +619,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   };
 }
 
+// Use refined version above
+/*
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
-  if (candles.length === 0) throw new Error("No candles");
-  const prices = candles.map(c => c.close), rsi = calculateRSI(prices), macd = calculateMACD(prices);
-  const sma26 = calculateEMA(prices, 26), supertrend = calculateSupertrend(candles), atr = calculateATR(candles), adx = calculateADX(candles);
-  const trend = (supertrend.direction === "BULLISH" && prices[prices.length - 1] > sma26) ? "BULLISH" : ((supertrend.direction === "BEARISH" && prices[prices.length - 1] < sma26) ? "BEARISH" : "NEUTRAL");
-  const momentum = (adx > 30 && (trend === "BULLISH" ? rsi > 50 : rsi < 50)) ? "STRONG" : (adx > 20 ? "MODERATE" : "WEAK");
-  const bollingerBands = calculateBollingerBands(prices);
-  return {
-    rsi, macd, sma20: calculateSMA(prices, 20), sma50: calculateSMA(prices, 50), sma200: calculateSMA(prices, 200), ema12: calculateEMA(prices, 12), ema26: sma26,
-    bollingerBands: { ...bollingerBands, breakout: bollingerBands.percentB > 1 || bollingerBands.percentB < 0 },
-    stochastic: calculateStochastic(candles), atr, adx, supertrend, candlePattern: detectCandlePattern(candles), trend, momentum, volatility: "MEDIUM", marketRegime: adx > 25 ? "TRENDING" : "RANGING"
-  };
+  ...
 }
+*/
 
 export async function getAllQuotes(pairs: string[], apiKey?: string): Promise<ForexQuote[]> {
   return Promise.all(pairs.map(pair => getForexQuote(pair, apiKey)));
