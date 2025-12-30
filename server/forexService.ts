@@ -529,7 +529,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const mlPatternScore = detectPatterns(candles);
   const sentimentScore = analyzeSentiment(technicals);
-  const mlConfidenceBoost = Math.floor((Math.abs(mlPatternScore.score) + Math.abs(sentimentScore.score)) / 20);
+  const mlConfidenceBoost = Math.floor((Math.abs(mlPatternScore.overallScore) + Math.abs(sentimentScore.overallSentiment)) / 20);
 
   if (isOriginalRsiOk && isOriginalStochOk && originalCandleConfirmed && originalVolumeConfirmed) {
     confidence += 10;
@@ -638,13 +638,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   reasoning.push(`Final Confluence: ${confluenceScore}% | Score diff: ${scoreDiff} | R/R: ${riskReward}`);
 
   // ===== ML & SENTIMENT ANALYSIS =====
-  const mlPatternScore = detectPatterns(candles);
-  const sentimentScore = analyzeSentiment(technicals);
+  // Re-use previously computed mlPatternScore & sentimentScore from above
   
   // Calculate ML confidence boost
   const patternBias = mlPatternScore.direction === m5Trend ? Math.abs(mlPatternScore.overallScore) / 10 : -Math.abs(mlPatternScore.overallScore) / 10;
   const sentimentBias = sentimentScore.overallSentiment > 0 && signalType === "CALL" ? Math.abs(sentimentScore.overallSentiment) / 10 : sentimentScore.overallSentiment < 0 && signalType === "PUT" ? Math.abs(sentimentScore.overallSentiment) / 10 : -10;
-  const mlConfidenceBoost = Math.round((patternBias + sentimentBias) / 2);
+  const finalMlConfidenceBoost = Math.round((patternBias + sentimentBias) / 2);
   
   // Add ML insights to reasoning
   if (mlPatternScore.direction === m5Trend) {
@@ -655,7 +654,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   reasoning.push(`📊 SENTIMENT: ${getSentimentExplanation(sentimentScore).split(" - ")[0]}`);
   
   // Apply ML boost to confidence
-  let finalConfidence = Math.min(98, Math.max(0, confidence + mlConfidenceBoost));
+  let finalConfidence = Math.min(98, Math.max(0, confidence + finalMlConfidenceBoost));
   if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
   reasoning.push(`Grade ${signalGrade} | Rule Set: ${ruleSetLabel} | ML Confidence: ${finalConfidence}%`);
 
