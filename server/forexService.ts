@@ -506,19 +506,21 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const stochK = technicals.stochastic.k;
   const isPerfectStructure = candleConfirmed && technicals.adx > 30;
   
-  // M5 Trading: Allow RSI 85+ with proper quality filters (strong momentum on M5 = signal, not overbought)
-  // Quality assurance: htfAlignment (M15 confirmed) + sessionFilter (liquidity) + trend exhaustion check
-  const rsiLeeway = isPerfectStructure ? 15 : 10; // Increased leeway for M5: 85->100 range is normal strong momentum
-  const rsiOk = m5Trend === "BULLISH" 
-    ? (rsiValue >= (15 - rsiLeeway) && rsiValue <= (85 + rsiLeeway)) 
-    : (rsiValue >= (15 - rsiLeeway) && rsiValue <= (85 + rsiLeeway));
+  // MOMENTUM FILTER: Block only extreme zones RSI 95+ (too close to reversal), allow 20-95
+  const isExtremeZone = rsiValue > 95 || rsiValue < 5; // Too extreme - always block
+  const rsiOk = !isExtremeZone; // Block only the extreme zone
+  const stochOk = stochK >= (5) && stochK <= (95); // Stochastic must be 5-95
   
-  const stochOk = m5Trend === "BULLISH" ? stochK < (95 + rsiLeeway) : stochK > (5 - rsiLeeway); // Increased stoch threshold for M5
-
   ruleChecklist.momentumSafety = rsiOk && stochOk; // Mark momentum safety after validation
+
+  // EXTREME ZONE: Always block RSI 95+ and 5-, too close to reversal
+  if (isExtremeZone) {
+    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiValue.toFixed(1)}) - Reversal Risk Zone`);
+    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+  }
   
   if (!rsiOk || !stochOk) {
-    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiValue.toFixed(1)})`);
+    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiValue.toFixed(1)}) - Failed Momentum Check`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
@@ -603,6 +605,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   let finalConfidence = Math.min(98, Math.max(0, confidence + mlConfidenceBoost));
   if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
   reasoning.push(`Grade ${signalGrade} | ML Confidence: ${finalConfidence}%`);
+
+  // QUALITY GATE: Require 85%+ confidence for M5 trading (prevents low-quality signal spam)
+  const minConfidenceThreshold = 85;
+  if (finalConfidence < minConfidenceThreshold) {
+    reasoning.push(`🚫 SIGNAL FILTERED: Confidence ${finalConfidence}% below threshold (${minConfidenceThreshold}%)`);
+    return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+  }
 
   return {
     pair,
