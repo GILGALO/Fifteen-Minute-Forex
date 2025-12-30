@@ -561,7 +561,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   // MOMENTUM FILTER: Relaxed boundaries if in flexible mode
-  const isExtremeZone = rsiValue > 98 || rsiValue < 2;
+  const isExtremeZone = rsiValue > 99 || rsiValue < 1;
   const rsiOk = isFlexibleMode ? (rsiValue >= 15 && rsiValue <= 85) : isOriginalRsiOk;
   const stochOk = isFlexibleMode ? (stochK >= 2 && stochK <= 98) : isOriginalStochOk;
   const finalCandleConfirmed = isFlexibleMode ? (originalCandleConfirmed || technicals.adx >= 20) : originalCandleConfirmed;
@@ -591,7 +591,19 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     reasoning.push(`⚠️ MOMENTUM OUT OF RANGE (RSI: ${rsiValue.toFixed(1)}) - Confidence reduced`);
   }
 
-  const signalType = m5Trend === "BULLISH" ? "CALL" : "PUT", exhausted = detectTrendExhaustion(technicals.adx, technicals.rsi, signalType);
+  const signalType = m5Trend === "BULLISH" ? "CALL" : "PUT";
+  const exhausted = detectTrendExhaustion(technicals.adx, technicals.rsi, signalType);
+
+  if (signalType === "PUT") {
+    log(`[ANALYSIS] Processing PUT signal for ${pair} | Trend: ${m5Trend} | RSI: ${technicals.rsi.toFixed(1)} | ADX: ${technicals.adx.toFixed(1)}`, "forex");
+  }
+
+  // Confidence calculation for SELL (PUT) signals needs to be as robust as CALL (BUY)
+  const isPut = signalType === "PUT";
+
+  if (isPut) {
+    log(`[ANALYSIS] Processing PUT signal for ${pair} (ADX: ${technicals.adx.toFixed(1)}, RSI: ${technicals.rsi.toFixed(1)})`, "forex");
+  }
   if (exhausted) {
     reasoning.push(`❌ TREND EXHAUSTED`);
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
@@ -613,7 +625,9 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), m5_m15_aligned);
-  if (signalGrade === "C" && !candleConfirmed) {
+  
+  // LOGIC FIX: Don't skip Grade C if it has high confidence or special conditions
+  if (signalGrade === "C" && !candleConfirmed && confidence < 80) {
     reasoning.push(`⚠️ GRADE C SKIPPED`);
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
@@ -656,7 +670,9 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   
   // Calculate ML confidence boost
   const patternBias = mlPatternScore.direction === m5Trend ? Math.abs(mlPatternScore.overallScore) / 10 : -Math.abs(mlPatternScore.overallScore) / 10;
-  const sentimentBias = sentimentScore.overallSentiment > 0 && signalType === "CALL" ? Math.abs(sentimentScore.overallSentiment) / 10 : sentimentScore.overallSentiment < 0 && signalType === "PUT" ? Math.abs(sentimentScore.overallSentiment) / 10 : -10;
+  const sentimentBias = (sentimentScore.overallSentiment > 0 && signalType === "CALL") || (sentimentScore.overallSentiment < 0 && signalType === "PUT") 
+    ? Math.abs(sentimentScore.overallSentiment) / 10 
+    : (sentimentScore.overallSentiment === 0 ? 0 : -5);
   const finalMlConfidenceBoost = Math.round((patternBias + sentimentBias) / 2);
   
   // Add ML insights to reasoning

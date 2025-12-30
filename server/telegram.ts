@@ -100,6 +100,8 @@ export async function sendToTelegram(
     const modeLabel = isAuto ? "AUTO" : "MANUAL";
     const { isHotZone, session } = isSessionHotZone();
 
+    console.log(`[TELEGRAM PRE-DISPATCH] ${signal.pair} ${signal.type} | Confidence: ${signal.confidence}% | Auto: ${isAuto}`);
+
     // Extract advanced metrics from reasoning
     let confluenceScore = 70;
     let htfAlignment = "Unknown";
