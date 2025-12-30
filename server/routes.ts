@@ -162,9 +162,9 @@ export async function registerRoutes(
       // Filter out signals that are unconfirmed (SKIPPED) or have 0 confidence
       const validSignals = sortedSignals.filter(s => s.confidence > 0 && s.signalGrade !== "SKIPPED");
       
-      // Send only the BEST signal per turn (one signal at a time)
+      // Send all HIGH-QUALITY signals (85%+ confidence, all valid pairs)
       const bestSignal = validSignals[0] || null;
-      const signalsToReturn = bestSignal ? [bestSignal] : [];
+      const signalsToReturn = validSignals;
       
       log(`[SCAN] Complete - Found ${validSignals.length}/${signals.length} valid signals. Best: ${bestSignal?.confidence || 0}%`, "scan");
       
