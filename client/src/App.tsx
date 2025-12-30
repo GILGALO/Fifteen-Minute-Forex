@@ -99,26 +99,13 @@ function App() {
           <div className="flex h-screen w-full overflow-hidden">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
-              <header className="flex flex-col sticky top-0 z-50 bg-background/50 backdrop-blur-sm">
-                <div className="flex items-center justify-between w-full p-2 border-b">
-                  <div className="flex items-center gap-2">
-                    <SidebarTrigger data-testid="button-sidebar-toggle" />
-                    <span className="text-xl font-black tracking-tighter uppercase text-primary">
-                      gilgalo
-                    </span>
-                  </div>
-                  <NewsCountdown />
+              <header className="flex items-center justify-between p-2 border-b sticky top-0 z-50 bg-background/50 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <PushNotificationToggle />
+                  <ThemeToggle />
                 </div>
-                
-                {/* Mobile-optimized secondary bar for controls */}
-                <div className="flex items-center justify-between p-2 border-t border-border/50">
-                  <div className="flex items-center gap-2">
-                    <PushNotificationToggle />
-                    <ThemeToggle />
-                  </div>
-                  <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
-                    Trading Dashboard
-                  </div>
+                <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
+                  Trading Dashboard
                 </div>
               </header>
               <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
