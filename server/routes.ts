@@ -152,19 +152,24 @@ export async function registerRoutes(
       const sortedSignals = signals.sort((a, b) => b.confidence - a.confidence);
       const validSignals = sortedSignals.filter(s => s.confidence > 0);
       
-      log(`[SCAN] Complete - Found ${validSignals.length}/${signals.length} valid signals. Best: ${validSignals[0]?.confidence || 0}%`, "scan");
+      // Send only the BEST signal per turn (one signal at a time)
+      const bestSignal = validSignals[0] || null;
+      const signalsToReturn = bestSignal ? [bestSignal] : [];
+      
+      log(`[SCAN] Complete - Found ${validSignals.length}/${signals.length} valid signals. Best: ${bestSignal?.confidence || 0}%`, "scan");
       
       res.json({
         timestamp: Date.now(),
         timeframe: tf,
-        signals: validSignals,
-        bestSignal: validSignals[0] || null,
+        signals: signalsToReturn,
+        bestSignal: bestSignal,
         stats: {
           total: signals.length,
           valid: validSignals.length,
           blocked: signals.length - validSignals.length,
           maxRescans,
-          minConfidenceThreshold
+          minConfidenceThreshold,
+          availableSignals: validSignals.length
         }
       });
     } catch (error: any) {
