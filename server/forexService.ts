@@ -611,8 +611,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
   reasoning.push(`Grade ${signalGrade} | ML Confidence: ${finalConfidence}%`);
 
-  // QUALITY GATE: Require 85%+ confidence for M5 trading (prevents low-quality signal spam)
-  const minConfidenceThreshold = 85;
+  // QUALITY GATE: Require 80%+ confidence for M5 trading (prevents low-quality signal spam)
+  const minConfidenceThreshold = 80;
   if (finalConfidence < minConfidenceThreshold) {
     reasoning.push(`🚫 SIGNAL FILTERED: Confidence ${finalConfidence}% below threshold (${minConfidenceThreshold}%)`);
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
