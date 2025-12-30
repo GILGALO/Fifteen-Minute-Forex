@@ -43,11 +43,11 @@ export function verifySignalSafety(
   }
 
   // 2. Check HTF alignment from reasoning
-  const htfReasoning = analysis.reasoning.find(r => r.includes("HTF Alignment:"));
-  if (htfReasoning && htfReasoning.includes("PERFECT HTF ALIGNMENT")) {
+  const htfReasoning = analysis.reasoning.find(r => r.includes("Multi-TF:"));
+  if (htfReasoning && htfReasoning.includes("M5/M15: YES")) {
     passedChecks.htfAlignment = true;
-  } else if (htfReasoning && htfReasoning.includes("CRITICAL: Multi-timeframe misalignment")) {
-    blockReasons.push("HTF alignment failed - M5/M15/H1 conflict");
+  } else if (htfReasoning && htfReasoning.includes("M5/M15: NO")) {
+    blockReasons.push("MTF alignment failed - M5/M15 conflict");
   }
 
   // 3. Check candle confirmation

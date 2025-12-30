@@ -404,6 +404,35 @@ function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAl
   return "C";
 }
 
+function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
+  if (candles.length === 0) return {} as any;
+  const prices = candles.map(c => c.close);
+  const rsi = calculateRSI(prices);
+  const macd = calculateMACD(prices);
+  const sma20 = calculateSMA(prices, 20);
+  const sma50 = calculateSMA(prices, 50);
+  const sma200 = calculateSMA(prices, 200);
+  const ema12 = calculateEMA(prices, 12);
+  const ema26 = calculateEMA(prices, 26);
+  const bollingerBands = calculateBollingerBands(prices);
+  const stochastic = calculateStochastic(candles);
+  const atr = calculateATR(candles);
+  const adx = calculateADX(candles);
+  const supertrend = calculateSupertrend(candles);
+  const candlePattern = detectCandlePattern(candles);
+
+  const trend = supertrend.direction;
+  const momentum = adx > 25 ? "STRONG" : (adx > 15 ? "MODERATE" : "WEAK");
+  const volatility = atr > (prices[prices.length - 1] * 0.001) ? "HIGH" : "MEDIUM";
+  const marketRegime = adx > 20 ? "TRENDING" : "RANGING";
+
+  return {
+    rsi, macd, sma20, sma50, sma200, ema12, ema26,
+    bollingerBands, stochastic, atr, adx, supertrend,
+    candlePattern, trend, momentum, volatility, marketRegime
+  };
+}
+
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
   const sessionHour = getKenyaHour(), sessionForPair = getSessionForPair(pair, sessionHour);
   const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: sessionForPair !== null, marketRegime: false, trendExhaustion: true };
@@ -422,9 +451,18 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
   }
 
-  const [candles, candlesH1] = await Promise.all([getForexCandles(pair, "5min", apiKey), getForexCandles(pair, "60min", apiKey)]);
-  const technicals = analyzeTechnicals(candles), technicalsH1 = analyzeTechnicals(candlesH1);
-  const m5Trend = technicals.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
+  const [candles, candlesM15, candlesH1] = await Promise.all([
+    getForexCandles(pair, "5min", apiKey),
+    getForexCandles(pair, "15min", apiKey),
+    getForexCandles(pair, "60min", apiKey)
+  ]);
+  const technicals = analyzeTechnicals(candles);
+  const technicalsM15 = analyzeTechnicals(candlesM15);
+  const technicalsH1 = analyzeTechnicals(candlesH1);
+
+  const m5Trend = technicals.supertrend.direction;
+  const m15Trend = technicalsM15.supertrend.direction;
+  const h1Trend = technicalsH1.supertrend.direction;
 
   let baseConfidence = 65, sessionThreshold = 60, confidence = baseConfidence;
   reasoning.push(`📊 HIGH-OPPORTUNITY MODE: Active (Threshold: ${sessionThreshold}%)`);
@@ -442,12 +480,24 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     else { confidence -= 10; reasoning.push(`⚠️ CORRELATION DIVERGENCE`); }
   }
 
-  const currentPrice = lastCandle.close, htfAligned = m5Trend === h1Trend;
-  ruleChecklist.htfAlignment = htfAligned;
-  const alignmentText = htfAligned ? "H1 & M5 ALIGNED 🟢" : "MISALIGNED 🔴";
-  reasoning.push(`HTF Alignment: ${alignmentText} | Trend: ${m5Trend}`);
+  const currentPrice = lastCandle.close;
+  const m5_m15_aligned = m5Trend === m15Trend;
+  const htfAligned = m5Trend === h1Trend;
   
-  if (htfAligned) { confidence += 10; reasoning.push(`✅ HTF ALIGNED`); } else { confidence += 2; reasoning.push(`⚠️ HTF MISALIGNED (Binary Mode)`); }
+  ruleChecklist.htfAlignment = m5_m15_aligned; // Use M15 as primary confirmation
+  
+  const alignmentText = `M5/M15: ${m5_m15_aligned ? "YES" : "NO"} | H1: ${htfAligned ? "YES" : "NO"}`;
+  reasoning.push(`Multi-TF: ${alignmentText} | Trend: ${m5Trend}`);
+  
+  if (m5_m15_aligned) { 
+    confidence += 10; 
+    reasoning.push(`✅ M15 CONFIRMATION`); 
+  } else {
+    reasoning.push(`❌ M5/M15 CONFLICT`);
+    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+  }
+
+  if (htfAligned) { confidence += 5; reasoning.push(`✅ H1 ALIGNED`); } else { reasoning.push(`⚠️ H1 CONTRA-TREND (Scalp Mode)`); }
 
   if (technicals.marketRegime !== "TRENDING") {
     reasoning.push(`❌ NOT TRENDING`);
@@ -457,13 +507,21 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const candleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
   ruleChecklist.candleConfirmation = candleConfirmed;
   
-  // Relaxed overbought/oversold filters for higher signal frequency
-  // BULLISH: RSI must stay below 85 (avoid extreme overbought), Stochastic K below 90
-  // BEARISH: RSI must stay above 15 (avoid extreme oversold), Stochastic K above 10
-  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 15 && technicals.rsi <= 85) : (technicals.rsi >= 15 && technicals.rsi <= 85);
-  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 90 : technicals.stochastic.k > 10;
+  // Weighted Scoring for RSI/Stochastic
+  const rsiValue = technicals.rsi;
+  const stochK = technicals.stochastic.k;
+  const isPerfectStructure = candleConfirmed && technicals.adx > 30;
+  
+  // Near-Extreme Logic: Allow 5% leeway if structure is perfect
+  const rsiLeeway = isPerfectStructure ? 5 : 0;
+  const rsiOk = m5Trend === "BULLISH" 
+    ? (rsiValue >= (15 - rsiLeeway) && rsiValue <= (85 + rsiLeeway)) 
+    : (rsiValue >= (15 - rsiLeeway) && rsiValue <= (85 + rsiLeeway));
+  
+  const stochOk = m5Trend === "BULLISH" ? stochK < (90 + rsiLeeway) : stochK > (10 - rsiLeeway);
+
   if (!rsiOk || !stochOk) {
-    reasoning.push(`❌ MOMENTUM UNSAFE (RSI/STOCH EXTREME)`);
+    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiValue.toFixed(1)})`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
@@ -474,28 +532,46 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   if (technicals.adx > 25) confidence += 10; else if (technicals.adx < 15) confidence -= 12;
-  // GRADE A+ WIN-RATE VERIFICATION (INSTITUTIONAL PRECISION)
+
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
   const isPerfectAlignment = indicatorCheck.count === 4; 
   const correlationAligned = reasoning.includes(`✅ FULL CORRELATION`) || reasoning.includes(`✅ PARTIAL CORRELATION`);
-  const institutionalQuality = isPerfectAlignment && htfAligned && volumeConfirmed && correlationAligned;
+  const institutionalQuality = isPerfectAlignment && m5_m15_aligned && volumeConfirmed && correlationAligned;
 
   if (institutionalQuality) {
     confidence = Math.min(98, Math.max(94, confidence + 20));
-    reasoning.push(`💎 INSTITUTIONAL GRADE A+: Triple-Verified Winning Setup!`);
-  } else if (isPerfectAlignment && htfAligned) {
+    reasoning.push(`💎 INSTITUTIONAL GRADE A+: Triple-Verified Setup`);
+  } else if (isPerfectAlignment && m5_m15_aligned) {
     confidence = Math.min(92, Math.max(88, confidence + 12));
-    reasoning.push(`✨ HIGH-QUALITY GRADE A: Trend & Indicator Alignment`);
+    reasoning.push(`✨ HIGH-QUALITY GRADE A: Multi-TF Alignment`);
   }
 
-  const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
+  const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), m5_m15_aligned);
   if (signalGrade === "C" && !candleConfirmed) {
     reasoning.push(`⚠️ GRADE C SKIPPED`);
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
-  // ATR-based Stop Loss and Take Profit
-  const pipValue = pair.includes("JPY") ? 0.01 : 0.0001;
+  // ATR-based Dynamic SL/TP and Volatility Filter
+  const atr = technicals.atr;
+  const isJpy = pair.includes("JPY");
+  const volatilityMultiplier = isJpy ? 1.5 : 2.0;
+  
+  // Dynamic Volatility Filter: If ATR is extremely low relative to spread, skip
+  const spread = isJpy ? 0.02 : 0.00002;
+  if (atr < spread * 1.5) {
+    reasoning.push(`⚠️ VOLATILITY TOO LOW (ATR: ${atr.toFixed(5)})`);
+    ruleChecklist.volatilityFilter = false;
+    return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+  }
+  ruleChecklist.volatilityFilter = true;
+
+  const slDistance = atr * volatilityMultiplier;
+  const tpDistance = slDistance * 1.5; // 1:1.5 Risk/Reward
+
+  const entry = currentPrice;
+  const stopLoss = signalType === "CALL" ? entry - slDistance : entry + slDistance;
+  const takeProfit = signalType === "CALL" ? entry + tpDistance : entry - tpDistance;  const pipValue = pair.includes("JPY") ? 0.01 : 0.0001;
   const atrPips = technicals.atr / pipValue;
   const slPips = Math.max(atrPips * 1.5, 10); // Minimum 10 pips SL
   const tpPips = slPips * 1.5; // Fixed 1:1.5 Risk/Reward
