@@ -55,7 +55,20 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
     }
   };
 
-  const { data: quotesData } = useQuery<{ quotes: any; marketStatus: { isOpen: boolean; reason?: string } }>({
+  const { data: quotesData } = useQuery<{ 
+    quotes: any; 
+    marketStatus: { isOpen: boolean; reason?: string };
+    newsStatus?: { 
+      blocked: boolean; 
+      event?: { 
+        name: string; 
+        timeUTC: number; 
+        impactLevel: string; 
+        blockMinutes: number 
+      };
+      remainingMinutes: number 
+    }
+  }>({
     queryKey: ["/api/forex/quotes"],
     refetchInterval: 30000,
   });
@@ -154,6 +167,15 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-rose-500 animate-ping flex-shrink-0" />
             <span className="text-[7px] sm:text-[8px] md:text-[10px] font-black text-rose-400 uppercase tracking-[0.1em] sm:tracking-[0.15em] md:tracking-[0.3em] text-center">
               {marketStatus.reason || "MARKETS CLOSED"}
+            </span>
+          </div>
+        )}
+
+        {quotesData?.newsStatus?.blocked && (
+          <div className="bg-amber-500/10 border-b border-amber-500/20 py-1.5 sm:py-2 px-2 sm:px-4 flex items-center justify-center gap-1.5 sm:gap-2 md:gap-3 animate-in fade-in slide-in-from-top-2">
+            <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-amber-500 animate-pulse" />
+            <span className="text-[7px] sm:text-[8px] md:text-[10px] font-black text-amber-400 uppercase tracking-[0.1em] sm:tracking-[0.15em] md:tracking-[0.2em] text-center">
+              HIGH IMPACT NEWS: {quotesData.newsStatus.event?.name} | SCANNERS PAUSED FOR {quotesData.newsStatus.remainingMinutes} MIN
             </span>
           </div>
         )}
