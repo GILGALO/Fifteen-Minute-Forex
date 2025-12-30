@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -19,6 +19,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { AlertCircle, Clock } from "lucide-react";
+
+const MarketTicker = lazy(() => import("@/components/market-ticker"));
 
 function NewsCountdown() {
   const { data } = useQuery<any>({
@@ -99,8 +101,8 @@ function App() {
           <div className="flex h-screen w-full overflow-hidden">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
-              <header className="flex flex-col p-2 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-50">
-                <div className="flex items-center justify-between w-full">
+              <header className="flex flex-col sticky top-0 z-50 bg-background/50 backdrop-blur-sm">
+                <div className="flex items-center justify-between w-full p-2 border-b">
                   <div className="flex items-center gap-2">
                     <SidebarTrigger data-testid="button-sidebar-toggle" />
                     <span className="text-xl font-black tracking-tighter uppercase text-primary">
@@ -110,8 +112,12 @@ function App() {
                   <NewsCountdown />
                 </div>
                 
+                <Suspense fallback={<div className="h-[40px] md:h-[52px] bg-background/30" />}>
+                  <MarketTicker />
+                </Suspense>
+                
                 {/* Mobile-optimized secondary bar for controls */}
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
+                <div className="flex items-center justify-between p-2 border-t border-border/50">
                   <div className="flex items-center gap-2">
                     <PushNotificationToggle />
                     <ThemeToggle />
