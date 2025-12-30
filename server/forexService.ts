@@ -432,15 +432,11 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: sessionForPair !== null, marketRegime: false, trendExhaustion: true };
   const reasoning: string[] = [];
 
-  const { blocked, event, remainingMinutes, allowWithWarning } = isNewsEventTime() as any;
-  if (blocked && !allowWithWarning) {
+  const { blocked, event, remainingMinutes } = isNewsEventTime() as any;
+  if (blocked) {
     const remainingText = remainingMinutes ? ` (${remainingMinutes}m left)` : "";
-    reasoning.push(`🚫 NEWS EVENT BLOCK: ${event?.name}${remainingText}`);
+    reasoning.push(`🚫 HIGH IMPACT NEWS: ${event?.name} | SCANNERS PAUSED FOR ${remainingMinutes} MIN`);
     return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
-  }
-
-  if (blocked && allowWithWarning) {
-    reasoning.push(`⚠️ VOLATILITY WARNING: Active ${event?.name} news event. Trading carries higher risk.`);
   }
 
   const stats = sessionTracker.getStats();
