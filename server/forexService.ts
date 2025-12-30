@@ -466,12 +466,21 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const technicalsM15 = analyzeTechnicals(candlesM15);
   const technicalsH1 = analyzeTechnicals(candlesH1);
 
+  // ML Pattern Recognition Consensus Requirement
+  const mlPatternScore = detectPatterns(candles);
+  const mlScore = mlPatternScore.overallScore;
+
   const m5Trend = technicals.supertrend.direction;
   const m15Trend = technicalsM15.supertrend.direction;
   const h1Trend = technicalsH1.supertrend.direction;
 
   let baseConfidence = 65, sessionThreshold = 60, confidence = baseConfidence;
   
+  // A+ Institutional Filter: ML Consensus Requirement
+  const isBullishML = mlScore >= 40;
+  const isBearishML = mlScore <= -40;
+  const hasMLConsensus = isBullishML || isBearishML;
+
   const newsStatusResult = isNewsEventTime() as any;
   const newsBlocked = newsStatusResult.blocked;
   const isNewsWarning = newsStatusResult.allowWithWarning;
@@ -483,10 +492,15 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const lastCandle = candles[candles.length - 1], avgVol = candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
 
   const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD"];
+  let hasFullCorrelation = false;
   if (majorPairs.includes(pair)) {
     const results = await Promise.all(majorPairs.filter(p => p !== pair).map(async p => analyzeTechnicals(await getForexCandles(p, "5min", apiKey)).supertrend.direction));
     const alignedCount = results.filter(t => t === m5Trend).length;
-    if (alignedCount === results.length) { confidence += 12; reasoning.push(`✅ FULL CORRELATION`); }
+    if (alignedCount === results.length) { 
+      confidence += 12; 
+      reasoning.push(`✅ FULL CORRELATION`); 
+      hasFullCorrelation = true;
+    }
     else if (alignedCount > 0) { confidence += 5; reasoning.push(`✅ PARTIAL CORRELATION`); }
     else { confidence -= 10; reasoning.push(`⚠️ CORRELATION DIVERGENCE`); }
   }
@@ -495,20 +509,48 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m5_m15_aligned = m5Trend === m15Trend;
   const htfAligned = m5Trend === h1Trend;
   
-  ruleChecklist.htfAlignment = m5_m15_aligned; // Use M15 as primary confirmation
+  // A+ Institutional Filter: H1 Structural Alignment (Mandatory)
+  ruleChecklist.htfAlignment = htfAligned;
   
   const alignmentText = `M5/M15: ${m5_m15_aligned ? "✅ALIGNED" : "❌CONFLICT"} | H1: ${htfAligned ? "✅ALIGNED" : "⚠️CONTRA"}`;
   reasoning.push(`Trend Analysis: ${alignmentText} | Direction: ${m5Trend}`);
+  
+  // A+ Institutional Filter: Momentum Safety Guard (RSI 88/12)
+  const rsiValue = technicals.rsi;
+  const isRsiOverExtended = (m5Trend === "BULLISH" && rsiValue > 88) || (m5Trend === "BEARISH" && rsiValue < 12);
+  ruleChecklist.momentumSafety = !isRsiOverExtended;
+
+  if (isRsiOverExtended) {
+    reasoning.push(`⚠️ MOMENTUM EXHAUSTION: RSI ${rsiValue.toFixed(1)} is over-extended. Avoiding end-of-move entry.`);
+  }
+
+  // Final Grade and Dispatch Logic
+  let signalType: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
+  
+  // Core A+ Filter Logic
+  const meetsAplusCriteria = hasMLConsensus && htfAligned && !isRsiOverExtended;
+
+  if (!meetsAplusCriteria) {
+    if (!hasMLConsensus) reasoning.push(`❌ ML DIVERGENCE: Score ${mlScore} is too neutral for A+ setup.`);
+    if (!htfAligned) reasoning.push(`❌ H1 DIVERGENCE: H1 trend must align for A+ setup.`);
+    
+    return { 
+      pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", 
+      entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist,
+      mlPatternScore
+    };
+  }
   
   // IMPROVED TREND CATCHING: Detect early trend formation with ADX crossover
   const adxStrength = technicals.adx;
   const isTrendForming = adxStrength > 15 && adxStrength < 25; // Early trend formation
   const isTrendStrong = adxStrength >= 25; // Strong established trend
   
-  if (m5_m15_aligned) { 
-    confidence += 18; // Boosted for better trend catching
-    reasoning.push(`✅ STRONG TREND MATCH (M5 = M15 = ${m5Trend})`); 
-  } else if (isTrendForming && m5Trend === m15Trend) {
+  if (m5_m15_aligned && htfAligned) { 
+    confidence += 18; 
+    reasoning.push(`✅ INSTITUTIONAL ALIGNMENT (M5=M15=H1=${m5Trend})`); 
+  }
+ else if (isTrendForming && m5Trend === m15Trend) {
     confidence += 8;
     reasoning.push(`📈 TREND FORMING: Early ${m5Trend} confirmation (ADX: ${adxStrength.toFixed(1)})`);
   } else if (isTrendStrong && technicalsM15.adx > 20) {
