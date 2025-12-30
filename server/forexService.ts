@@ -590,9 +590,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   // Final Grade and Dispatch Logic
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   
-  // Core A+ Filter Logic
-  const rsiValueLocal = technicals.rsi;
-  const meetsAplusCriteria = hasMLConsensus && htfAligned && (m5Trend === "BULLISH" ? rsiValueLocal <= 88 : rsiValueLocal >= 12);
+  // Clean reasoning for the user - only show high-level outcome
+  const cleanReasoning: string[] = [];
+  if (meetsAplusCriteria) {
+    cleanReasoning.push("🚀 Institutional A+ Signal Confirmed");
+  } else {
+    cleanReasoning.push("⚡ Tactical Setup Confirmed");
+  }
 
   if (!meetsAplusCriteria) {
     if (!hasMLConsensus) reasoning.push(`❌ ML DIVERGENCE: Score ${mlScore} is too neutral for A+ setup.`);
@@ -838,7 +842,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     stopLoss: stopLossFinal,
     takeProfit: takeProfitFinal,
     technicals,
-    reasoning,
+    reasoning: cleanReasoning,
     ruleChecklist,
     mlPatternScore,
     sentimentScore,

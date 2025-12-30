@@ -135,29 +135,24 @@ export async function sendToTelegram(
     const ruleSet = analysis?.reasoning?.find((r: string) => r.includes("Rule Set:"))?.split(": ")[1] || "ORIGINAL RULES";
     
     // Build simplified message
-    let message = `🚀 NEW SIGNAL ALERT 🤖\n`;
+    let message = `🚀 <b>GILGALO PRO SIGNAL</b> 🤖\n`;
     message += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
-    message += `📊 Pair: ${signal.pair}\n`;
-    message += `🟢 Type: ${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}\n`;
-    message += `⏱ Timeframe: ${signal.timeframe}✅\n`;
-    message += `⚡️ RuleSet: ${ruleSet}\n\n`;
+    message += `📊 Pair: <b>${signal.pair}</b>\n`;
+    message += `🟢 Action: <b>${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}</b>\n\n`;
 
     if (analysis?.stakeAdvice) {
       const stake = analysis.stakeAdvice;
       const stakeEmoji = stake.recommendation === "HIGH" ? "💎" : (stake.recommendation === "MEDIUM" ? "✨" : "⚖️");
-      message += `${stakeEmoji} <b>STAKE ADVICE: ${stake.recommendation}</b>\n`;
-      message += `💰 <b>Size: ${stake.size}</b>\n`;
-      message += `📝 <i>${stake.reason}</i>\n\n`;
+      message += `${stakeEmoji} <b>STAKE: ${stake.recommendation} (${stake.size})</b>\n\n`;
     }
 
-    message += `⏰ Start Time: ${signal.startTime} EAT\n`;
-    message += `🏁 End Time: ${signal.endTime} EAT\n\n`;
-    message += `🎯 Entry: ${signal.entry.toFixed(5)}\n`;
-    message += `🛑 Stop Loss: ${signal.stopLoss.toFixed(5)}\n`;
-    message += `✅ Take Profit: ${signal.takeProfit.toFixed(5)}\n`;
-    message += `🔥 Confidence: ${signal.confidence}%\n\n`;
+    message += `🎯 Entry: <b>${signal.entry.toFixed(5)}</b>\n`;
+    message += `🛑 Stop Loss: <b>${signal.stopLoss.toFixed(5)}</b>\n`;
+    message += `✅ Take Profit: <b>${signal.takeProfit.toFixed(5)}</b>\n\n`;
+    
+    message += `⏰ Time: ${signal.startTime} - ${signal.endTime} EAT\n`;
     message += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `GILGALO TRADING PRO SIGNAL 💎`;
+    message += `<i>Trust the system. Trade the plan.</i>`;
 
     console.log(`[TELEGRAM] Sending simplified message to chat_id: ${TELEGRAM_CHAT_ID}`);
     console.log(`[TELEGRAM] Bot token (first 10 chars): ${TELEGRAM_BOT_TOKEN.substring(0, 10)}...`);
