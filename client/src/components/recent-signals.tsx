@@ -145,6 +145,10 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
 
 SignalItem.displayName = "SignalItem";
 
+interface RecentSignalsProps {
+  signals: SignalWithML[];
+}
+
 function RecentSignals({ signals }: RecentSignalsProps) {
   const [filter, setFilter] = useState<'all' | 'active' | 'won' | 'lost'>('all');
   const [expandedSignal, setExpandedSignal] = useState<string | null>(null);
