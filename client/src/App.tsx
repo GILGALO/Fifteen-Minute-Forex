@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -19,6 +19,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { AlertCircle, Clock } from "lucide-react";
+
+const MarketTicker = lazy(() => import("@/components/market-ticker"));
 
 function NewsCountdown() {
   const { data } = useQuery<any>({
@@ -99,13 +101,32 @@ function App() {
           <div className="flex h-screen w-full overflow-hidden">
             <AppSidebar isAdmin={isAdmin} />
             <div className="flex flex-col flex-1 w-full overflow-hidden">
-              <header className="flex items-center justify-between p-2 border-b sticky top-0 z-50 bg-background/50 backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <PushNotificationToggle />
-                  <ThemeToggle />
-                </div>
-                <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
-                  Trading Dashboard
+              <header className="flex flex-col sticky top-0 z-50 bg-background/50 backdrop-blur-sm">
+                <Suspense fallback={<div className="h-[40px] bg-background/30" />}>
+                  <MarketTicker />
+                </Suspense>
+                
+                <div className="flex flex-col border-t border-border/50">
+                  <div className="flex items-center justify-between p-3">
+                    <div className="flex items-center gap-3">
+                      <SidebarTrigger data-testid="button-sidebar-toggle" />
+                      <div className="flex flex-col gap-0.5">
+                        <div className="text-lg font-black tracking-tighter uppercase text-white">
+                          GILGALO
+                        </div>
+                        <div className="text-sm font-bold tracking-tight text-accent">
+                          TRADING
+                        </div>
+                        <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
+                          PRO SIGNAL
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <PushNotificationToggle />
+                      <ThemeToggle />
+                    </div>
+                  </div>
                 </div>
               </header>
               <main className="flex-1 overflow-auto bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
