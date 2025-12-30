@@ -501,6 +501,11 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const candleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
   ruleChecklist.candleConfirmation = candleConfirmed;
   
+  if (!candleConfirmed) {
+    reasoning.push(`❌ CANDLE CONFIRMATION FAILED (Waiting for strong price action)`);
+    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+  }
+  
   // Weighted Scoring for RSI/Stochastic
   const rsiValue = technicals.rsi;
   const stochK = technicals.stochastic.k;
