@@ -137,7 +137,8 @@ export async function sendToTelegram(
     message += `⏱ Timeframe:\n${signal.timeframe}\n`;
     message += `⏰ Start Time:\n${signal.startTime}\n`;
     message += `🏁 End Time:\n${signal.endTime}\n`;
-    message += `Confidence: ${signal.confidence}%\n\n`;
+    message += `Confidence: ${signal.confidence}%\n`;
+    message += `Grade: GRADE A\n\n`;
     message += `SIGNAL PASSED TRADE`;
 
     console.log(`[TELEGRAM] Sending simplified message to chat_id: ${TELEGRAM_CHAT_ID}`);
