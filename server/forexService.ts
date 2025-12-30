@@ -427,6 +427,37 @@ export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
   };
 }
 
+// Signal Cool-down tracking
+const signalHistory: Map<string, number> = new Map();
+const COOLDOWN_PERIOD = 15 * 60 * 1000; // 15 minutes
+
+function isPairInCooldown(pair: string): boolean {
+  const lastSignal = signalHistory.get(pair);
+  if (!lastSignal) return false;
+  return Date.now() - lastSignal < COOLDOWN_PERIOD;
+}
+
+function updateSignalHistory(pair: string) {
+  signalHistory.set(pair, Date.now());
+}
+
+function getMinConfidence(pair: string): number {
+  const accuracy = getPairAccuracy(pair);
+  if (accuracy === "HIGH") return 85;
+  if (accuracy === "MEDIUM") return 88;
+  return 92;
+}
+
+function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "B+" | "SKIPPED" {
+  const isHighVolumeSession = getCurrentSessionTime() !== "EVENING"; // Afternoon/Morning are higher volume
+  const mlThreshold = isHighVolumeSession ? 25 : 35;
+  
+  if (htfAligned && Math.abs(mlScore) >= mlThreshold && adx >= 20) {
+    return "B+";
+  }
+  return "SKIPPED";
+}
+
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
   const { isOpen, nextAction } = isMarketOpen();
   const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: false, marketRegime: false, trendExhaustion: true };
@@ -454,6 +485,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const stats = sessionTracker.getStats();
   if (sessionTracker.hasReachedDailyGoal() || sessionTracker.hasExceededMaxDrawdown()) {
     reasoning.push(`🛑 TRADING HALTED: Goal or Drawdown reached`);
+    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
+  }
+
+  // Cool-down filter
+  if (isPairInCooldown(pair)) {
+    reasoning.push(`⏳ COOL-DOWN: Skipping signal for ${pair} (15m window)`);
     return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
   }
 
@@ -527,7 +564,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   
   // Core A+ Filter Logic
-  const meetsAplusCriteria = hasMLConsensus && htfAligned && !isRsiOverExtended;
+  const rsiValueLocal = technicals.rsi;
+  const meetsAplusCriteria = hasMLConsensus && htfAligned && (m5Trend === "BULLISH" ? rsiValueLocal <= 88 : rsiValueLocal >= 12);
 
   if (!meetsAplusCriteria) {
     if (!hasMLConsensus) reasoning.push(`❌ ML DIVERGENCE: Score ${mlScore} is too neutral for A+ setup.`);
@@ -675,7 +713,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   // A+ Institutional Filter: Auto-dispatch only if FULL CORRELATION
   if (!hasFullCorrelation) {
     reasoning.push(`⚠️ DISPATCH BLOCKED: A+ Institutional Filter requires FULL CORRELATION for Telegram auto-dispatch.`);
-    return { pair, currentPrice, signalType, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
+    return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
   }
 
   // LOGIC FIX: Don't skip Grade C if it has high confidence or special conditions
@@ -685,31 +723,42 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   // ATR-based Dynamic SL/TP and Volatility Filter
-  const atr = technicals.atr;
-  const isJpy = pair.includes("JPY");
-  const volatilityMultiplier = isJpy ? 1.5 : 2.0;
+  const atrVal = technicals.atr;
+  const isJpyPair = pair.includes("JPY");
+  const volMultiplier = isJpyPair ? 1.5 : 2.0;
   
-  // Dynamic Volatility Filter: If ATR is extremely low relative to spread, skip
-  const spread = isJpy ? 0.02 : 0.00002;
-  if (atr < spread * 1.5) {
-    reasoning.push(`⚠️ VOLATILITY TOO LOW (ATR: ${atr.toFixed(5)})`);
+  // ATR vs Spread "Dead Zone" Filter
+  const spreadVal = isJpyPair ? 0.02 : 0.00002;
+  const minAtrBuffer = spreadVal * 3; // Profit potential must be at least 3x the spread
+  if (atrVal < minAtrBuffer) {
+    reasoning.push(`⚠️ DEAD ZONE: Volatility too low relative to spread (ATR: ${atrVal.toFixed(5)})`);
     ruleChecklist.volatilityFilter = false;
-    return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+    return { pair, currentPrice: 0, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
   ruleChecklist.volatilityFilter = true;
 
-  const slDistance = atr * volatilityMultiplier;
+  // Refined Grading Logic
+  const tacticalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
+  const finalGrade: "A" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "B+" ? "B" : "SKIPPED");
+
+  if (finalGrade === "SKIPPED") {
+    reasoning.push(`❌ FILTERED: Setup does not meet A+ or B+ Tactical criteria.`);
+    return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
+  }
+
+  const slDistance = atrVal * volMultiplier;
   const tpDistance = slDistance * 1.5; // 1:1.5 Risk/Reward
 
   const entry = currentPrice;
-  const stopLoss = signalType === "CALL" ? entry - slDistance : entry + slDistance;
-  const takeProfit = signalType === "CALL" ? entry + tpDistance : entry - tpDistance;  const pipValue = pair.includes("JPY") ? 0.01 : 0.0001;
-  const atrPips = technicals.atr / pipValue;
+  const stopLoss = signalTypeVal === "CALL" ? entry - slDistance : entry + slDistance;
+  const takeProfit = signalTypeVal === "CALL" ? entry + tpDistance : entry - tpDistance;
+  const pipValue = isJpyPair ? 0.01 : 0.0001;
+  const atrPips = atrVal / pipValue;
   const slPips = Math.max(atrPips * 1.5, 10); // Minimum 10 pips SL
   const tpPips = slPips * 1.5; // Fixed 1:1.5 Risk/Reward
 
-  const stopLossFinal = signalType === "CALL" ? currentPrice - (slPips * pipValue) : currentPrice + (slPips * pipValue);
-  const takeProfitFinal = signalType === "CALL" ? currentPrice + (tpPips * pipValue) : currentPrice - (tpPips * pipValue);
+  const stopLossFinal = signalTypeVal === "CALL" ? currentPrice - (slPips * pipValue) : currentPrice + (slPips * pipValue);
+  const takeProfitFinal = signalTypeVal === "CALL" ? currentPrice + (tpPips * pipValue) : currentPrice - (tpPips * pipValue);
   
   const riskReward = "1:1.5";
   const confluenceScore = Math.min(95, confidence);
@@ -740,19 +789,22 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
   reasoning.push(`Grade ${signalGrade} | Rule Set: ${ruleSetLabel} | ML Confidence: ${finalConfidence}%`);
 
-  // QUALITY GATE: Require 80%+ confidence for M5 trading (prevents low-quality signal spam)
-  const minConfidenceThreshold = 80;
-  if (finalConfidence < minConfidenceThreshold) {
-    reasoning.push(`🚫 SIGNAL FILTERED: Confidence ${finalConfidence}% below threshold (${minConfidenceThreshold}%)`);
+  // QUALITY GATE: Dynamic Confidence Floor
+  const minThreshold = getMinConfidence(pair);
+  if (finalConfidence < minThreshold) {
+    reasoning.push(`🚫 SIGNAL FILTERED: Confidence ${finalConfidence}% below ${pair} threshold (${minThreshold}%)`);
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
+
+  // Update cooldown only for successful dispatches
+  updateSignalHistory(pair);
 
   return {
     pair,
     currentPrice,
     signalType,
     confidence: finalConfidence,
-    signalGrade,
+    signalGrade: finalGrade,
     entry: currentPrice,
     stopLoss: stopLossFinal,
     takeProfit: takeProfitFinal,
