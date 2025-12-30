@@ -515,17 +515,16 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const alignmentText = `M5/M15: ${m5_m15_aligned ? "✅ALIGNED" : "❌CONFLICT"} | H1: ${htfAligned ? "✅ALIGNED" : "⚠️CONTRA"}`;
   reasoning.push(`Trend Analysis: ${alignmentText} | Direction: ${m5Trend}`);
   
-  // A+ Institutional Filter: Momentum Safety Guard (RSI 88/12)
-  const rsiValue = technicals.rsi;
-  const isRsiOverExtended = (m5Trend === "BULLISH" && rsiValue > 88) || (m5Trend === "BEARISH" && rsiValue < 12);
+  // Momentum Safety Guard (RSI 88/12)
+  const isRsiOverExtended = (m5Trend === "BULLISH" && technicals.rsi > 88) || (m5Trend === "BEARISH" && technicals.rsi < 12);
   ruleChecklist.momentumSafety = !isRsiOverExtended;
 
   if (isRsiOverExtended) {
-    reasoning.push(`⚠️ MOMENTUM EXHAUSTION: RSI ${rsiValue.toFixed(1)} is over-extended. Avoiding end-of-move entry.`);
+    reasoning.push(`⚠️ MOMENTUM EXHAUSTION: RSI ${technicals.rsi.toFixed(1)} is over-extended. Avoiding end-of-move entry.`);
   }
 
   // Final Grade and Dispatch Logic
-  let signalType: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
+  const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   
   // Core A+ Filter Logic
   const meetsAplusCriteria = hasMLConsensus && htfAligned && !isRsiOverExtended;
@@ -535,7 +534,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     if (!htfAligned) reasoning.push(`❌ H1 DIVERGENCE: H1 trend must align for A+ setup.`);
     
     return { 
-      pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", 
+      pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", 
       entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist,
       mlPatternScore
     };
@@ -572,23 +571,22 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   // Weighted Scoring for RSI/Stochastic
-  const rsiValue = technicals.rsi;
+  const rsiVal = technicals.rsi;
   const stochK = technicals.stochastic.k;
 
-  const isOriginalRsiOk = rsiValue >= 30 && rsiValue <= 70;
+  const isOriginalRsiOk = rsiVal >= 30 && rsiVal <= 70;
   const isOriginalStochOk = stochK >= 20 && stochK <= 80;
   const originalCandleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
   const originalVolumeConfirmed = !lastCandle.volume || lastCandle.volume > avgVol * 0.5;
   
   // Mid-Trend Logic for Flexible Rules
   const isMidTrend = technicals.adx > 30 && technicals.supertrend.direction === m5Trend;
-  const isFlexibleRsiOk = isMidTrend ? (rsiValue >= 25 && rsiValue <= 75) : (rsiValue >= 15 && rsiValue <= 85);
+  const isFlexibleRsiOk = isMidTrend ? (rsiVal >= 25 && rsiVal <= 75) : (rsiVal >= 15 && rsiVal <= 85);
   const isFlexibleStochOk = isMidTrend ? (stochK >= 10 && stochK <= 90) : (stochK >= 2 && stochK <= 98);
 
   let isFlexibleMode = false;
   let ruleSetLabel = "ORIGINAL RULES";
 
-  const mlPatternScore = detectPatterns(candles);
   const sentimentScore = analyzeSentiment(technicals);
   const mlConfidenceBoost = Math.floor((Math.abs(mlPatternScore.overallScore) + Math.abs(sentimentScore.overallSentiment)) / 20);
 
@@ -607,12 +605,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     isFlexibleMode = true;
     ruleSetLabel = "SCALP MODE";
     confidence -= 15;
-    reasoning.push(`📊 SCALP MODE: Relaxed rules for lower-volatility entry (RSI: ${rsiValue.toFixed(1)}, Stoch: ${stochK.toFixed(1)})`);
+    reasoning.push(`📊 SCALP MODE: Relaxed rules for lower-volatility entry (RSI: ${rsiVal.toFixed(1)}, Stoch: ${stochK.toFixed(1)})`);
   }
 
   // MOMENTUM FILTER: Relaxed boundaries if in flexible mode
-  const isExtremeZone = rsiValue > 99 || rsiValue < 1;
-  const rsiOk = isFlexibleMode ? (rsiValue >= 15 && rsiValue <= 85) : isOriginalRsiOk;
+  const isExtremeZone = rsiVal > 99 || rsiVal < 1;
+  const rsiOk = isFlexibleMode ? (rsiVal >= 15 && rsiVal <= 85) : isOriginalRsiOk;
   const stochOk = isFlexibleMode ? (stochK >= 2 && stochK <= 98) : isOriginalStochOk;
   const finalCandleConfirmed = isFlexibleMode ? (originalCandleConfirmed || technicals.adx >= 20) : originalCandleConfirmed;
   const finalVolumeConfirmed = isFlexibleMode ? true : originalVolumeConfirmed;
@@ -628,20 +626,18 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const isPerfectStructure = candleConfirmed && technicals.adx > 30;
   
-  ruleChecklist.momentumSafety = rsiOk && stochOk; // Mark momentum safety after validation
-
   // EXTREME ZONE: Always block RSI 95+ and 5-, too close to reversal
   if (isExtremeZone) {
-    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiValue.toFixed(1)}) - Reversal Risk Zone`);
-    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiVal.toFixed(1)}) - Reversal Risk Zone`);
+    return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
   
   if (!rsiOk || !stochOk) {
     confidence -= 12;
-    reasoning.push(`⚠️ MOMENTUM OUT OF RANGE (RSI: ${rsiValue.toFixed(1)}) - Confidence reduced`);
+    reasoning.push(`⚠️ MOMENTUM OUT OF RANGE (RSI: ${rsiVal.toFixed(1)}) - Confidence reduced`);
   }
 
-  const signalType = m5Trend === "BULLISH" ? "CALL" : "PUT";
+  const signalType = signalTypeVal;
   const exhausted = detectTrendExhaustion(technicals.adx, technicals.rsi, signalType);
 
   if (signalType === "PUT") {
@@ -674,8 +670,14 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     reasoning.push(`✨ HIGH-QUALITY GRADE A: Multi-TF Alignment`);
   }
 
-  const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), m5_m15_aligned);
+  const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   
+  // A+ Institutional Filter: Auto-dispatch only if FULL CORRELATION
+  if (!hasFullCorrelation) {
+    reasoning.push(`⚠️ DISPATCH BLOCKED: A+ Institutional Filter requires FULL CORRELATION for Telegram auto-dispatch.`);
+    return { pair, currentPrice, signalType, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
+  }
+
   // LOGIC FIX: Don't skip Grade C if it has high confidence or special conditions
   if (signalGrade === "C" && !candleConfirmed && confidence < 80) {
     reasoning.push(`⚠️ GRADE C SKIPPED`);
