@@ -394,12 +394,12 @@ function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAl
   if (exhausted) return "C";
   
   // High-Accuracy "A" Grade for Pocket Option:
-  // Requires high momentum (ADX > 20) + 100% indicator alignment (MACD + Supertrend) + HTF trend confirmation
-  if (adx > 20 && macdAligned && supertrendAligned && htfAligned) return "A";
+  // Requires high momentum (ADX > 28) + 100% indicator alignment (MACD + Supertrend) + HTF trend confirmation
+  if (adx > 28 && macdAligned && supertrendAligned && htfAligned) return "A";
   
   // Opportunistic "B" Grade:
   // Good for 5-min scalps if momentum is sufficient, even with slight misalignment
-  if (adx >= 15 && (macdAligned || supertrendAligned)) return "B";
+  if (adx >= 24 && (macdAligned || supertrendAligned)) return "B";
   
   return "C";
 }
@@ -455,10 +455,10 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   ruleChecklist.candleConfirmation = candleConfirmed;
   
   // Relaxed overbought/oversold filters for higher signal frequency
-  // BULLISH: RSI must stay below 95 (avoid extreme overbought), Stochastic K below 98
-  // BEARISH: RSI must stay above 5 (avoid extreme oversold), Stochastic K above 2
-  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 5 && technicals.rsi <= 95) : (technicals.rsi >= 5 && technicals.rsi <= 95);
-  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 98 : technicals.stochastic.k > 2;
+  // BULLISH: RSI must stay below 85 (avoid extreme overbought), Stochastic K below 90
+  // BEARISH: RSI must stay above 15 (avoid extreme oversold), Stochastic K above 10
+  const rsiOk = m5Trend === "BULLISH" ? (technicals.rsi >= 15 && technicals.rsi <= 85) : (technicals.rsi >= 15 && technicals.rsi <= 85);
+  const stochOk = m5Trend === "BULLISH" ? technicals.stochastic.k < 90 : technicals.stochastic.k > 10;
   if (!rsiOk || !stochOk) {
     reasoning.push(`❌ MOMENTUM UNSAFE (RSI/STOCH EXTREME)`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
@@ -470,7 +470,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
-  if (technicals.adx > 15) confidence += 10; else if (technicals.adx < 10) confidence -= 12;
+  if (technicals.adx > 25) confidence += 10; else if (technicals.adx < 15) confidence -= 12;
   // GRADE A+ WIN-RATE VERIFICATION (INSTITUTIONAL PRECISION)
   const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
   const isPerfectAlignment = indicatorCheck.count === 4; 
