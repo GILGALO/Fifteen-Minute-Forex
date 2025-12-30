@@ -587,6 +587,10 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     reasoning.push(`⚠️ MOMENTUM EXHAUSTION: RSI ${technicals.rsi.toFixed(1)} is over-extended. Avoiding end-of-move entry.`);
   }
 
+  // Core A+ Filter Logic
+  const rsiValueLocal = technicals.rsi;
+  const meetsAplusCriteria = hasMLConsensus && htfAligned && (m5Trend === "BULLISH" ? rsiValueLocal <= 88 : rsiValueLocal >= 12);
+
   // Final Grade and Dispatch Logic
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   
