@@ -146,8 +146,6 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
           if (state.scanStatus?.includes("NEWS EVENT BLOCK")) {
             const match = state.scanStatus.match(/BLOCK: (.*)/);
             if (match) {
-              // We'll calculate remaining time on the backend soon, 
-              // for now we'll just show the name and let the interval handle updates
               setNewsBlockInfo(prev => ({ 
                 name: match[1], 
                 remainingMinutes: prev?.remainingMinutes || 30 
@@ -173,6 +171,9 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
+      // Immediately trigger local update for smoothness
+      if (updates.autoMode !== undefined) setAutoMode(updates.autoMode === "true");
+      if (updates.scanMode !== undefined) setScanMode(updates.scanMode === "true");
     } catch (err) {
       console.error("Failed to update remote scanner state:", err);
     }

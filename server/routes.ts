@@ -106,6 +106,15 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/forex/signals", async (req, res) => {
+    try {
+      const signals = await storage.listSignals();
+      res.json(signals);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   app.post("/api/forex/signal", async (req, res) => {
     try {
       const { pair, timeframe } = req.body;
