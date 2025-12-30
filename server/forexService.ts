@@ -514,19 +514,36 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const rsiValue = technicals.rsi;
   const stochK = technicals.stochastic.k;
 
-  // Check with ORIGINAL STRICT RULES first
   const isOriginalRsiOk = rsiValue >= 30 && rsiValue <= 70;
   const isOriginalStochOk = stochK >= 20 && stochK <= 80;
   const originalCandleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
   const originalVolumeConfirmed = !lastCandle.volume || lastCandle.volume > avgVol * 0.5;
   
+  // Mid-Trend Logic for Flexible Rules
+  const isMidTrend = technicals.adx > 30 && technicals.supertrend.direction === m5Trend;
+  const isFlexibleRsiOk = isMidTrend ? (rsiValue >= 25 && rsiValue <= 75) : (rsiValue >= 15 && rsiValue <= 85);
+  const isFlexibleStochOk = isMidTrend ? (stochK >= 10 && stochK <= 90) : (stochK >= 2 && stochK <= 98);
+
   let isFlexibleMode = false;
   let ruleSetLabel = "ORIGINAL RULES";
 
-  if (!isOriginalRsiOk || !isOriginalStochOk || !m5_m15_aligned || !originalCandleConfirmed || !originalVolumeConfirmed) {
+  const mlPatternScore = detectPatterns(candles);
+  const sentimentScore = analyzeSentiment(technicals);
+  const mlConfidenceBoost = Math.floor((Math.abs(mlPatternScore.score) + Math.abs(sentimentScore.score)) / 20);
+
+  if (isOriginalRsiOk && isOriginalStochOk && originalCandleConfirmed && originalVolumeConfirmed) {
+    confidence += 10;
+    reasoning.push(`✅ Rule Set: ORIGINAL RULES`);
+  } else if (isFlexibleRsiOk && isFlexibleStochOk) {
     isFlexibleMode = true;
-    ruleSetLabel = "FLEXIBLE RULES (Active Leniency)";
-    reasoning.push(`ℹ️ FLEXIBLE MODE: Original criteria failed, applying secondary high-quality conditions.`);
+    ruleSetLabel = "FLEXIBLE RULES";
+    confidence -= 10; 
+    reasoning.push(`ℹ️ FLEXIBLE MODE: Secondary criteria active`);
+    reasoning.push(`✅ Rule Set: FLEXIBLE RULES`);
+    if (isMidTrend) reasoning.push(`🚀 MID-TREND BOOST: Strong momentum detected`);
+  } else {
+    reasoning.push(`❌ NO RULESET ALIGNMENT (RSI: ${rsiValue.toFixed(1)}, Stoch: ${stochK.toFixed(1)})`);
+    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
 
   // MOMENTUM FILTER: Relaxed boundaries if in flexible mode

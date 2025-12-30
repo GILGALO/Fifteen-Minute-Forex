@@ -494,7 +494,7 @@ export async function registerRoutes(
   });
 
   // AUTO-SCANNER
-  const AUTO_SCAN_INTERVAL_MS = 30 * 1000;
+  const AUTO_SCAN_INTERVAL_MS = 15 * 1000; // Increased frequency to 15s
   let lastSignalDispatchTime = 0;
   const MIN_DISPATCH_INTERVAL = 4 * 60 * 1000; // Increased to 4m to ensure current signal finishes (5m duration)
   let lastSignalEndTime: number = 0;
