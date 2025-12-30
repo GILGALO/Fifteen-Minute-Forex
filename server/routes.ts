@@ -486,23 +486,30 @@ export async function registerRoutes(
 
   // AUTO-SCANNER
   const AUTO_SCAN_INTERVAL_MS = 30 * 1000;
-  let autoScanEnabled = true;
   let lastSignalDispatchTime = 0;
-  const MIN_DISPATCH_INTERVAL = 3 * 60 * 1000;
+  const MIN_DISPATCH_INTERVAL = 4 * 60 * 1000; // Increased to 4m to ensure current signal finishes (5m duration)
+  let lastSignalEndTime: number = 0;
 
   async function runAutoScan() {
     try {
+      const now = Date.now();
+      
+      // Strict Timing Lock: Don't scan if a signal is currently active (within its 5m window)
+      if (now < lastSignalEndTime) {
+        return;
+      }
+
       // Check scanner state - respect autoMode toggle
       const scannerState = await storage.getScannerState();
       if (scannerState.autoMode !== "true") return;
 
-      const now = Date.now();
       const kenyaOffset = 3 * 60 * 60 * 1000;
       const nowKenya = new Date(now + kenyaOffset);
       const currentMinutes = nowKenya.getMinutes();
       const candleInterval = 5;
       const minutesIntoCandle = currentMinutes % candleInterval;
       
+      // We scan at the 2-minute mark of the current candle to prepare for the NEXT candle
       if (minutesIntoCandle !== 2) return;
 
       const signals = await Promise.all(
@@ -512,10 +519,9 @@ export async function registerRoutes(
       const highProbSignals = signals.filter(s => s.confidence >= 65 && s.signalGrade !== "SKIPPED");
       
       if (now - lastSignalDispatchTime < MIN_DISPATCH_INTERVAL) return;
-      lastSignalDispatchTime = now;
       
       if (highProbSignals.length > 0) {
-        // Dispatch only the single best signal from this turn to prevent multiple signals at once
+        // Dispatch only the single best signal from this turn
         const bestAutoSignal = highProbSignals.sort((a, b) => b.confidence - a.confidence)[0];
         
         const minutesToNext = candleInterval - minutesIntoCandle;
@@ -523,6 +529,13 @@ export async function registerRoutes(
         startTimeDate.setSeconds(0, 0);
         const startTime = startTimeDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         
+        const endTimeDate = new Date(startTimeDate.getTime() + (5 * 60000));
+        const endTime = endTimeDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        
+        // Set the global lock for the end time of this signal
+        lastSignalEndTime = endTimeDate.getTime();
+        lastSignalDispatchTime = now;
+
         const signalData = {
           id: `auto-${Date.now()}-${bestAutoSignal.pair.replace('/', '')}`,
           pair: bestAutoSignal.pair,
@@ -534,9 +547,12 @@ export async function registerRoutes(
           confidence: bestAutoSignal.confidence,
           timestamp: Date.now(),
           startTime,
-          endTime: "", // Added to fix LSP error
+          endTime,
           status: "active" as const
         };
+        
+        // PERSIST the signal so it shows up in the App Dashboard
+        await storage.createSignal(signalData);
         
         await sendToTelegram(signalData, bestAutoSignal, true);
         await sendPushNotification(

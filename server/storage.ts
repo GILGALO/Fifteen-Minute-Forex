@@ -16,6 +16,8 @@ export interface IStorage {
   deleteTrade(id: string): Promise<boolean>;
   getScannerState(): Promise<ScannerState>;
   updateScannerState(state: Partial<InsertScannerState>): Promise<ScannerState>;
+  createSignal(signal: any): Promise<any>;
+  listSignals(): Promise<any[]>;
   addPushSubscription(sub: InsertPushSubscription): Promise<PushSubscription>;
   getAllPushSubscriptions(): Promise<PushSubscription[]>;
   removePushSubscription(endpoint: string): Promise<void>;
@@ -109,6 +111,19 @@ export class MemStorage implements IStorage {
       lastUpdated: new Date()
     } as ScannerState;
     return this.scannerState;
+  }
+
+  async createSignal(signal: any): Promise<any> {
+    const id = signal.id || crypto.randomUUID();
+    const newSignal = { ...signal, id, timestamp: new Date(signal.timestamp || Date.now()) };
+    this.trades.set(id, newSignal as any);
+    return newSignal;
+  }
+
+  async listSignals(): Promise<any[]> {
+    return Array.from(this.trades.values())
+      .filter((t: any) => t.status === "active")
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }
 
   async addPushSubscription(insertSub: InsertPushSubscription): Promise<PushSubscription> {
