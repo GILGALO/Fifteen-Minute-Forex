@@ -514,31 +514,34 @@ export async function registerRoutes(
       if (now - lastSignalDispatchTime < MIN_DISPATCH_INTERVAL) return;
       lastSignalDispatchTime = now;
       
-      for (const signal of highProbSignals) {
+      if (highProbSignals.length > 0) {
+        // Dispatch only the single best signal from this turn to prevent multiple signals at once
+        const bestAutoSignal = highProbSignals.sort((a, b) => b.confidence - a.confidence)[0];
+        
         const minutesToNext = candleInterval - minutesIntoCandle;
         const startTimeDate = new Date(nowKenya.getTime() + (minutesToNext * 60000));
         startTimeDate.setSeconds(0, 0);
         const startTime = startTimeDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         
         const signalData = {
-          id: `auto-${Date.now()}-${signal.pair.replace('/', '')}`,
-          pair: signal.pair,
+          id: `auto-${Date.now()}-${bestAutoSignal.pair.replace('/', '')}`,
+          pair: bestAutoSignal.pair,
           timeframe: "M5",
-          type: signal.signalType,
-          entry: signal.entry,
-          stopLoss: signal.stopLoss,
-          takeProfit: signal.takeProfit,
-          confidence: signal.confidence,
+          type: bestAutoSignal.signalType,
+          entry: bestAutoSignal.entry,
+          stopLoss: bestAutoSignal.stopLoss,
+          takeProfit: bestAutoSignal.takeProfit,
+          confidence: bestAutoSignal.confidence,
           timestamp: Date.now(),
           startTime,
           endTime: "", // Added to fix LSP error
           status: "active" as const
         };
         
-        await sendToTelegram(signalData, signal, true);
+        await sendToTelegram(signalData, bestAutoSignal, true);
         await sendPushNotification(
-          `🚀 SIGNAL: ${signal.pair} ${signal.signalType}`,
-          `Confidence: ${signal.confidence}% | Entry: ${startTime} EAT`
+          `🚀 SIGNAL: ${bestAutoSignal.pair} ${bestAutoSignal.signalType}`,
+          `Confidence: ${bestAutoSignal.confidence}% | Entry: ${startTime} EAT`
         );
       }
     } catch (error: any) {
