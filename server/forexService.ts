@@ -548,13 +548,16 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   } else if (isFlexibleRsiOk && isFlexibleStochOk) {
     isFlexibleMode = true;
     ruleSetLabel = "FLEXIBLE RULES";
-    confidence -= 10; 
+    confidence -= 5; 
     reasoning.push(`ℹ️ FLEXIBLE MODE: Secondary criteria active`);
     reasoning.push(`✅ Rule Set: FLEXIBLE RULES`);
     if (isMidTrend) reasoning.push(`🚀 MID-TREND BOOST: Strong momentum detected`);
   } else {
-    reasoning.push(`❌ NO RULESET ALIGNMENT (RSI: ${rsiValue.toFixed(1)}, Stoch: ${stochK.toFixed(1)})`);
-    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
+    // Allow scalp mode instead of rejecting
+    isFlexibleMode = true;
+    ruleSetLabel = "SCALP MODE";
+    confidence -= 15;
+    reasoning.push(`📊 SCALP MODE: Relaxed rules for lower-volatility entry (RSI: ${rsiValue.toFixed(1)}, Stoch: ${stochK.toFixed(1)})`);
   }
 
   // MOMENTUM FILTER: Relaxed boundaries if in flexible mode
@@ -569,8 +572,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   ruleChecklist.candleConfirmation = candleConfirmed;
   
   if (!candleConfirmed && technicals.adx < 20) {
-    reasoning.push(`❌ CANDLE CONFIRMATION FAILED`);
-    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+    confidence -= 8;
+    reasoning.push(`⚠️ WEAK CANDLE (ADX: ${technicals.adx.toFixed(1)}) - Confidence reduced`);
   }
 
   const isPerfectStructure = candleConfirmed && technicals.adx > 30;
@@ -584,8 +587,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
   
   if (!rsiOk || !stochOk) {
-    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiValue.toFixed(1)}) - Failed Momentum Check`);
-    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+    confidence -= 12;
+    reasoning.push(`⚠️ MOMENTUM OUT OF RANGE (RSI: ${rsiValue.toFixed(1)}) - Confidence reduced`);
   }
 
   const signalType = m5Trend === "BULLISH" ? "CALL" : "PUT", exhausted = detectTrendExhaustion(technicals.adx, technicals.rsi, signalType);

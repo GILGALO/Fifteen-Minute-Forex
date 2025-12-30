@@ -518,16 +518,22 @@ export async function registerRoutes(
       const candleInterval = 5;
       const minutesIntoCandle = currentMinutes % candleInterval;
       
-      // We scan at the 2-minute mark of the current candle to prepare for the NEXT candle
-      if (minutesIntoCandle !== 2) return;
+      // Scan more frequently: every minute instead of just at :02 mark
+      // This increases the chance of catching good setups
+      // if (minutesIntoCandle !== 2) return;
 
       const signals = await Promise.all(
         FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M5", apiKey))
       );
       
-      const highProbSignals = signals.filter(s => s.confidence >= 65 && s.signalGrade !== "SKIPPED");
+      const sortedByConfidence = signals.sort((a, b) => b.confidence - a.confidence);
+      const bestSignals = sortedByConfidence.slice(0, 3);
+      const skippedCount = signals.filter(s => s.signalGrade === "SKIPPED").length;
       
-      log(`[AUTO-SCAN] Found ${highProbSignals.length} high-probability signals (confidence 65%+) from ${signals.length} pairs scanned`, "auto-scan");
+      const highProbSignals = signals.filter(s => s.confidence >= 50 && s.signalGrade !== "SKIPPED");
+      
+      const topConfidences = bestSignals.map(s => `${s.pair}:${s.confidence}%`).join(" | ");
+      log(`[AUTO-SCAN] Top 3: ${topConfidences} | Valid: ${highProbSignals.length} (50%+) | Skipped: ${skippedCount}`, "auto-scan");
       
       if (now - lastSignalDispatchTime < MIN_DISPATCH_INTERVAL) {
         if (highProbSignals.length > 0) {
@@ -578,7 +584,8 @@ export async function registerRoutes(
           `Confidence: ${bestAutoSignal.confidence}% | Entry: ${startTime} EAT | Grade: ${bestAutoSignal.signalGrade}`
         );
       } else {
-        log(`[AUTO-SCAN] No high-probability signals detected in this scan cycle`, "auto-scan");
+        const topSignal = bestSignals[0];
+        log(`[AUTO-SCAN] Best signal: ${topSignal.pair} ${topSignal.signalType} at ${topSignal.confidence}% (below 50% threshold) - Reason: ${topSignal.reasoning.slice(-1)[0] || 'Multiple filters'}`, "auto-scan");
       }
     } catch (error: any) {
       log(`[AUTO-SCAN ERROR] ${error.message}`, "auto-scan");
