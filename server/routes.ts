@@ -152,13 +152,13 @@ export async function registerRoutes(
       const sortedSignals = signals.sort((a, b) => b.confidence - a.confidence);
       const validSignals = sortedSignals.filter(s => s.confidence > 0);
       
-      log(`[SCAN] Complete - Found ${validSignals.length}/${signals.length} valid signals. Best: ${sortedSignals[0]?.confidence || 0}%`, "scan");
+      log(`[SCAN] Complete - Found ${validSignals.length}/${signals.length} valid signals. Best: ${validSignals[0]?.confidence || 0}%`, "scan");
       
       res.json({
         timestamp: Date.now(),
         timeframe: tf,
-        signals: sortedSignals,
-        bestSignal: sortedSignals[0],
+        signals: validSignals,
+        bestSignal: validSignals[0] || null,
         stats: {
           total: signals.length,
           valid: validSignals.length,
