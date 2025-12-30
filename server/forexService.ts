@@ -121,6 +121,11 @@ export interface SignalAnalysis {
   mlPatternScore?: PatternScore;
   sentimentScore?: SentimentScore;
   mlConfidenceBoost?: number;
+  stakeAdvice?: {
+    recommendation: "HIGH" | "MEDIUM" | "LOW" | "CAUTION";
+    reason: string;
+    size: string;
+  };
 }
 
 interface RuleChecklist {
@@ -456,6 +461,28 @@ function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "B
     return "B+";
   }
   return "SKIPPED";
+}
+
+function getStakeAdvice(confidence: number, grade: string, pair: string): { recommendation: "HIGH" | "MEDIUM" | "LOW" | "CAUTION"; reason: string; size: string } {
+  if (grade === "A" && confidence >= 92) {
+    return {
+      recommendation: "HIGH",
+      reason: "💎 A+ Institutional Setup: Multi-TF Alignment + ML Pattern Consensus + High Confidence.",
+      size: "2.0% - 3.0% of Balance"
+    };
+  }
+  if (confidence >= 88) {
+    return {
+      recommendation: "MEDIUM",
+      reason: "✨ High Probability Tactical Setup: Strong momentum with H1 alignment.",
+      size: "1.0% - 1.5% of Balance"
+    };
+  }
+  return {
+    recommendation: "LOW",
+    reason: "⚖️ Standard Setup: Follow strict risk management. Momentum is stable but not explosive.",
+    size: "0.5% - 1.0% of Balance"
+  };
 }
 
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
@@ -799,6 +826,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   // Update cooldown only for successful dispatches
   updateSignalHistory(pair);
 
+  const stakeAdvice = getStakeAdvice(finalConfidence, finalGrade, pair);
+
   return {
     pair,
     currentPrice,
@@ -813,7 +842,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     ruleChecklist,
     mlPatternScore,
     sentimentScore,
-    mlConfidenceBoost
+    mlConfidenceBoost,
+    stakeAdvice
   };
 }
 

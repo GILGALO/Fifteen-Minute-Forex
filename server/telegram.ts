@@ -141,6 +141,15 @@ export async function sendToTelegram(
     message += `🟢 Type: ${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}\n`;
     message += `⏱ Timeframe: ${signal.timeframe}✅\n`;
     message += `⚡️ RuleSet: ${ruleSet}\n\n`;
+
+    if (analysis?.stakeAdvice) {
+      const stake = analysis.stakeAdvice;
+      const stakeEmoji = stake.recommendation === "HIGH" ? "💎" : (stake.recommendation === "MEDIUM" ? "✨" : "⚖️");
+      message += `${stakeEmoji} <b>STAKE ADVICE: ${stake.recommendation}</b>\n`;
+      message += `💰 <b>Size: ${stake.size}</b>\n`;
+      message += `📝 <i>${stake.reason}</i>\n\n`;
+    }
+
     message += `⏰ Start Time: ${signal.startTime} EAT\n`;
     message += `🏁 End Time: ${signal.endTime} EAT\n\n`;
     message += `🎯 Entry: ${signal.entry.toFixed(5)}\n`;
