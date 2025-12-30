@@ -150,7 +150,8 @@ export async function registerRoutes(
       );
       
       const sortedSignals = signals.sort((a, b) => b.confidence - a.confidence);
-      const validSignals = sortedSignals.filter(s => s.confidence > 0);
+      // Filter out signals that are unconfirmed (SKIPPED) or have 0 confidence
+      const validSignals = sortedSignals.filter(s => s.confidence > 0 && s.signalGrade !== "SKIPPED");
       
       // Send only the BEST signal per turn (one signal at a time)
       const bestSignal = validSignals[0] || null;
