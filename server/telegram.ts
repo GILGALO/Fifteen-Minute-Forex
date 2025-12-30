@@ -146,11 +146,10 @@ export async function sendToTelegram(
       message += `${stakeEmoji} <b>STAKE: ${stake.recommendation} (${stake.size})</b>\n\n`;
     }
 
-    message += `🎯 Entry: <b>${signal.entry.toFixed(5)}</b>\n`;
-    message += `🛑 Stop Loss: <b>${signal.stopLoss.toFixed(5)}</b>\n`;
-    message += `✅ Take Profit: <b>${signal.takeProfit.toFixed(5)}</b>\n\n`;
+    message += `🎯 Entry: <b>${signal.entry.toFixed(5)}</b>\n\n`;
+    message += `⏰ Start Time: <b>${signal.startTime} EAT</b>\n`;
+    message += `🏁 End Time: <b>${signal.endTime} EAT</b>\n\n`;
     
-    message += `⏰ Time: ${signal.startTime} - ${signal.endTime} EAT\n`;
     message += `━━━━━━━━━━━━━━━━━━━━━\n`;
     message += `<i>Trust the system. Trade the plan.</i>`;
 
