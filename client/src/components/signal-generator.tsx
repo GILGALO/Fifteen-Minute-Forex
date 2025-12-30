@@ -720,8 +720,13 @@ ${lastSignal?.type === "CALL" ? "🟢" : "🔴"} DIRECTION: ${lastSignal?.type =
                       )}
                     </motion.div>
                     <div>
-                      <div className={`text-3xl font-black ${lastSignal.type === "CALL" ? "text-emerald-500 neon-text" : "text-rose-500 neon-text"}`}>
+                      <div className={`text-3xl font-black ${lastSignal.type === "CALL" ? "text-emerald-500 neon-text" : "text-rose-500 neon-text"} flex items-center gap-2`}>
                         {lastSignal.type}
+                        {lastAnalysis?.reasoning?.some((r: string) => r.includes("VOLATILITY WARNING")) && (
+                          <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-500 text-[8px] sm:text-[10px] font-bold border border-amber-500/30 animate-pulse flex-shrink-0">
+                            ⚠️ WARNING
+                          </span>
+                        )}
                       </div>
                       <div className="text-sm font-mono text-muted-foreground font-semibold">{lastSignal.pair}</div>
                     </div>
