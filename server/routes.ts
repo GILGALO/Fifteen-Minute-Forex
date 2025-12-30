@@ -494,9 +494,9 @@ export async function registerRoutes(
   });
 
   // AUTO-SCANNER
-  const AUTO_SCAN_INTERVAL_MS = 15 * 1000; // Increased frequency to 15s
+  const AUTO_SCAN_INTERVAL_MS = 5 * 1000; // Scan every 5 seconds for more frequent signal detection
   let lastSignalDispatchTime = 0;
-  const MIN_DISPATCH_INTERVAL = 4 * 60 * 1000; // Increased to 4m to ensure current signal finishes (5m duration)
+  const MIN_DISPATCH_INTERVAL = 4 * 60 * 1000; // 4m to ensure current signal finishes (5m duration)
   let lastSignalEndTime: number = 0;
 
   async function runAutoScan() {
@@ -527,7 +527,14 @@ export async function registerRoutes(
       
       const highProbSignals = signals.filter(s => s.confidence >= 65 && s.signalGrade !== "SKIPPED");
       
-      if (now - lastSignalDispatchTime < MIN_DISPATCH_INTERVAL) return;
+      log(`[AUTO-SCAN] Found ${highProbSignals.length} high-probability signals (confidence 65%+) from ${signals.length} pairs scanned`, "auto-scan");
+      
+      if (now - lastSignalDispatchTime < MIN_DISPATCH_INTERVAL) {
+        if (highProbSignals.length > 0) {
+          log(`[AUTO-SCAN] ${highProbSignals[0].pair} ${highProbSignals[0].signalType} at ${highProbSignals[0].confidence}% - Waiting for dispatch window (${Math.round((MIN_DISPATCH_INTERVAL - (now - lastSignalDispatchTime)) / 1000)}s remaining)`, "auto-scan");
+        }
+        return;
+      }
       
       if (highProbSignals.length > 0) {
         // Dispatch only the single best signal from this turn
@@ -560,14 +567,18 @@ export async function registerRoutes(
           status: "active" as const
         };
         
+        log(`[AUTO-SCAN DISPATCHED] ${bestAutoSignal.pair} ${bestAutoSignal.signalType} | Grade: ${bestAutoSignal.signalGrade} | Confidence: ${bestAutoSignal.confidence}% | Entry: ${startTime} EAT | Exit: ${endTime} EAT`, "signal-verified");
+        
         // PERSIST the signal so it shows up in the App Dashboard
         await storage.createSignal(signalData);
         
         await sendToTelegram(signalData, bestAutoSignal, true);
         await sendPushNotification(
           `🚀 SIGNAL: ${bestAutoSignal.pair} ${bestAutoSignal.signalType}`,
-          `Confidence: ${bestAutoSignal.confidence}% | Entry: ${startTime} EAT`
+          `Confidence: ${bestAutoSignal.confidence}% | Entry: ${startTime} EAT | Grade: ${bestAutoSignal.signalGrade}`
         );
+      } else {
+        log(`[AUTO-SCAN] No high-probability signals detected in this scan cycle`, "auto-scan");
       }
     } catch (error: any) {
       log(`[AUTO-SCAN ERROR] ${error.message}`, "auto-scan");

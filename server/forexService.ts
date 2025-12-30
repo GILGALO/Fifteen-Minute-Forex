@@ -489,21 +489,32 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   
   ruleChecklist.htfAlignment = m5_m15_aligned; // Use M15 as primary confirmation
   
-  const alignmentText = `M5/M15: ${m5_m15_aligned ? "YES" : "NO"} | H1: ${htfAligned ? "YES" : "NO"}`;
-  reasoning.push(`Multi-TF: ${alignmentText} | Trend: ${m5Trend}`);
+  const alignmentText = `M5/M15: ${m5_m15_aligned ? "✅ALIGNED" : "❌CONFLICT"} | H1: ${htfAligned ? "✅ALIGNED" : "⚠️CONTRA"}`;
+  reasoning.push(`Trend Analysis: ${alignmentText} | Direction: ${m5Trend}`);
+  
+  // IMPROVED TREND CATCHING: Detect early trend formation with ADX crossover
+  const adxStrength = technicals.adx;
+  const isTrendForming = adxStrength > 15 && adxStrength < 25; // Early trend formation
+  const isTrendStrong = adxStrength >= 25; // Strong established trend
   
   if (m5_m15_aligned) { 
-    confidence += 15; 
-    reasoning.push(`✅ M15 CONFIRMATION`); 
-  } else if (m5Trend === m15Trend || technicalsM15.rsi > 40 && technicalsM15.rsi < 60) {
-    confidence += 5;
-    reasoning.push(`⚠️ M15 NEUTRAL (Leniency Active)`);
+    confidence += 18; // Boosted for better trend catching
+    reasoning.push(`✅ STRONG TREND MATCH (M5 = M15 = ${m5Trend})`); 
+  } else if (isTrendForming && m5Trend === m15Trend) {
+    confidence += 8;
+    reasoning.push(`📈 TREND FORMING: Early ${m5Trend} confirmation (ADX: ${adxStrength.toFixed(1)})`);
+  } else if (isTrendStrong && technicalsM15.adx > 20) {
+    confidence += 10;
+    reasoning.push(`💪 STRONG TREND DETECTED: M5 showing ${m5Trend} (ADX: ${adxStrength.toFixed(1)})`);
+  } else if (technicalsM15.rsi > 40 && technicalsM15.rsi < 60) {
+    confidence += 4;
+    reasoning.push(`⚠️ NEUTRAL M15 (ADX: ${technicalsM15.adx.toFixed(1)}) - Scalp Mode Active`);
   } else {
-    reasoning.push(`❌ M5/M15 CONFLICT`);
+    reasoning.push(`❌ WEAK TREND FORMATION: M5/M15 misaligned (ADX: ${adxStrength.toFixed(1)})`);
     // Return skipped signal
   }
 
-  if (htfAligned) { confidence += 5; reasoning.push(`✅ H1 ALIGNED`); } else { reasoning.push(`⚠️ H1 CONTRA-TREND (Scalp Mode)`); }
+  if (htfAligned) { confidence += 7; reasoning.push(`✅ H1 CONFLUENCE: All timeframes aligned`); } else { reasoning.push(`⚠️ H1 DIVERGENCE: ${h1Trend} vs ${m5Trend} - Scalp Mode`); }
 
   if (technicals.marketRegime !== "TRENDING" && technicals.adx < 15) {
     reasoning.push(`❌ LOW VOLATILITY RANGE`);
