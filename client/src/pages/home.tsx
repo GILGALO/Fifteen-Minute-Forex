@@ -217,13 +217,11 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
                 <SidebarTrigger data-testid="button-sidebar-toggle" className="hover-elevate min-h-11 px-4 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer flex-shrink-0 text-sm" />
                 <ThemeToggle />
                 {isAdmin && (
-                  <Link 
-                    href="/admin"
-                    className="min-h-11 px-4 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group text-sm sm:text-xs"
-                    data-testid="link-admin"
-                  >
-                    <Settings className="w-5 h-5 text-slate-400 group-hover:rotate-90 transition-transform duration-500 flex-shrink-0" />
-                    <span className="font-bold text-slate-200 hidden sm:inline whitespace-nowrap">System Config</span>
+                  <Link href="/admin">
+                    <div className="min-h-11 px-4 rounded-md sm:rounded-lg bg-white/5 border border-white/10 flex items-center gap-2 hover:bg-white/10 transition-all cursor-pointer group text-sm sm:text-xs" data-testid="link-admin">
+                      <Settings className="w-5 h-5 text-slate-400 group-hover:rotate-90 transition-transform duration-500 flex-shrink-0" />
+                      <span className="font-bold text-slate-200 hidden sm:inline whitespace-nowrap">System Config</span>
+                    </div>
                   </Link>
                 )}
                 <Button
