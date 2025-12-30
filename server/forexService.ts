@@ -494,9 +494,20 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
-  const pipValue = pair.includes("JPY") ? 0.01 : 0.0001, slPips = Math.max(technicals.atr * 1.5, pipValue * 10);
-  const stopLoss = signalType === "CALL" ? currentPrice - slPips : currentPrice + slPips;
-  const takeProfit = signalType === "CALL" ? currentPrice + slPips * 1.5 : currentPrice - slPips * 1.5;
+  // ATR-based Stop Loss and Take Profit
+  const pipValue = pair.includes("JPY") ? 0.01 : 0.0001;
+  const atrPips = technicals.atr / pipValue;
+  const slPips = Math.max(atrPips * 1.5, 10); // Minimum 10 pips SL
+  const tpPips = slPips * 1.5; // Fixed 1:1.5 Risk/Reward
+  
+  const stopLoss = signalType === "CALL" ? currentPrice - (slPips * pipValue) : currentPrice + (slPips * pipValue);
+  const takeProfit = signalType === "CALL" ? currentPrice + (tpPips * pipValue) : currentPrice - (tpPips * pipValue);
+  
+  const riskReward = "1:1.5";
+  const confluenceScore = Math.min(95, confidence);
+  const scoreDiff = Math.abs(confidence - 65);
+  
+  reasoning.push(`Final Confluence: ${confluenceScore}% | Score diff: ${scoreDiff} | R/R: ${riskReward}`);
 
   // ===== ML & SENTIMENT ANALYSIS =====
   const mlPatternScore = detectPatterns(candles);
@@ -520,7 +531,22 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   if (confidence < sessionThreshold) confidence = Math.max(sessionThreshold - 5, confidence);
   reasoning.push(`Grade ${signalGrade} | ML Confidence: ${confidence}%`);
 
-  return { pair, currentPrice, signalType, confidence, signalGrade, entry: currentPrice, stopLoss, takeProfit, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
+  return {
+    pair,
+    currentPrice,
+    signalType,
+    confidence,
+    signalGrade,
+    entry: currentPrice,
+    stopLoss,
+    takeProfit,
+    technicals,
+    reasoning,
+    ruleChecklist,
+    mlPatternScore,
+    sentimentScore,
+    mlConfidenceBoost
+  };
 }
 
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
