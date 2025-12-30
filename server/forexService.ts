@@ -444,6 +444,9 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const currentPrice = lastCandle.close, htfAligned = m5Trend === h1Trend;
   ruleChecklist.htfAlignment = htfAligned;
+  const alignmentText = htfAligned ? "H1 & M5 ALIGNED 🟢" : "MISALIGNED 🔴";
+  reasoning.push(`HTF Alignment: ${alignmentText} | Trend: ${m5Trend}`);
+  
   if (htfAligned) { confidence += 10; reasoning.push(`✅ HTF ALIGNED`); } else { confidence += 2; reasoning.push(`⚠️ HTF MISALIGNED (Binary Mode)`); }
 
   if (technicals.marketRegime !== "TRENDING") {

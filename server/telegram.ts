@@ -144,18 +144,12 @@ export async function sendToTelegram(
     const dayName = kenyaStart.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Africa/Nairobi' });
     message += `🕐 START TIME: ${signal.startTime} EAT (${dayName})\n`;
     message += `🏁 EXPIRY TIME: ${signal.endTime} EAT\n`;
-
+    
     // Multi-Timeframe Alignment (CRITICAL)
     message += `━━━━━━━━━━━━━━━━━━━━━\n`;
     message += `🔄 <b>TIMEFRAME ALIGNMENT</b>\n`;
     message += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `${htfAlignment}\n`;
-    if (candleStrength >= 3) {
-      message += `✅ <b>${candleStrength} Consecutive Strong Candles</b> - Excellent Confirmation!\n`;
-    } else if (candleStrength === 2) {
-      message += `✅ <b>${candleStrength} Consecutive Strong Candles</b> - Good Confirmation\n`;
-    }
-    message += `\n`;
+    message += `${htfAlignment}\n\n`;
 
     // Trade Levels with pip calculations
     const pipValue = signal.pair.includes("JPY") ? 0.01 : 0.0001;
