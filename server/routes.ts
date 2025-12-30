@@ -490,8 +490,11 @@ export async function registerRoutes(
   const MIN_DISPATCH_INTERVAL = 3 * 60 * 1000;
 
   async function runAutoScan() {
-    if (!autoScanEnabled) return;
     try {
+      // Check scanner state - respect autoMode toggle
+      const scannerState = await storage.getScannerState();
+      if (scannerState.autoMode !== "true") return;
+
       const now = Date.now();
       const kenyaOffset = 3 * 60 * 60 * 1000;
       const nowKenya = new Date(now + kenyaOffset);
