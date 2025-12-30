@@ -1,5 +1,5 @@
 import { Switch, Route } from "wouter";
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -19,8 +19,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PushNotificationToggle } from "@/components/push-notification-toggle";
 import { AlertCircle, Clock } from "lucide-react";
-
-const MarketTicker = lazy(() => import("@/components/market-ticker"));
 
 function NewsCountdown() {
   const { data } = useQuery<any>({
@@ -111,10 +109,6 @@ function App() {
                   </div>
                   <NewsCountdown />
                 </div>
-                
-                <Suspense fallback={<div className="h-[40px] md:h-[52px] bg-background/30" />}>
-                  <MarketTicker />
-                </Suspense>
                 
                 {/* Mobile-optimized secondary bar for controls */}
                 <div className="flex items-center justify-between p-2 border-t border-border/50">
