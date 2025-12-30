@@ -462,17 +462,14 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m15Trend = technicalsM15.supertrend.direction;
   const h1Trend = technicalsH1.supertrend.direction;
 
-  let baseConfidence = 65, sessionThreshold = 55, confidence = baseConfidence;
+  let baseConfidence = 65, sessionThreshold = 60, confidence = baseConfidence;
   
   const newsStatusResult = isNewsEventTime() as any;
   const newsBlocked = newsStatusResult.blocked;
   const isNewsWarning = newsStatusResult.allowWithWarning;
   
   if (newsBlocked && isNewsWarning) {
-    sessionThreshold = 50; // Extra lenient during news to capture volatility moves
-    reasoning.push(`📊 NEWS VOLATILITY MODE: Active (Threshold: ${sessionThreshold}%)`);
-  } else {
-    reasoning.push(`📊 HIGH-OPPORTUNITY MODE: Active (Threshold: ${sessionThreshold}%)`);
+    reasoning.push(`⚠️ VOLATILITY WARNING: Active ${newsStatusResult.event?.name} news event. Trading carries higher risk.`);
   }
 
   const lastCandle = candles[candles.length - 1], avgVol = candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;

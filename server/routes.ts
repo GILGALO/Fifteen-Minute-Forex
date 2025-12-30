@@ -525,7 +525,7 @@ export async function registerRoutes(
         FOREX_PAIRS.map(pair => generateSignalAnalysis(pair, "M5", apiKey))
       );
       
-      const highProbSignals = signals.filter(s => s.confidence >= 55 && s.signalGrade !== "SKIPPED");
+      const highProbSignals = signals.filter(s => s.confidence >= 65 && s.signalGrade !== "SKIPPED");
       
       if (now - lastSignalDispatchTime < MIN_DISPATCH_INTERVAL) return;
       
