@@ -506,14 +506,17 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const stochK = technicals.stochastic.k;
   const isPerfectStructure = candleConfirmed && technicals.adx > 30;
   
-  // Near-Extreme Logic: Allow 5% leeway if structure is perfect
-  const rsiLeeway = isPerfectStructure ? 5 : 0;
+  // M5 Trading: Allow RSI 85+ with proper quality filters (strong momentum on M5 = signal, not overbought)
+  // Quality assurance: htfAlignment (M15 confirmed) + sessionFilter (liquidity) + trend exhaustion check
+  const rsiLeeway = isPerfectStructure ? 15 : 10; // Increased leeway for M5: 85->100 range is normal strong momentum
   const rsiOk = m5Trend === "BULLISH" 
     ? (rsiValue >= (15 - rsiLeeway) && rsiValue <= (85 + rsiLeeway)) 
     : (rsiValue >= (15 - rsiLeeway) && rsiValue <= (85 + rsiLeeway));
   
-  const stochOk = m5Trend === "BULLISH" ? stochK < (90 + rsiLeeway) : stochK > (10 - rsiLeeway);
+  const stochOk = m5Trend === "BULLISH" ? stochK < (95 + rsiLeeway) : stochK > (5 - rsiLeeway); // Increased stoch threshold for M5
 
+  ruleChecklist.momentumSafety = rsiOk && stochOk; // Mark momentum safety after validation
+  
   if (!rsiOk || !stochOk) {
     reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiValue.toFixed(1)})`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };

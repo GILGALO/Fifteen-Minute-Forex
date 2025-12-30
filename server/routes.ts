@@ -124,6 +124,25 @@ export async function registerRoutes(
       const { timeframe, maxRescans = 5, minConfidenceThreshold = 70 } = req.body;
       const tf = timeframe || "M15";
       
+      // Check scanner state - respect auto/manual mode toggle
+      const scannerState = await storage.getScannerState();
+      if (scannerState.autoMode !== "true" && scannerState.scanMode !== "true") {
+        return res.json({
+          timestamp: Date.now(),
+          timeframe: tf,
+          signals: [],
+          bestSignal: null,
+          stats: {
+            total: 0,
+            valid: 0,
+            blocked: 0,
+            maxRescans,
+            minConfidenceThreshold
+          },
+          scanPaused: true
+        });
+      }
+      
       log(`[SCAN] Starting smart rescan for ${FOREX_PAIRS.length} pairs (maxRescans: ${maxRescans}, minThreshold: ${minConfidenceThreshold}%)`, "scan");
       
       const signals = await Promise.all(
