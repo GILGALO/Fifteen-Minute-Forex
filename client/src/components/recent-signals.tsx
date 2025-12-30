@@ -1,11 +1,11 @@
 
+import { memo, useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Signal } from "@/lib/constants";
 import { format } from "date-fns";
 import { TrendingUp, TrendingDown, Clock, CheckCircle2, XCircle, Timer, Activity, Filter, Zap, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import MLConfidenceBreakdown from "./ml-confidence-breakdown";
 
 interface PatternScore {
@@ -38,19 +38,7 @@ interface SignalWithML extends Signal {
   mlConfidenceBoost?: number;
 }
 
-interface RecentSignalsProps {
-  signals: SignalWithML[];
-}
-
-function RecentSignals({ signals }: RecentSignalsProps) {
-  const [filter, setFilter] = useState<'all' | 'active' | 'won' | 'lost'>('all');
-  const [expandedSignal, setExpandedSignal] = useState<string | null>(null);
-
-  const filteredSignals = signals.filter(signal => {
-    if (filter === 'all') return true;
-    return signal.status === filter;
-  });
-
+const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithML, isExpanded: boolean, onToggle: () => void }) => {
   const getStatusIcon = (status: Signal["status"]) => {
     switch (status) {
       case "won":
@@ -61,6 +49,110 @@ function RecentSignals({ signals }: RecentSignalsProps) {
         return <Timer className="w-4 h-4 text-primary animate-pulse" />;
     }
   };
+
+  return (
+    <div className="group relative bg-slate-950/80 border border-emerald-500/20 rounded-2xl p-6 hover:border-emerald-500/40 transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.1)] hover:-translate-y-1">
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
+      <div className="space-y-4 font-mono relative z-10">
+        <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
+          <div className="flex flex-col">
+            <span className="text-emerald-400 font-black tracking-tighter uppercase text-[11px] sm:text-sm flex items-center gap-2">
+              NEW SIGNAL ALERT 🚀
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-white/5 rounded-xl border border-white/10 group-hover:border-emerald-500/30 transition-colors">
+              {getStatusIcon(signal.status)}
+            </div>
+          </div>
+        </div>
+        
+        <div className="space-y-2 text-[11px] sm:text-sm">
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-slate-500 w-24 tracking-tight">📊 Pair:</span>
+            <span className="font-black uppercase tracking-wider">{signal.pair}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-slate-500 w-24 tracking-tight">⚡ Type:</span>
+            <span className={`font-black flex items-center gap-1.5 ${
+              signal.type === "CALL" ? "text-emerald-400" : "text-rose-400"
+            }`}>
+              {signal.type === "CALL" ? "🟢 BUY/CALL" : "🔴 SELL/PUT"}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-slate-500 w-24 tracking-tight">⏱ Timeframe:</span>
+            <span className="font-bold">{signal.timeframe}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-slate-500 w-24 tracking-tight">⏰ Start Time:</span>
+            <span className="font-bold tabular-nums">{signal.startTime}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-slate-500 w-24 tracking-tight">🏁 End Time:</span>
+            <span className="font-bold tabular-nums">{signal.endTime}</span>
+          </div>
+        </div>
+
+        <div className="pt-3 mt-2 border-t border-white/5 space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Confidence: {signal.confidence}%</span>
+            <span className="text-[9px] text-emerald-500/70 font-black uppercase tracking-widest">Verified ⚡</span>
+          </div>
+
+          {signal.mlPatternScore && signal.sentimentScore && (
+            <button
+              onClick={onToggle}
+              className="w-full flex items-center justify-between text-[9px] font-black text-purple-400 uppercase tracking-wider hover:text-purple-300 transition-colors pt-1"
+            >
+              <span>ML Analysis Breakdown</span>
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronDown className="w-3 h-3" />
+              </motion.div>
+            </button>
+          )}
+        </div>
+
+        <AnimatePresence>
+          {isExpanded && signal.mlPatternScore && signal.sentimentScore && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="pt-3 mt-3 border-t border-white/10"
+            >
+              <MLConfidenceBreakdown
+                patternScore={signal.mlPatternScore}
+                sentimentScore={signal.sentimentScore}
+                mlConfidenceBoost={signal.mlConfidenceBoost}
+                signalType={signal.type}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+});
+
+SignalItem.displayName = "SignalItem";
+
+function RecentSignals({ signals }: RecentSignalsProps) {
+  const [filter, setFilter] = useState<'all' | 'active' | 'won' | 'lost'>('all');
+  const [expandedSignal, setExpandedSignal] = useState<string | null>(null);
+
+  const filteredSignals = useMemo(() => signals.filter(signal => {
+    if (filter === 'all') return true;
+    return signal.status === filter;
+  }), [signals, filter]);
 
   return (
     <Card className="h-full bg-slate-950/40 border-emerald-500/10 overflow-hidden flex flex-col backdrop-blur-xl shadow-[0_0_50px_rgba(0,0,0,0.3)] ring-1 ring-white/5">
@@ -77,7 +169,6 @@ function RecentSignals({ signals }: RecentSignalsProps) {
           )}
         </div>
         
-        {/* Filter Buttons */}
         <div className="flex gap-1.5 md:gap-2 overflow-x-auto no-scrollbar pb-1">
           {['all', 'active', 'won', 'lost'].map((f) => (
             <button
@@ -103,106 +194,14 @@ function RecentSignals({ signals }: RecentSignalsProps) {
             <p className="text-[10px] md:text-xs font-black text-slate-500 uppercase tracking-widest">Idle System</p>
           </div>
         ) : (
-          <div className="p-3 md:p-4 space-y-2 md:space-y-3">
-            {filteredSignals.map((signal, index) => (
-              <motion.div
+          <div className="p-3 md:p-4 space-y-2 md:space-y-3 signal-list-container">
+            {filteredSignals.map((signal) => (
+              <SignalItem
                 key={signal.id}
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="group relative bg-slate-950/80 border border-emerald-500/20 rounded-2xl p-6 hover:border-emerald-500/40 transition-all duration-500 hover:shadow-[0_0_40px_rgba(16,185,129,0.1)] hover:-translate-y-1"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
-                <div className="space-y-4 font-mono relative z-10">
-                  <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
-                    <div className="flex flex-col">
-                      <span className="text-emerald-400 font-black tracking-tighter uppercase text-[11px] sm:text-sm flex items-center gap-2">
-                        NEW SIGNAL ALERT 🚀
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-white/5 rounded-xl border border-white/10 group-hover:border-emerald-500/30 transition-colors">
-                        {getStatusIcon(signal.status)}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2 text-[11px] sm:text-sm">
-                    <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">📊 Pair:</span>
-                      <span className="font-black uppercase tracking-wider">{signal.pair}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">⚡ Type:</span>
-                      <span className={`font-black flex items-center gap-1.5 ${
-                        signal.type === "CALL" ? "text-emerald-400" : "text-rose-400"
-                      }`}>
-                        {signal.type === "CALL" ? "🟢 BUY/CALL" : "🔴 SELL/PUT"}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">⏱ Timeframe:</span>
-                      <span className="font-bold">{signal.timeframe}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">⏰ Start Time:</span>
-                      <span className="font-bold tabular-nums">{signal.startTime}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-white">
-                      <span className="text-slate-500 w-24 tracking-tight">🏁 End Time:</span>
-                      <span className="font-bold tabular-nums">{signal.endTime}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 mt-2 border-t border-white/5 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Confidence: {signal.confidence}%</span>
-                      <span className="text-[9px] text-emerald-500/70 font-black uppercase tracking-widest">Verified ⚡</span>
-                    </div>
-
-                    {/* ML Insights Button */}
-                    {signal.mlPatternScore && signal.sentimentScore && (
-                      <motion.button
-                        onClick={() => setExpandedSignal(expandedSignal === signal.id ? null : signal.id)}
-                        className="w-full flex items-center justify-between text-[9px] font-black text-purple-400 uppercase tracking-wider hover:text-purple-300 transition-colors pt-1"
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <span>ML Analysis Breakdown</span>
-                        <motion.div
-                          animate={{ rotate: expandedSignal === signal.id ? 180 : 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <ChevronDown className="w-3 h-3" />
-                        </motion.div>
-                      </motion.button>
-                    )}
-                  </div>
-
-                  {/* ML Confidence Breakdown */}
-                  <AnimatePresence>
-                    {expandedSignal === signal.id && signal.mlPatternScore && signal.sentimentScore && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="pt-3 mt-3 border-t border-white/10"
-                      >
-                        <MLConfidenceBreakdown
-                          patternScore={signal.mlPatternScore}
-                          sentimentScore={signal.sentimentScore}
-                          mlConfidenceBoost={signal.mlConfidenceBoost}
-                          signalType={signal.type}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              </motion.div>
+                signal={signal}
+                isExpanded={expandedSignal === signal.id}
+                onToggle={() => setExpandedSignal(expandedSignal === signal.id ? null : signal.id)}
+              />
             ))}
           </div>
         )}
@@ -211,4 +210,4 @@ function RecentSignals({ signals }: RecentSignalsProps) {
   );
 }
 
-export default RecentSignals;
+export default memo(RecentSignals);

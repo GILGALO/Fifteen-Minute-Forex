@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { type Signal } from "@/lib/constants";
 import { TrendingUp, Target, Zap } from "lucide-react";
@@ -7,7 +8,9 @@ interface AnalyticsDashboardProps {
   signals: Signal[];
 }
 
-export default function AnalyticsDashboard({ signals }: AnalyticsDashboardProps) {
+function AnalyticsDashboard({ signals }: AnalyticsDashboardProps) {
+  // ... (logic stays same)
+
   const wonSignals = signals.filter(s => s.status === 'won').length;
   const lostSignals = signals.filter(s => s.status === 'lost').length;
   const totalCompleted = wonSignals + lostSignals;
@@ -106,3 +109,5 @@ export default function AnalyticsDashboard({ signals }: AnalyticsDashboardProps)
     </div>
   );
 }
+
+export default memo(AnalyticsDashboard);

@@ -178,11 +178,18 @@
 
 @layer components {
   .glass-panel {
-    @apply backdrop-blur-xl bg-gradient-to-br from-slate-950/80 to-slate-950/50 border border-purple-500/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_32px_rgba(168,85,247,0.15)] transition-all duration-500 hover:border-purple-500/30;
+    @apply backdrop-blur-md bg-gradient-to-br from-slate-950/80 to-slate-950/50 border border-purple-500/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_32px_rgba(168,85,247,0.15)] transition-all duration-300 hover:border-purple-500/30;
+    will-change: transform, opacity;
   }
 
   .premium-card {
-    @apply relative overflow-hidden rounded-[2rem] border border-white/5 bg-slate-950/40 backdrop-blur-2xl shadow-2xl transition-all duration-500 hover:border-purple-500/20;
+    @apply relative overflow-hidden rounded-[2rem] border border-white/5 bg-slate-950/40 backdrop-blur-md shadow-2xl transition-all duration-300 hover:border-purple-500/20;
+    contain: layout style;
+  }
+
+  .signal-list-container {
+    content-visibility: auto;
+    contain-intrinsic-size: 100px 500px;
   }
 
   .gradient-accent {

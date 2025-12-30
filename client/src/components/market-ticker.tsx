@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, memo } from "react";
 
 function MarketTicker() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,4 +83,4 @@ function MarketTicker() {
   );
 }
 
-export default MarketTicker;
+export default memo(MarketTicker);
