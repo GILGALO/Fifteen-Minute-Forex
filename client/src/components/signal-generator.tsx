@@ -646,15 +646,19 @@ export default function SignalGenerator({ onSignalGenerated, onPairChange }: Sig
 
 function SignalCard({ lastSignal, lastAnalysis, telegramConfigured, MIN_CONFIDENCE_THRESHOLD }: { lastSignal: Signal, lastAnalysis: any, telegramConfigured: boolean, MIN_CONFIDENCE_THRESHOLD: number }) {
     const { toast } = useToast();
+    const ruleSet = lastAnalysis?.reasoning?.find((r: string) => r.includes("Rule Set:"))?.split(": ")[1] || "ORIGINAL RULES";
+    const isFlexible = ruleSet.includes("FLEXIBLE");
+
     const copyToClipboard = () => {
-      const text = `NEW SIGNAL 🤖
+      const text = `🚀 NEW SIGNAL 🤖
 ━━━━━━━━━━━━━━━━━━━━━
 
 📊 PAIR: ${lastSignal?.pair}
 ${lastSignal?.type === "CALL" ? "🟢" : "🔴"} DIRECTION: ${lastSignal?.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}
 ⏱ TIMEFRAME: ${lastSignal?.timeframe}✅
+⚡️ RULESET: ${ruleSet}
 
-🕐 START TIME: ${lastSignal?.startTime} EAT (${lastSignal?.dayName || "Today"})
+🕐 START TIME: ${lastSignal?.startTime} EAT
 🏁 EXPIRY TIME: ${lastSignal?.endTime} EAT`;
 
       navigator.clipboard.writeText(text);
@@ -770,6 +774,9 @@ ${lastSignal?.type === "CALL" ? "🟢" : "🔴"} DIRECTION: ${lastSignal?.type =
                     {lastSignal.type === "CALL" ? "🟢" : "🔴"} DIRECTION: {lastSignal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}
                   </div>
                   <div className="text-foreground/90 font-bold">⏱ TIMEFRAME: {lastSignal.timeframe}✅</div>
+                  <div className={`font-black text-[10px] px-2 py-0.5 rounded inline-block mt-1 ${isFlexible ? 'bg-amber-500/20 text-amber-500 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/30'}`}>
+                    ⚡️ {ruleSet.toUpperCase()}
+                  </div>
                   <div className="mt-2 text-foreground/90 font-bold">🕐 START TIME: {lastSignal.startTime} EAT ({lastSignal.dayName || "Today"})</div>
                   <div className="text-foreground/90 font-bold">🏁 EXPIRY TIME: {lastSignal.endTime} EAT</div>
 

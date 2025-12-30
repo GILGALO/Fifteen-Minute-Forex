@@ -130,16 +130,23 @@ export async function sendToTelegram(
       }
     }
 
+    const ruleSet = analysis?.reasoning?.find((r: string) => r.includes("Rule Set:"))?.split(": ")[1] || "ORIGINAL RULES";
+    
     // Build simplified message
-    let message = `NEW SIGNAL ALERT 🚀\n`;
-    message += `📊 Pair:\n${signal.pair}\n`;
-    message += `⚡ Type:\n${signal.type === "CALL" ? "🟢 BUY/CALL" : "🔴 SELL/PUT"}\n`;
-    message += `⏱ Timeframe:\n${signal.timeframe}\n`;
-    message += `⏰ Start Time:\n${signal.startTime}\n`;
-    message += `🏁 End Time:\n${signal.endTime}\n`;
-    message += `Confidence: ${signal.confidence}%\n`;
-    message += `Grade: GRADE A\n\n`;
-    message += `SIGNAL PASSED TRADE`;
+    let message = `🚀 NEW SIGNAL ALERT 🤖\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    message += `📊 Pair: ${signal.pair}\n`;
+    message += `🟢 Type: ${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}\n`;
+    message += `⏱ Timeframe: ${signal.timeframe}✅\n`;
+    message += `⚡️ RuleSet: ${ruleSet}\n\n`;
+    message += `⏰ Start Time: ${signal.startTime} EAT\n`;
+    message += `🏁 End Time: ${signal.endTime} EAT\n\n`;
+    message += `🎯 Entry: ${signal.entry.toFixed(5)}\n`;
+    message += `🛑 Stop Loss: ${signal.stopLoss.toFixed(5)}\n`;
+    message += `✅ Take Profit: ${signal.takeProfit.toFixed(5)}\n`;
+    message += `🔥 Confidence: ${signal.confidence}%\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `GILGALO TRADING PRO SIGNAL 💎`;
 
     console.log(`[TELEGRAM] Sending simplified message to chat_id: ${TELEGRAM_CHAT_ID}`);
     console.log(`[TELEGRAM] Bot token (first 10 chars): ${TELEGRAM_BOT_TOKEN.substring(0, 10)}...`);
