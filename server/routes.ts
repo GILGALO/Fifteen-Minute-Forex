@@ -530,7 +530,17 @@ export async function registerRoutes(
       const bestSignals = sortedByConfidence.slice(0, 3);
       const skippedCount = signals.filter(s => s.signalGrade === "SKIPPED").length;
       
-      const highProbSignals = signals.filter(s => s.confidence >= 50 && s.signalGrade !== "SKIPPED");
+      // Filter to remove conflicting signals for the same pair - keep only the highest confidence per pair
+      const pairMap = new Map<string, typeof signals[0]>();
+      for (const signal of signals) {
+        if (signal.confidence >= 50 && signal.signalGrade !== "SKIPPED") {
+          const existing = pairMap.get(signal.pair);
+          if (!existing || signal.confidence > existing.confidence) {
+            pairMap.set(signal.pair, signal);
+          }
+        }
+      }
+      const highProbSignals = Array.from(pairMap.values());
       
       const topConfidences = bestSignals.map(s => `${s.pair}:${s.confidence}%`).join(" | ");
       log(`[AUTO-SCAN] Top 3: ${topConfidences} | Valid: ${highProbSignals.length} (50%+) | Skipped: ${skippedCount}`, "auto-scan");
