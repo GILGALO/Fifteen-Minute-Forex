@@ -473,8 +473,6 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   const lastCandle = candles[candles.length - 1], avgVol = candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
-  const volumeConfirmed = true; // Temporary bypass: allow signals even with low volume to find setups
-  reasoning.push(`✅ VOLUME OK (Bypass Active)`);
 
   const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD"];
   if (majorPairs.includes(pair)) {
@@ -512,23 +510,42 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
 
-  const candleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
+  // Weighted Scoring for RSI/Stochastic
+  const rsiValue = technicals.rsi;
+  const stochK = technicals.stochastic.k;
+
+  // Check with ORIGINAL STRICT RULES first
+  const isOriginalRsiOk = rsiValue >= 30 && rsiValue <= 70;
+  const isOriginalStochOk = stochK >= 20 && stochK <= 80;
+  const originalCandleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
+  const originalVolumeConfirmed = !lastCandle.volume || lastCandle.volume > avgVol * 0.5;
+  
+  let isFlexibleMode = false;
+  let ruleSetLabel = "ORIGINAL RULES";
+
+  if (!isOriginalRsiOk || !isOriginalStochOk || !m5_m15_aligned || !originalCandleConfirmed || !originalVolumeConfirmed) {
+    isFlexibleMode = true;
+    ruleSetLabel = "FLEXIBLE RULES (Active Leniency)";
+    reasoning.push(`ℹ️ FLEXIBLE MODE: Original criteria failed, applying secondary high-quality conditions.`);
+  }
+
+  // MOMENTUM FILTER: Relaxed boundaries if in flexible mode
+  const isExtremeZone = rsiValue > 98 || rsiValue < 2;
+  const rsiOk = isFlexibleMode ? (rsiValue >= 15 && rsiValue <= 85) : isOriginalRsiOk;
+  const stochOk = isFlexibleMode ? (stochK >= 2 && stochK <= 98) : isOriginalStochOk;
+  const finalCandleConfirmed = isFlexibleMode ? (originalCandleConfirmed || technicals.adx >= 20) : originalCandleConfirmed;
+  const finalVolumeConfirmed = isFlexibleMode ? true : originalVolumeConfirmed;
+
+  const candleConfirmed = finalCandleConfirmed;
+  const volumeConfirmed = finalVolumeConfirmed;
   ruleChecklist.candleConfirmation = candleConfirmed;
   
   if (!candleConfirmed && technicals.adx < 20) {
     reasoning.push(`❌ CANDLE CONFIRMATION FAILED`);
     return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
-  
-  // Weighted Scoring for RSI/Stochastic
-  const rsiValue = technicals.rsi;
-  const stochK = technicals.stochastic.k;
+
   const isPerfectStructure = candleConfirmed && technicals.adx > 30;
-  
-  // MOMENTUM FILTER: Relaxed boundaries
-  const isExtremeZone = rsiValue > 98 || rsiValue < 2; // Further relaxed from 95/5
-  const rsiOk = rsiValue >= 15 && rsiValue <= 85; // Standard trading zone
-  const stochOk = stochK >= 2 && stochK <= 98; // Relaxed from 5-95
   
   ruleChecklist.momentumSafety = rsiOk && stochOk; // Mark momentum safety after validation
 
@@ -623,7 +640,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   // Apply ML boost to confidence
   let finalConfidence = Math.min(98, Math.max(0, confidence + mlConfidenceBoost));
   if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
-  reasoning.push(`Grade ${signalGrade} | ML Confidence: ${finalConfidence}%`);
+  reasoning.push(`Grade ${signalGrade} | Rule Set: ${ruleSetLabel} | ML Confidence: ${finalConfidence}%`);
 
   // QUALITY GATE: Require 80%+ confidence for M5 trading (prevents low-quality signal spam)
   const minConfidenceThreshold = 80;
