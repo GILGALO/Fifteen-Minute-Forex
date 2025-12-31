@@ -97,11 +97,6 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
           )}
           
           <div className="flex items-baseline gap-2 text-white pt-1">
-            <span className="text-slate-500 w-14 shrink-0">Entry:</span>
-            <span className="font-bold tabular-nums">{signal.entry.toFixed(5)}</span>
-          </div>
-          
-          <div className="flex items-baseline gap-2 text-white">
             <span className="text-slate-500 w-14 shrink-0">Start:</span>
             <span className="font-bold tabular-nums text-emerald-400">{signal.startTime} EAT</span>
           </div>
