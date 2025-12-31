@@ -4,6 +4,7 @@ import { isNewsEventTime } from "./newsEvents";
 import { sessionTracker } from "./sessionTracker";
 import { detectPatterns, type PatternScore } from "./ml/patternRecognizer";
 import { analyzeSentiment, getSentimentExplanation, type SentimentScore } from "./ml/sentimentAnalyzer";
+import { storage } from "./storage";
 
 export interface ForexQuote {
   pair: string;
@@ -455,16 +456,16 @@ function getMinConfidence(pair: string): number {
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
   const isHighVolumeSession = getCurrentSessionTime() !== "EVENING"; // Afternoon/Morning are higher volume
-  const mlThreshold = isHighVolumeSession ? 20 : 30; // Capture A-/B setups
+  const mlThreshold = isHighVolumeSession ? 15 : 20; // Lowered from 20/30 to catch more B+ setups
   
   // A+ Setup (The Original Powerhouse)
-  if (htfAligned && Math.abs(mlScore) >= 70 && adx >= 28) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 25) return "A"; // Lowered from 70/28
 
   // A- Setup (High Quality)
-  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 25) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 40 && adx >= 22) return "A-"; // Lowered from 60/25
 
   // B+ Setup (Tactical Opportunity)
-  if (htfAligned && Math.abs(mlScore) >= mlThreshold && adx >= 18) return "B+";
+  if (Math.abs(mlScore) >= mlThreshold && adx >= 15) return "B+"; // Removed htfAligned requirement for B+
 
   return "SKIPPED";
 }
@@ -655,13 +656,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   // Grade B and A- logic: Allow these to pass if they meet the revised criteria
+  const tacticalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
   const isAminus = tacticalGrade === "A-";
   const isBplus = tacticalGrade === "B+";
   const isPassable = meetsAplusCriteria || isAminus || isBplus;
 
   if (!isPassable) {
     if (!hasMLConsensus && !isAminus && !isBplus) reasoning.push(`❌ ML DIVERGENCE: Score ${mlScore} is too neutral for high-grade setup.`);
-    if (!htfAligned) reasoning.push(`❌ H1 DIVERGENCE: H1 trend alignment required for Grade A/B.`);
     
     return { 
       pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", 
@@ -900,8 +901,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   // Final validation for signal quality
   const isQualitySignal = ["A", "A-", "B+"].includes(finalGrade as string);
-  if (!isQualitySignal && (signalGrade === "C" || !htfAligned || Math.abs(mlScore) < 20)) {
-    const skipReason = !htfAligned ? "H1 DIVERGENCE" : (Math.abs(mlScore) < 20 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE");
+  if (!isQualitySignal && (signalGrade === "C" || Math.abs(mlScore) < 15)) {
+    const skipReason = Math.abs(mlScore) < 15 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE";
     reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A/B+ setups.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
@@ -926,7 +927,6 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   ruleChecklist.volatilityFilter = true;
 
   // Refined Grading Logic
-  const tacticalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
   const finalGrade: "A" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "B+" ? "B" : "SKIPPED");
 
   if (finalGrade === "SKIPPED") {
