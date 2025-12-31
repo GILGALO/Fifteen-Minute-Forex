@@ -85,9 +85,16 @@ app.use((req, res, next) => {
   next();
 });
 
+import { checkTradeOutcomes } from "./tradeLog";
+
 (async () => {
   try {
     await registerRoutes(httpServer, app);
+
+    // Background outcome checker (runs every 60 seconds)
+    setInterval(() => {
+      checkTradeOutcomes().catch(err => console.error("Outcome check error:", err));
+    }, 60000);
 
     app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
       const status = err.status || err.statusCode || 500;

@@ -1,5 +1,6 @@
 
 import { log } from "./index";
+import { getForexQuote } from "./forexService";
 
 interface TradeLog {
   timestamp: number;
@@ -22,6 +23,34 @@ interface TradeLog {
 }
 
 const tradeHistory: TradeLog[] = [];
+
+// Automated outcome checker for 5-minute binary windows
+export async function checkTradeOutcomes(): Promise<void> {
+  const now = Date.now();
+  const FIVE_MINUTES = 5 * 60 * 1000;
+
+  for (const trade of tradeHistory) {
+    if (trade.result === "PENDING" && now - trade.timestamp >= FIVE_MINUTES) {
+      try {
+        const currentQuote = await getForexQuote(trade.pair);
+        const exitPrice = currentQuote.price;
+        
+        // Binary Options Logic: Was price higher or lower after 5 mins?
+        const isWin = trade.signalType === "CALL" 
+          ? exitPrice > trade.entry 
+          : exitPrice < trade.entry;
+
+        trade.result = isWin ? "WIN" : "LOSS";
+        trade.exitPrice = exitPrice;
+        trade.exitTime = now;
+        
+        log(`[OUTCOME] ${trade.pair} ${trade.signalType} ${trade.result} | Entry: ${trade.entry} | Exit: ${exitPrice}`, "trade-log");
+      } catch (error) {
+        log(`Failed to check outcome for ${trade.pair}: ${error}`, "trade-log");
+      }
+    }
+  }
+}
 
 export function logTrade(tradeData: Omit<TradeLog, 'timestamp'>): void {
   const trade: TradeLog = {
