@@ -163,21 +163,19 @@ Gilgalo Trading is an advanced forex trading signal generator with machine learn
 
 ---
 
-## Recent Changes (Dec 29, 2025)
+## 💡 Outside the Box Ideas (Priority List)
+1. **The "Ghost" Trade Optimizer**: Background engine to log and "backtest" all signals (including skips) to find the "sweet spot" of pair/time accuracy.
+2. **Institutional "Shadow" Correlation**: Detecting market-wide USD/EUR strength to catch "lagger" trades across related pairs.
+3. **"Sniper" Session Transition Mode**: Auto-activating high-intensity scanning only during major session opens (London/NY).
+4. **Macro "Impact" Awareness**: Analyzing post-news "recovery" patterns (Institutional sweeps) for high-probability reversals.
+5. **Liquidity "X-Ray"**: Identifying Order Blocks and Supply/Demand zones for bounce confirmation.
 
-### ML & AI Integration Complete ✅
-1. **Pattern Recognition Module** - 8 candlestick patterns detected and scored
-2. **Sentiment Analysis Module** - Market sentiment from 6+ technical indicators  
-3. **Confidence Boost System** - ML insights enhance signal confidence
-4. **Dashboard Visualization** - Expandable ML analysis breakdown in signal cards
-5. **Type-Safe Implementation** - Full TypeScript interfaces for all ML data
-
-### Key Implementation Details
-- Pattern scores range from -100 (bearish) to +100 (bullish)
-- Sentiment analysis weighted from 6 indicators with ADX strength
-- Confidence boost calculated as average of pattern + sentiment bias
-- ML insights included in all signal reasoning
-- Dashboard component supports interactive expansion of analysis
+## Recent Changes (Dec 31, 2025)
+### Signal Accuracy & Efficiency Audit
+- Refined "Early Trend" detection (ADX > 15) to increase signal frequency without sacrificing quality.
+- Tightened A+ Institutional filters: Skips signals with "ML Neutrality" (score < 20) or "H1 Divergence".
+- Implemented `updateSignalHistory` to prevent duplicate/opposite signals on the same pair in a single scan.
+- Updated documentation with the "Outside the Box" roadmap for future development.
 
 ---
 
