@@ -453,14 +453,19 @@ function getMinConfidence(pair: string): number {
   return 92;
 }
 
-function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "B+" | "A-" | "SKIPPED" {
+function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
   const isHighVolumeSession = getCurrentSessionTime() !== "EVENING"; // Afternoon/Morning are higher volume
-  const mlThreshold = isHighVolumeSession ? 20 : 30; // Reduced from 25/35 to capture A-/B setups
+  const mlThreshold = isHighVolumeSession ? 20 : 30; // Capture A-/B setups
   
-  if (htfAligned && Math.abs(mlScore) >= mlThreshold && adx >= 18) { // Reduced ADX from 20 to 18
-    if (Math.abs(mlScore) >= 60 && adx >= 25) return "A-";
-    return "B+";
-  }
+  // A+ Setup (The Original Powerhouse)
+  if (htfAligned && Math.abs(mlScore) >= 70 && adx >= 28) return "A";
+
+  // A- Setup (High Quality)
+  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 25) return "A-";
+
+  // B+ Setup (Tactical Opportunity)
+  if (htfAligned && Math.abs(mlScore) >= mlThreshold && adx >= 18) return "B+";
+
   return "SKIPPED";
 }
 
