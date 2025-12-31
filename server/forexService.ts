@@ -781,11 +781,18 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
       reasoning.push(`✨ HIGH-QUALITY GRADE A: Multi-TF Alignment`);
     }
 
-    // Sniper Session Transition Mode
-    const sniperData = getSniperConfidence(pair, confidence);
-    if (sniperData.isSniperZone) {
-      confidence = Math.min(99, sniperData.boosted);
-      reasoning.push(`🎯 SNIPER MODE: High-probability session transition active (+10%)`);
+    // Macro "Impact" Awareness (News Logic)
+    const newsStatus = isNewsEventTime();
+    if (newsStatus.allowWithWarning) {
+      // Post-news "recovery" or "institutional sweep" detection
+      // If we are in the warning zone (blockMinutes), we check if the market is stabilizing
+      if (technicals.adx > 25 && !exhausted) {
+        confidence += 5;
+        reasoning.push(`📡 MACRO RECOVERY: Post-news institutional sweep detected`);
+      } else {
+        confidence -= 15;
+        reasoning.push(`⚠️ MACRO IMPACT: High volatility zone around ${newsStatus.event?.name}`);
+      }
     }
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
