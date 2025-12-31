@@ -91,7 +91,7 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
             <div className="mt-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
               <div className="flex items-center gap-2 text-emerald-400 font-black">
                 <span>{signal.stakeAdvice.recommendation === "HIGH" ? "💎" : (signal.stakeAdvice.recommendation === "MEDIUM" ? "✨" : "⚖️")}</span>
-                <span className="uppercase tracking-widest">STAKE: {signal.stakeAdvice.recommendation} ({signal.stakeAdvice.size})</span>
+                <span className="uppercase tracking-widest text-[10px] sm:text-xs">STAKE: {signal.stakeAdvice.recommendation} ({signal.stakeAdvice.size})</span>
               </div>
             </div>
           )}
@@ -112,13 +112,25 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
           </div>
         </div>
 
-        <div className="pt-3 mt-2 border-t border-white/5 flex justify-center italic text-[10px] text-slate-500">
-          Trust the system. Trade the plan.
+        <div className="pt-3 mt-2 border-t border-white/5 flex flex-col gap-2">
+          {signal.mlPatternScore && signal.sentimentScore && (
+            <button
+              onClick={onToggle}
+              className="w-full flex items-center justify-between text-[9px] font-black text-purple-400 uppercase tracking-wider hover:text-purple-300 transition-colors pt-1"
+            >
+              <span>ML Analysis Breakdown</span>
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ChevronDown className="w-3 h-3" />
+              </motion.div>
+            </button>
+          )}
+          <div className="flex justify-center italic text-[10px] text-slate-500">
+            Trust the system. Trade the plan.
+          </div>
         </div>
-      </div>
-    </div>
-  );
-});
 
         <AnimatePresence>
           {isExpanded && signal.mlPatternScore && signal.sentimentScore && (
