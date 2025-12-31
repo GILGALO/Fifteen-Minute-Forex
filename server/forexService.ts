@@ -654,9 +654,14 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     cleanReasoning.push("⚡ Tactical Setup Confirmed");
   }
 
-  if (!meetsAplusCriteria) {
-    if (!hasMLConsensus) reasoning.push(`❌ ML DIVERGENCE: Score ${mlScore} is too neutral for A+ setup.`);
-    if (!htfAligned) reasoning.push(`❌ H1 DIVERGENCE: H1 trend must align for A+ setup.`);
+  // Grade B and A- logic: Allow these to pass if they meet the revised criteria
+  const isAminus = tacticalGrade === "A-";
+  const isBplus = tacticalGrade === "B+";
+  const isPassable = meetsAplusCriteria || isAminus || isBplus;
+
+  if (!isPassable) {
+    if (!hasMLConsensus && !isAminus && !isBplus) reasoning.push(`❌ ML DIVERGENCE: Score ${mlScore} is too neutral for high-grade setup.`);
+    if (!htfAligned) reasoning.push(`❌ H1 DIVERGENCE: H1 trend alignment required for Grade A/B.`);
     
     return { 
       pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", 
@@ -886,14 +891,16 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     isGhost: signalGrade === "SKIPPED" || confidence < minConfidence
   });
 
-  // A+ Institutional Filter: Auto-dispatch only if FULL CORRELATION
-  if (!hasFullCorrelation && confidence < 92) {
-    reasoning.push(`⚠️ DISPATCH BLOCKED: A+ Institutional Filter requires FULL CORRELATION or 92%+ Confidence for Telegram auto-dispatch.`);
+  // A+ Institutional Filter: Auto-dispatch only if grade is A or B
+  const isDispatchable = ["A", "A-", "B+"].includes(finalGrade as string);
+  if (!isDispatchable && confidence < 92) {
+    reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires 92%+ Confidence for Telegram auto-dispatch.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
   }
 
-  // Final validation for 85%+ win rate targets
-  if (signalGrade === "C" || !htfAligned || Math.abs(mlScore) < 20) {
+  // Final validation for signal quality
+  const isQualitySignal = ["A", "A-", "B+"].includes(finalGrade as string);
+  if (!isQualitySignal && (signalGrade === "C" || !htfAligned || Math.abs(mlScore) < 20)) {
     const skipReason = !htfAligned ? "H1 DIVERGENCE" : (Math.abs(mlScore) < 20 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE");
     reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A/B+ setups.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
