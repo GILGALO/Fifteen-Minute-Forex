@@ -485,6 +485,22 @@ function getStakeAdvice(confidence: number, grade: string, pair: string): { reco
   };
 }
 
+function getSniperConfidence(pair: string, currentConfidence: number): { boosted: number; isSniperZone: boolean } {
+  const kenyaHour = getKenyaHour();
+  const minute = new Date(Date.now() + (3 * 60 * 60 * 1000)).getUTCMinutes();
+  
+  // Sniper Zones: 30 mins before/after major opens
+  // London: 11:00 EAT (Open) -> Zone: 10:30 - 11:30
+  // NY: 16:00 EAT (Open) -> Zone: 15:30 - 16:30
+  const isLondonOpen = (kenyaHour === 10 && minute >= 30) || (kenyaHour === 11 && minute <= 30);
+  const isNYOpen = (kenyaHour === 15 && minute >= 30) || (kenyaHour === 16 && minute <= 30);
+  
+  if (isLondonOpen || isNYOpen) {
+    return { boosted: currentConfidence + 10, isSniperZone: true };
+  }
+  return { boosted: currentConfidence, isSniperZone: false };
+}
+
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
   const { isOpen, nextAction } = isMarketOpen();
   const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: false, marketRegime: false, trendExhaustion: true };
@@ -757,13 +773,20 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const correlationAligned = reasoning.includes(`✅ FULL CORRELATION`) || reasoning.includes(`✅ PARTIAL CORRELATION`);
   const institutionalQuality = isPerfectAlignment && m5_m15_aligned && volumeConfirmed && correlationAligned;
 
-  if (institutionalQuality) {
-    confidence = Math.min(98, Math.max(94, confidence + 20));
-    reasoning.push(`💎 INSTITUTIONAL GRADE A+: Triple-Verified Setup`);
-  } else if (isPerfectAlignment && m5_m15_aligned) {
-    confidence = Math.min(92, Math.max(88, confidence + 12));
-    reasoning.push(`✨ HIGH-QUALITY GRADE A: Multi-TF Alignment`);
-  }
+    if (institutionalQuality) {
+      confidence = Math.min(98, Math.max(94, confidence + 20));
+      reasoning.push(`💎 INSTITUTIONAL GRADE A+: Triple-Verified Setup`);
+    } else if (isPerfectAlignment && m5_m15_aligned) {
+      confidence = Math.min(92, Math.max(88, confidence + 12));
+      reasoning.push(`✨ HIGH-QUALITY GRADE A: Multi-TF Alignment`);
+    }
+
+    // Sniper Session Transition Mode
+    const sniperData = getSniperConfidence(pair, confidence);
+    if (sniperData.isSniperZone) {
+      confidence = Math.min(99, sniperData.boosted);
+      reasoning.push(`🎯 SNIPER MODE: High-probability session transition active (+10%)`);
+    }
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   
