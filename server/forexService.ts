@@ -811,13 +811,40 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
       }
     }
 
+    // The "Ghost" Trade Rebalancer: Dynamic Stake Sizing
+    // Fetch last 5 trades to determine "Ghost" win rate
+    const recentTrades = await storage.getTrades();
+    const last5 = recentTrades.slice(-5);
+    const ghostWinCount = last5.filter(t => t.outcome === "WIN").length;
+    const ghostWinRate = last5.length > 0 ? (ghostWinCount / last5.length) * 100 : 100;
+
+    let stakeSizing = "MEDIUM";
+    if (ghostWinRate >= 80) {
+      stakeSizing = "HIGH";
+      reasoning.push(`🔥 REBALANCER: High performance streak - Sizing: HIGH`);
+    } else if (ghostWinRate <= 40) {
+      stakeSizing = "LOW";
+      reasoning.push(`🧊 REBALANCER: Cooling down after drawdown - Sizing: LOW`);
+    } else {
+      reasoning.push(`⚖️ REBALANCER: Balanced performance - Sizing: MEDIUM`);
+    }
+
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   
   const analysisResult: SignalAnalysis = { 
     pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade, 
-    entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, 
+    timeframe, recommendation: stakeSizing as "HIGH" | "MEDIUM" | "LOW", 
+    reasoning, ruleChecklist,
+    technicals: {
+      rsi: technicals.rsi,
+      macd: technicals.macd,
+      stoch: technicals.stoch,
+      adx: technicals.adx,
+      trend: technicals.supertrend.direction,
+      volatility: technicals.volatility
+    },
     mlPatternScore, sentimentScore, mlConfidenceBoost,
-    stakeAdvice: getStakeAdvice(confidence, signalGrade, pair)
+    stakeAdvice: stakeSizing as "HIGH" | "MEDIUM" | "LOW"
   };
 
   // Priority 1: The "Ghost" Trade Optimizer - log EVERYTHING for accuracy analysis
