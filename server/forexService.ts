@@ -555,18 +555,40 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const lastCandle = candles[candles.length - 1], avgVol = candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
 
-  const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD"];
+  const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD", "USD/JPY", "USD/CAD"];
   let hasFullCorrelation = false;
+  let currencyStrength = 0;
+  
   if (majorPairs.includes(pair)) {
-    const results = await Promise.all(majorPairs.filter(p => p !== pair).map(async p => analyzeTechnicals(await getForexCandles(p, "5min", apiKey)).supertrend.direction));
-    const alignedCount = results.filter(t => t === m5Trend).length;
-    if (alignedCount === results.length) { 
-      confidence += 12; 
-      reasoning.push(`✅ FULL CORRELATION`); 
+    const baseCurrency = pair.split('/')[0];
+    const isBaseUsd = baseCurrency === "USD";
+    
+    // Shadow Correlation: Check if the base/quote currency is moving globally
+    const correlationResults = await Promise.all(
+      majorPairs
+        .filter(p => p !== pair)
+        .map(async p => {
+          const tech = analyzeTechnicals(await getForexCandles(p, "5min", apiKey));
+          return { pair: p, direction: tech.supertrend.direction };
+        })
+    );
+
+    const alignedCount = correlationResults.filter(r => r.direction === m5Trend).length;
+    currencyStrength = (alignedCount / correlationResults.length) * 100;
+
+    if (alignedCount === correlationResults.length) { 
+      confidence += 15; 
+      reasoning.push(`💎 SHADOW CONFLUENCE: Global ${baseCurrency} Strength detected`); 
       hasFullCorrelation = true;
     }
-    else if (alignedCount > 0) { confidence += 5; reasoning.push(`✅ PARTIAL CORRELATION`); }
-    else { confidence -= 10; reasoning.push(`⚠️ CORRELATION DIVERGENCE`); }
+    else if (alignedCount >= correlationResults.length * 0.6) { 
+      confidence += 8; 
+      reasoning.push(`📈 MARKET FLOW: Majority of ${baseCurrency} pairs aligned`); 
+    }
+    else { 
+      confidence -= 10; 
+      reasoning.push(`⚠️ DIVERGENCE: Market flow not supporting ${pair} move`); 
+    }
   }
 
   const currentPrice = lastCandle.close;
