@@ -485,20 +485,28 @@ function getStakeAdvice(confidence: number, grade: string, pair: string): { reco
   };
 }
 
-function getSniperConfidence(pair: string, currentConfidence: number): { boosted: number; isSniperZone: boolean } {
-  const kenyaHour = getKenyaHour();
-  const minute = new Date(Date.now() + (3 * 60 * 60 * 1000)).getUTCMinutes();
+function detectLiquidityXRay(candles: any[]): { hasOrderBlock: boolean; type: "BULLISH" | "BEARISH" | null; confidenceBoost: number } {
+  if (candles.length < 5) return { hasOrderBlock: false, type: null, confidenceBoost: 0 };
   
-  // Sniper Zones: 30 mins before/after major opens
-  // London: 11:00 EAT (Open) -> Zone: 10:30 - 11:30
-  // NY: 16:00 EAT (Open) -> Zone: 15:30 - 16:30
-  const isLondonOpen = (kenyaHour === 10 && minute >= 30) || (kenyaHour === 11 && minute <= 30);
-  const isNYOpen = (kenyaHour === 15 && minute >= 30) || (kenyaHour === 16 && minute <= 30);
+  // Last 3 candles for OB detection
+  const c1 = candles[candles.length - 3]; // The "Institutional" candle (Impulsive)
+  const c2 = candles[candles.length - 2]; 
+  const c3 = candles[candles.length - 1]; // The "Mitigation" attempt
   
-  if (isLondonOpen || isNYOpen) {
-    return { boosted: currentConfidence + 10, isSniperZone: true };
+  const isImpulsiveBullish = c1.close > c1.open && (c1.close - c1.open) > (c1.high - c1.low) * 0.6;
+  const isImpulsiveBearish = c1.open > c1.close && (c1.open - c1.close) > (c1.high - c1.low) * 0.6;
+  
+  // Bullish OB: Large green candle followed by price staying above its bottom half
+  if (isImpulsiveBullish && c3.low > c1.open) {
+    return { hasOrderBlock: true, type: "BULLISH", confidenceBoost: 12 };
   }
-  return { boosted: currentConfidence, isSniperZone: false };
+  
+  // Bearish OB: Large red candle followed by price staying below its top half
+  if (isImpulsiveBearish && c3.high < c1.open) {
+    return { hasOrderBlock: true, type: "BEARISH", confidenceBoost: 12 };
+  }
+  
+  return { hasOrderBlock: false, type: null, confidenceBoost: 0 };
 }
 
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
@@ -784,14 +792,22 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     // Macro "Impact" Awareness (News Logic)
     const newsStatus = isNewsEventTime();
     if (newsStatus.allowWithWarning) {
-      // Post-news "recovery" or "institutional sweep" detection
-      // If we are in the warning zone (blockMinutes), we check if the market is stabilizing
       if (technicals.adx > 25 && !exhausted) {
         confidence += 5;
         reasoning.push(`📡 MACRO RECOVERY: Post-news institutional sweep detected`);
       } else {
         confidence -= 15;
         reasoning.push(`⚠️ MACRO IMPACT: High volatility zone around ${newsStatus.event?.name}`);
+      }
+    }
+
+    // Liquidity X-Ray (Order Blocks)
+    const liquidity = detectLiquidityXRay(candles);
+    if (liquidity.hasOrderBlock) {
+      const isAligned = (liquidity.type === "BULLISH" && signalType === "CALL") || (liquidity.type === "BEARISH" && signalType === "PUT");
+      if (isAligned) {
+        confidence = Math.min(99, confidence + liquidity.confidenceBoost);
+        reasoning.push(`🔋 LIQUIDITY X-RAY: Institutional Order Block confirmed`);
       }
     }
 
