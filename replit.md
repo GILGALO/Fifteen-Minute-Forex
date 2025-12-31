@@ -164,11 +164,11 @@ Gilgalo Trading is an advanced forex trading signal generator with machine learn
 ---
 
 ## 💡 Outside the Box Ideas (Priority List)
-1. **The "Ghost" Trade Optimizer**: Background engine to log and "backtest" all signals (including skips) to find the "sweet spot" of pair/time accuracy.
-2. **Institutional "Shadow" Correlation**: Detecting market-wide USD/EUR strength to catch "lagger" trades across related pairs.
-3. **"Sniper" Session Transition Mode**: Auto-activating high-intensity scanning only during major session opens (London/NY).
-4. **Macro "Impact" Awareness**: Analyzing post-news "recovery" patterns (Institutional sweeps) for high-probability reversals.
-5. **Liquidity "X-Ray"**: Identifying Order Blocks and Supply/Demand zones for bounce confirmation.
+1. **Liquidity "X-Ray" (Priority 5)**: Identifying Order Blocks and Supply/Demand zones for bounce confirmation.
+2. **The "Ghost" Trade Rebalancer**: Auto-adjusting stake sizing (High/Med/Low) based on the last 5 "Ghost" outcomes.
+3. **Institutional "Pivot" Logic**: Using H4/D1 institutional levels to filter M5 signals near major turning points.
+4. **Volume "Climax" Filter**: Detecting "Blow-off" volume candles to avoid entering at the very end of a trend.
+5. **AI Adaptive Thresholds**: Dynamic confidence requirements that increase during low-volatility "choppy" market states.
 
 ## Recent Changes (Dec 31, 2025)
 ### Signal Accuracy & Efficiency Audit
