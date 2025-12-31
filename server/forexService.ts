@@ -745,6 +745,30 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   
+  const analysisResult: SignalAnalysis = { 
+    pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade, 
+    entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, 
+    mlPatternScore, sentimentScore, mlConfidenceBoost,
+    stakeAdvice: getStakeAdvice(confidence, signalGrade, pair)
+  };
+
+  // Priority 1: The "Ghost" Trade Optimizer - log EVERYTHING for accuracy analysis
+  logTrade({
+    pair,
+    signalType: signalTypeVal,
+    entry: currentPrice,
+    stopLoss: 0,
+    takeProfit: 0,
+    confidence,
+    rsi: technicals.rsi,
+    stochastic: technicals.stochastic,
+    candlePattern: technicals.candlePattern,
+    htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT",
+    session: getCurrentSessionTime(),
+    pairAccuracy: accuracy,
+    isGhost: signalGrade === "SKIPPED" || confidence < minConfidence
+  });
+
   // A+ Institutional Filter: Auto-dispatch only if FULL CORRELATION
   if (!hasFullCorrelation && confidence < 92) {
     reasoning.push(`⚠️ DISPATCH BLOCKED: A+ Institutional Filter requires FULL CORRELATION or 92%+ Confidence for Telegram auto-dispatch.`);

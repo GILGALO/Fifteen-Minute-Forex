@@ -18,6 +18,7 @@ interface TradeLog {
   result?: "WIN" | "LOSS" | "PENDING";
   exitPrice?: number;
   exitTime?: number;
+  isGhost?: boolean; // True if it was a skipped signal
 }
 
 const tradeHistory: TradeLog[] = [];
