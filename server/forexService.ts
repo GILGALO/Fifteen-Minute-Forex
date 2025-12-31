@@ -746,16 +746,21 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   
   // A+ Institutional Filter: Auto-dispatch only if FULL CORRELATION
-  if (!hasFullCorrelation) {
-    reasoning.push(`⚠️ DISPATCH BLOCKED: A+ Institutional Filter requires FULL CORRELATION for Telegram auto-dispatch.`);
+  if (!hasFullCorrelation && confidence < 92) {
+    reasoning.push(`⚠️ DISPATCH BLOCKED: A+ Institutional Filter requires FULL CORRELATION or 92%+ Confidence for Telegram auto-dispatch.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
   }
 
-  // LOGIC FIX: Don't skip Grade C if it has high confidence or special conditions
-  if (signalGrade === "C" && !candleConfirmed && confidence < 80) {
-    reasoning.push(`⚠️ GRADE C SKIPPED`);
-    return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+  // Final validation for 85%+ win rate targets
+  if (signalGrade === "C" || !htfAligned || Math.abs(mlScore) < 20) {
+    const skipReason = !htfAligned ? "H1 DIVERGENCE" : (Math.abs(mlScore) < 20 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE");
+    reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A/B+ setups.`);
+    return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
+
+  // Prevent duplicate/conflicting signals in the same scan window
+  const activeSignals = sessionTracker.getStats().tradesWon + sessionTracker.getStats().tradesLost;
+  updateSignalHistory(pair);
 
   // ATR-based Dynamic SL/TP and Volatility Filter
   const atrVal = technicals.atr;
