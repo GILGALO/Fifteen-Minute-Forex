@@ -453,11 +453,12 @@ function getMinConfidence(pair: string): number {
   return 92;
 }
 
-function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "B+" | "SKIPPED" {
+function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "B+" | "A-" | "SKIPPED" {
   const isHighVolumeSession = getCurrentSessionTime() !== "EVENING"; // Afternoon/Morning are higher volume
-  const mlThreshold = isHighVolumeSession ? 25 : 35;
+  const mlThreshold = isHighVolumeSession ? 20 : 30; // Reduced from 25/35 to capture A-/B setups
   
-  if (htfAligned && Math.abs(mlScore) >= mlThreshold && adx >= 20) {
+  if (htfAligned && Math.abs(mlScore) >= mlThreshold && adx >= 18) { // Reduced ADX from 20 to 18
+    if (Math.abs(mlScore) >= 60 && adx >= 25) return "A-";
     return "B+";
   }
   return "SKIPPED";
