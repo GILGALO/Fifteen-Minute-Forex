@@ -485,28 +485,28 @@ function getStakeAdvice(confidence: number, grade: string, pair: string): { reco
   };
 }
 
-function detectLiquidityXRay(candles: any[]): { hasOrderBlock: boolean; type: "BULLISH" | "BEARISH" | null; confidenceBoost: number } {
-  if (candles.length < 5) return { hasOrderBlock: false, type: null, confidenceBoost: 0 };
-  
-  // Last 3 candles for OB detection
-  const c1 = candles[candles.length - 3]; // The "Institutional" candle (Impulsive)
-  const c2 = candles[candles.length - 2]; 
-  const c3 = candles[candles.length - 1]; // The "Mitigation" attempt
-  
-  const isImpulsiveBullish = c1.close > c1.open && (c1.close - c1.open) > (c1.high - c1.low) * 0.6;
-  const isImpulsiveBearish = c1.open > c1.close && (c1.open - c1.close) > (c1.high - c1.low) * 0.6;
-  
-  // Bullish OB: Large green candle followed by price staying above its bottom half
-  if (isImpulsiveBullish && c3.low > c1.open) {
-    return { hasOrderBlock: true, type: "BULLISH", confidenceBoost: 12 };
-  }
-  
-  // Bearish OB: Large red candle followed by price staying below its top half
-  if (isImpulsiveBearish && c3.high < c1.open) {
-    return { hasOrderBlock: true, type: "BEARISH", confidenceBoost: 12 };
-  }
-  
-  return { hasOrderBlock: false, type: null, confidenceBoost: 0 };
+function detectPivotLevels(candles: any[]): { isNearPivot: boolean; type: "SUPPORT" | "RESISTANCE" | null } {
+  if (candles.length < 20) return { isNearPivot: false, type: null };
+  const currentPrice = candles[candles.length - 1].close;
+  const high = Math.max(...candles.map(c => c.high));
+  const low = Math.min(...candles.map(c => c.low));
+  const buffer = (high - low) * 0.05;
+
+  if (Math.abs(currentPrice - high) < buffer) return { isNearPivot: true, type: "RESISTANCE" };
+  if (Math.abs(currentPrice - low) < buffer) return { isNearPivot: true, type: "SUPPORT" };
+  return { isNearPivot: false, type: null };
+}
+
+function isVolumeClimax(candles: any[]): boolean {
+  if (candles.length < 10) return false;
+  const lastCandle = candles[candles.length - 1];
+  const avgVol = candles.slice(-10, -1).reduce((s, c) => s + (c.volume || 0), 0) / 9;
+  return (lastCandle.volume || 0) > avgVol * 2.5;
+}
+
+function getAdaptiveThreshold(technicals: any): number {
+  const isChoppy = technicals.adx < 20 && Math.abs(technicals.rsi - 50) < 10;
+  return isChoppy ? 85 : 75;
 }
 
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
@@ -801,14 +801,30 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
       }
     }
 
-    // Liquidity X-Ray (Order Blocks)
-    const liquidity = detectLiquidityXRay(candles);
-    if (liquidity.hasOrderBlock) {
-      const isAligned = (liquidity.type === "BULLISH" && signalType === "CALL") || (liquidity.type === "BEARISH" && signalType === "PUT");
-      if (isAligned) {
-        confidence = Math.min(99, confidence + liquidity.confidenceBoost);
-        reasoning.push(`🔋 LIQUIDITY X-RAY: Institutional Order Block confirmed`);
+    // Institutional Pivot Logic
+    const pivots = detectPivotLevels(candles);
+    if (pivots.isNearPivot) {
+      const isReversal = (pivots.type === "SUPPORT" && signalType === "CALL") || (pivots.type === "RESISTANCE" && signalType === "PUT");
+      if (isReversal) {
+        confidence += 10;
+        reasoning.push(`🏛️ INSTITUTIONAL PIVOT: Bounce from major ${pivots.type} level`);
+      } else {
+        confidence -= 15;
+        reasoning.push(`⚠️ PIVOT DANGER: Approaching major ${pivots.type} - high reversal risk`);
       }
+    }
+
+    // Volume Climax Filter
+    if (isVolumeClimax(candles)) {
+      confidence -= 20;
+      reasoning.push(`⚠️ VOLUME CLIMAX: Blow-off candle detected - trend may be exhausted`);
+    }
+
+    // AI Adaptive Thresholds
+    const dynamicMinConfidence = getAdaptiveThreshold(technicals);
+    if (confidence < dynamicMinConfidence && technicals.adx < 20) {
+      reasoning.push(`🧊 ADAPTIVE FILTER: Market too choppy for ${confidence}% setup (Required: ${dynamicMinConfidence}%)`);
+      // We don't return early here to allow the full analysis to complete, but the grade will be SKIPPED later
     }
 
     // The "Ghost" Trade Rebalancer: Dynamic Stake Sizing
