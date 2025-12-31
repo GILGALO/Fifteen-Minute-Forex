@@ -72,14 +72,14 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
           </div>
         </div>
         
-        <div className="space-y-3 text-[12px] sm:text-base">
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">📊 Pair:</span>
+        <div className="space-y-1 text-[13px] sm:text-base leading-tight">
+          <div className="flex items-baseline gap-2 text-white">
+            <span className="text-slate-500 w-14 shrink-0">Pair:</span>
             <span className="font-black uppercase tracking-wider">{signal.pair}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">🟢 Action:</span>
+          <div className="flex items-baseline gap-2 text-white">
+            <span className="text-slate-500 w-14 shrink-0">Action:</span>
             <span className={`font-black flex items-center gap-1.5 ${
               signal.type === "CALL" ? "text-emerald-400" : "text-rose-400"
             }`}>
@@ -88,7 +88,7 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
           </div>
 
           {signal.stakeAdvice && (
-            <div className="mt-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+            <div className="my-1.5 py-1.5 px-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
               <div className="flex items-center gap-2 text-emerald-400 font-black">
                 <span>{signal.stakeAdvice.recommendation === "HIGH" ? "💎" : (signal.stakeAdvice.recommendation === "MEDIUM" ? "✨" : "⚖️")}</span>
                 <span className="uppercase tracking-widest text-[10px] sm:text-xs">STAKE: {signal.stakeAdvice.recommendation} ({signal.stakeAdvice.size})</span>
@@ -96,18 +96,18 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
             </div>
           )}
           
-          <div className="flex items-center gap-2 text-white pt-2">
-            <span className="text-slate-500 w-24 tracking-tight">🎯 Entry:</span>
+          <div className="flex items-baseline gap-2 text-white pt-1">
+            <span className="text-slate-500 w-14 shrink-0">Entry:</span>
             <span className="font-bold tabular-nums">{signal.entry.toFixed(5)}</span>
           </div>
           
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">⏰ Start:</span>
+          <div className="flex items-baseline gap-2 text-white">
+            <span className="text-slate-500 w-14 shrink-0">Start:</span>
             <span className="font-bold tabular-nums text-emerald-400">{signal.startTime} EAT</span>
           </div>
           
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">🏁 End:</span>
+          <div className="flex items-baseline gap-2 text-white">
+            <span className="text-slate-500 w-14 shrink-0">End:</span>
             <span className="font-bold tabular-nums text-rose-400">{signal.endTime} EAT</span>
           </div>
         </div>
