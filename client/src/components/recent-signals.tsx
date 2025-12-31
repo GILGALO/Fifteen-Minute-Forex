@@ -36,6 +36,11 @@ interface SignalWithML extends Signal {
   mlPatternScore?: PatternScore;
   sentimentScore?: SentimentScore;
   mlConfidenceBoost?: number;
+  stakeAdvice?: {
+    recommendation: "HIGH" | "MEDIUM" | "LOW" | "CAUTION";
+    reason: string;
+    size: string;
+  };
 }
 
 const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithML, isExpanded: boolean, onToggle: () => void }) => {
@@ -57,7 +62,7 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
         <div className="flex justify-between items-center border-b border-white/10 pb-3 mb-3">
           <div className="flex flex-col">
             <span className="text-emerald-400 font-black tracking-tighter uppercase text-[11px] sm:text-sm flex items-center gap-2">
-              NEW SIGNAL ALERT 🚀
+              🚀 GILGALO PRO SIGNAL
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -67,58 +72,53 @@ const SignalItem = memo(({ signal, isExpanded, onToggle }: { signal: SignalWithM
           </div>
         </div>
         
-        <div className="space-y-2 text-[11px] sm:text-sm">
+        <div className="space-y-3 text-[12px] sm:text-base">
           <div className="flex items-center gap-2 text-white">
             <span className="text-slate-500 w-24 tracking-tight">📊 Pair:</span>
             <span className="font-black uppercase tracking-wider">{signal.pair}</span>
           </div>
           
           <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">⚡ Type:</span>
+            <span className="text-slate-500 w-24 tracking-tight">🟢 Action:</span>
             <span className={`font-black flex items-center gap-1.5 ${
               signal.type === "CALL" ? "text-emerald-400" : "text-rose-400"
             }`}>
-              {signal.type === "CALL" ? "🟢 BUY/CALL" : "🔴 SELL/PUT"}
+              {signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}
             </span>
           </div>
-          
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">⏱ Timeframe:</span>
-            <span className="font-bold">{signal.timeframe}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">⏰ Start Time:</span>
-            <span className="font-bold tabular-nums">{signal.startTime}</span>
-          </div>
-          
-          <div className="flex items-center gap-2 text-white">
-            <span className="text-slate-500 w-24 tracking-tight">🏁 End Time:</span>
-            <span className="font-bold tabular-nums">{signal.endTime}</span>
-          </div>
-        </div>
 
-        <div className="pt-3 mt-2 border-t border-white/5 space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Confidence: {signal.confidence}%</span>
-            <span className="text-[9px] text-emerald-500/70 font-black uppercase tracking-widest">Verified ⚡</span>
-          </div>
-
-          {signal.mlPatternScore && signal.sentimentScore && (
-            <button
-              onClick={onToggle}
-              className="w-full flex items-center justify-between text-[9px] font-black text-purple-400 uppercase tracking-wider hover:text-purple-300 transition-colors pt-1"
-            >
-              <span>ML Analysis Breakdown</span>
-              <motion.div
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ChevronDown className="w-3 h-3" />
-              </motion.div>
-            </button>
+          {signal.stakeAdvice && (
+            <div className="mt-2 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+              <div className="flex items-center gap-2 text-emerald-400 font-black">
+                <span>{signal.stakeAdvice.recommendation === "HIGH" ? "💎" : (signal.stakeAdvice.recommendation === "MEDIUM" ? "✨" : "⚖️")}</span>
+                <span className="uppercase tracking-widest">STAKE: {signal.stakeAdvice.recommendation} ({signal.stakeAdvice.size})</span>
+              </div>
+            </div>
           )}
+          
+          <div className="flex items-center gap-2 text-white pt-2">
+            <span className="text-slate-500 w-24 tracking-tight">🎯 Entry:</span>
+            <span className="font-bold tabular-nums">{signal.entry.toFixed(5)}</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-slate-500 w-24 tracking-tight">⏰ Start:</span>
+            <span className="font-bold tabular-nums text-emerald-400">{signal.startTime} EAT</span>
+          </div>
+          
+          <div className="flex items-center gap-2 text-white">
+            <span className="text-slate-500 w-24 tracking-tight">🏁 End:</span>
+            <span className="font-bold tabular-nums text-rose-400">{signal.endTime} EAT</span>
+          </div>
         </div>
+
+        <div className="pt-3 mt-2 border-t border-white/5 flex justify-center italic text-[10px] text-slate-500">
+          Trust the system. Trade the plan.
+        </div>
+      </div>
+    </div>
+  );
+});
 
         <AnimatePresence>
           {isExpanded && signal.mlPatternScore && signal.sentimentScore && (
