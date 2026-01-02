@@ -374,8 +374,24 @@ function detectTrendExhaustion(adx: number, rsi: number, signalType: "CALL" | "P
 }
 
 export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
-  // OVERRIDE: Market is forced open for "Ready Now" status
-  return { isOpen: true, nextAction: "Always Active" };
+  const now = new Date();
+  const day = now.getUTCDay();
+  const hour = now.getUTCHours();
+
+  // Friday close: 21:00 UTC (Saturday 00:00 EAT)
+  if (day === 5 && hour >= 21) {
+    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
+  }
+  // Saturday: Closed all day
+  if (day === 6) {
+    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
+  }
+  // Sunday open: 21:00 UTC (Monday 00:00 EAT)
+  if (day === 0 && hour < 21) {
+    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
+  }
+
+  return { isOpen: true, nextAction: "Saturday at 00:00 EAT" };
 }
 
 function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" {
