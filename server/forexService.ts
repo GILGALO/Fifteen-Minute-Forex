@@ -374,26 +374,8 @@ function detectTrendExhaustion(adx: number, rsi: number, signalType: "CALL" | "P
 }
 
 export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
-  const now = new Date();
-  const day = now.getUTCDay();
-  const hour = now.getUTCHours();
-
-  const kenyaOffset = 3; // UTC+3
-  
-  // Friday close: 21:00 UTC (Saturday 00:00 EAT)
-  if (day === 5 && hour >= 21) {
-    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
-  }
-  // Saturday: Closed all day
-  if (day === 6) {
-    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
-  }
-  // Sunday open: 21:00 UTC (Monday 00:00 EAT)
-  if (day === 0 && hour < 21) {
-    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
-  }
-
-  return { isOpen: true, nextAction: "Saturday at 00:00 EAT" };
+  // OVERRIDE: Market is forced open for "Ready Now" status
+  return { isOpen: true, nextAction: "Always Active" };
 }
 
 function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" {
@@ -944,7 +926,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   if (atrVal < minAtrBuffer) {
     reasoning.push(`⚠️ DEAD ZONE: Volatility too low relative to spread (ATR: ${atrVal.toFixed(5)})`);
     ruleChecklist.volatilityFilter = false;
-    return { pair, currentPrice: 0, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+    return { pair, currentPrice: 0, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
   ruleChecklist.volatilityFilter = true;
 
