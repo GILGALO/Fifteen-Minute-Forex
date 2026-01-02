@@ -843,7 +843,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     // Fetch last 5 trades to determine "Ghost" win rate
     const recentTrades = await storage.getTrades();
     const last5 = recentTrades.slice(-5);
-    const ghostWinCount = last5.filter(t => t.outcome === "WIN").length;
+    const ghostWinCount = last5.filter((t: any) => t.outcome === "WIN").length;
     const ghostWinRate = last5.length > 0 ? (ghostWinCount / last5.length) * 100 : 100;
 
     let stakeSizing = "MEDIUM";
@@ -859,20 +859,42 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
   
+  // Define accuracy and minConfidence for the ghost trade logger
+  const pairAccuracyValue = getPairAccuracy(pair);
+  const minConfidenceThreshold = getMinConfidence(pair);
+
+  // Refined Grading Logic - move up before use
+  const finalGrade: "A" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "B+" ? "B" : "SKIPPED");
+
   const analysisResult: SignalAnalysis = { 
-    pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade, 
-    timeframe, recommendation: stakeSizing as "HIGH" | "MEDIUM" | "LOW", 
+    pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: finalGrade, 
+    timeframe, 
     reasoning, ruleChecklist,
     technicals: {
       rsi: technicals.rsi,
       macd: technicals.macd,
-      stoch: technicals.stoch,
+      sma20: technicals.sma20,
+      sma50: technicals.sma50,
+      sma200: technicals.sma200,
+      ema12: technicals.ema12,
+      ema26: technicals.ema26,
+      bollingerBands: technicals.bollingerBands,
+      stochastic: technicals.stochastic,
+      atr: technicals.atr,
       adx: technicals.adx,
+      supertrend: technicals.supertrend,
+      candlePattern: technicals.candlePattern,
       trend: technicals.supertrend.direction,
-      volatility: technicals.volatility
+      momentum: technicals.momentum,
+      volatility: technicals.volatility,
+      marketRegime: technicals.marketRegime
     },
     mlPatternScore, sentimentScore, mlConfidenceBoost,
-    stakeAdvice: stakeSizing as "HIGH" | "MEDIUM" | "LOW"
+    stakeAdvice: {
+      recommendation: stakeSizing as "HIGH" | "MEDIUM" | "LOW",
+      reason: "Rebalancer logic applied",
+      size: stakeSizing === "HIGH" ? "2%" : stakeSizing === "MEDIUM" ? "1%" : "0.5%"
+    }
   };
 
   // Priority 1: The "Ghost" Trade Optimizer - log EVERYTHING for accuracy analysis
@@ -888,12 +910,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     candlePattern: technicals.candlePattern,
     htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT",
     session: getCurrentSessionTime(),
-    pairAccuracy: accuracy,
-    isGhost: signalGrade === "SKIPPED" || confidence < minConfidence
+    pairAccuracy: pairAccuracyValue,
+    isGhost: finalGrade === "SKIPPED" || confidence < minConfidenceThreshold
   });
 
   // A+ Institutional Filter: Auto-dispatch only if grade is A or B
-  const isDispatchable = ["A", "A-", "B+"].includes(finalGrade as string);
+  const isDispatchable = ["A", "A-", "B+"].includes(finalGrade);
   if (!isDispatchable && confidence < 92) {
     reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires 92%+ Confidence for Telegram auto-dispatch.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
@@ -925,14 +947,6 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     return { pair, currentPrice: 0, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
   }
   ruleChecklist.volatilityFilter = true;
-
-  // Refined Grading Logic
-  const finalGrade: "A" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "B+" ? "B" : "SKIPPED");
-
-  if (finalGrade === "SKIPPED") {
-    reasoning.push(`❌ FILTERED: Setup does not meet A+ or B+ Tactical criteria.`);
-    return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
-  }
 
   const slDistance = atrVal * volMultiplier;
   const tpDistance = slDistance * 1.5; // 1:1.5 Risk/Reward

@@ -113,6 +113,10 @@ export class MemStorage implements IStorage {
     return this.scannerState;
   }
 
+  async getTrades(): Promise<Trade[]> {
+    return Array.from(this.trades.values());
+  }
+
   async createSignal(signal: any): Promise<any> {
     const id = signal.id || crypto.randomUUID();
     const newSignal = { ...signal, id, timestamp: new Date(signal.timestamp || Date.now()) };
