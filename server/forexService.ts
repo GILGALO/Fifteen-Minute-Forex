@@ -850,8 +850,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const analysisResult: SignalAnalysis = { 
     pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: finalGrade, 
-    timeframe, 
-    reasoning, ruleChecklist,
+    entry: 0, stopLoss: 0, takeProfit: 0,
     technicals: {
       rsi: technicals.rsi,
       macd: technicals.macd,
@@ -871,6 +870,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
       volatility: technicals.volatility,
       marketRegime: technicals.marketRegime
     },
+    reasoning, ruleChecklist,
     mlPatternScore, sentimentScore, mlConfidenceBoost,
     stakeAdvice: {
       recommendation: stakeSizing as "HIGH" | "MEDIUM" | "LOW",
