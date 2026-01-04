@@ -252,43 +252,82 @@ export default function Strategies() {
                       Once liquidity is grabbed, they immediately reverse the price. This is where most retail traders lose.
                     </p>
                     <div className="bg-slate-950 p-4 rounded-md border border-white/5 space-y-3">
-                      <p className="text-[10px] font-black text-yellow-500 uppercase">How to Spot the Trap:</p>
+                      <p className="text-[10px] font-black text-yellow-500 uppercase">Mechanical Trap Identification:</p>
                       <ul className="text-[10px] space-y-2 text-slate-500 font-medium">
-                        <li>• <span className="text-white font-bold">The Slow Poke</span>: Price breaks level with a tiny candle and no volume.</li>
-                        <li>• <span className="text-white font-bold">The Wick Return</span>: Price breaks but closes <span className="text-red-400">inside</span> the level with a long wick.</li>
-                        <li>• <span className="text-white font-bold">EMA Distance</span>: If price is too far from the EMA 50 during a breakout, it is "stretched" and likely to fail.</li>
+                        <li>• <span className="text-white font-bold tracking-tight uppercase">01. The Liquidity Grab</span>: Price hits a major resistance level and pierces it by only <span className="text-yellow-500">2-5 pips</span>. This is bait for breakout algorithms.</li>
+                        <li>• <span className="text-white font-bold tracking-tight uppercase">02. Volume Divergence</span>: The breakout candle has <span className="text-red-400">Lower Volume</span> than the previous 3 candles. True breakouts require institutional volume spikes.</li>
+                        <li>• <span className="text-white font-bold tracking-tight uppercase">03. The Wick Return</span>: If the candle closes back <span className="text-red-400">BELOW</span> the breakout level, it is 100% a fakeout. Retail is trapped; Institutions are selling.</li>
+                        <li>• <span className="text-white font-bold tracking-tight uppercase">04. EMA Gap (The Rubber Band)</span>: If price is {">"} 10 pips from EMA 50, the "Rubber Band" is stretched. It will snap back to the EMA regardless of the breakout.</li>
                       </ul>
                     </div>
                   </div>
 
                   {/* VISUAL TRAP SIMULATION */}
-                  <div className="bg-black rounded-xl border border-yellow-500/20 p-6 relative flex flex-col justify-end min-h-[250px]">
+                  <div className="bg-black rounded-xl border border-yellow-500/20 p-6 relative flex flex-col justify-end min-h-[300px]">
                     <div className="absolute top-4 left-4 flex flex-col gap-1">
-                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[9px] uppercase font-black">Trap Simulation</Badge>
-                      <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Resistance Level: 18.83185</span>
+                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[9px] uppercase font-black">Institutional Bait Detection</Badge>
+                      <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Resistance Zone • 18.83185</span>
                     </div>
 
                     {/* CHART VISUAL */}
-                    <div className="relative h-32 flex items-end gap-1.5">
-                      <div className="w-5 h-20 bg-green-500/40 border border-green-500/30 rounded-sm" />
-                      <div className="w-5 h-28 bg-green-500/60 border border-green-500/40 rounded-sm" />
+                    <div className="relative h-40 flex items-end gap-1.5 pb-4">
+                      {/* PRE-TRAP MOMENTUM */}
+                      <div className="w-5 h-20 bg-green-500/20 border border-green-500/20 rounded-sm" />
+                      <div className="w-5 h-24 bg-green-500/40 border border-green-500/30 rounded-sm" />
                       
-                      {/* THE TRAP CANDLE */}
-                      <div className="w-6 h-36 bg-green-500 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] rounded-sm relative group">
-                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-px h-16 bg-white/50" />
-                        <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-yellow-500 text-black text-[9px] font-black px-2 py-0.5 rounded animate-pulse whitespace-nowrap italic">FAKE BREAKOUT!</div>
+                      {/* THE TRAP CANDLE (LIQUIDITY GRAB) */}
+                      <div className="w-6 h-40 bg-green-500/80 border-2 border-yellow-500 shadow-[0_0_25px_rgba(234,179,8,0.4)] rounded-sm relative group z-10">
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-px h-20 bg-white/70" />
+                        <div className="absolute -top-20 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                           <div className="bg-yellow-500 text-black text-[8px] font-black px-2 py-0.5 rounded animate-pulse shadow-xl">LIQUIDITY GRAB</div>
+                           <div className="h-4 w-px bg-yellow-500" />
+                        </div>
                       </div>
 
-                      {/* THE REVERSAL */}
-                      <div className="w-5 h-24 bg-red-500 border border-red-400 rounded-sm animate-bounce" />
+                      {/* THE TRAP REVERSAL (INSTITUTIONAL SELL) */}
+                      <div className="w-6 h-32 bg-red-600 border border-red-400 rounded-sm relative group animate-in fade-in slide-in-from-top-4 duration-1000">
+                         <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-[9px] font-black text-red-500 uppercase">Smart Money Sell</span>
+                            <ArrowRightCircle className="h-4 w-4 text-red-500 rotate-90" />
+                         </div>
+                      </div>
                       
-                      {/* RESISTANCE LINE */}
-                      <div className="absolute top-[25%] left-0 w-full h-px bg-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+                      {/* RESISTANCE LEVEL */}
+                      <div className="absolute top-[25%] left-0 w-full h-px bg-yellow-500/40 border-t border-dashed border-yellow-500/60 z-0">
+                         <span className="absolute -right-12 top-[-6px] text-[8px] text-yellow-500/60 font-black">BAIT LEVEL</span>
+                      </div>
                     </div>
 
-                    <div className="mt-6 p-3 bg-yellow-500/10 rounded border border-yellow-500/20">
-                      <p className="text-[9px] font-black text-yellow-500 uppercase mb-1 italic">The "OTC Killer" Secret:</p>
-                      <p className="text-[10px] text-slate-300">Never trade the initial breakout candle. Wait for a retest OR for the MACD to fully cross above zero. If it doesn't retest, it was a trap.</p>
+                    <div className="mt-6 grid grid-cols-2 gap-3">
+                      <div className="p-2 bg-slate-950 rounded border border-white/5">
+                        <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Retail Sentiment</p>
+                        <p className="text-[10px] text-green-400 font-bold italic">"Breakout! Buy now!"</p>
+                      </div>
+                      <div className="p-2 bg-slate-950 rounded border border-white/5">
+                        <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Institutional Reality</p>
+                        <p className="text-[10px] text-red-400 font-bold italic">"Generating Liquidity to Sell"</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950 p-6 rounded-xl border border-white/5 space-y-4">
+                  <h3 className="text-xs font-black text-white uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-primary" />
+                    The mechanical solution (THE RE-ENTRY)
+                  </h3>
+                  <div className="grid md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-black text-primary uppercase">01. Wait for Closure</p>
+                      <p className="text-[10px] text-slate-500">Never trade a candle until it finishes. A 1-minute breakout candle can become a rejection wick in the last 5 seconds.</p>
+                    </div>
+                    <div className="space-y-2 border-x border-white/5 px-6">
+                      <p className="text-[10px] font-black text-primary uppercase">02. Confirm the Slope</p>
+                      <p className="text-[10px] text-slate-500">Is the EMA 50 actually curving up? If it's horizontal, the 'breakout' is just a range expansion (No Trade).</p>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-[10px] font-black text-primary uppercase">03. High-Confidence Entry</p>
+                      <p className="text-[10px] text-slate-500">The safest entry is the <strong>First Pullback</strong> AFTER a successful, high-volume breakout and retest.</p>
                     </div>
                   </div>
                 </div>
