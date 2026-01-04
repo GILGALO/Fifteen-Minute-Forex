@@ -337,22 +337,23 @@ export default function Strategies() {
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
                           <p className="text-[10px] font-black text-white uppercase">Step 1: Trend Alignment</p>
-                          <p className="text-[10px] text-slate-500">Price must be <span className="text-green-400">ABOVE</span> EMA 50. This confirms a bullish environment. Look for the EMA to be angling upwards.</p>
+                          <p className="text-[10px] text-slate-500 italic">"Go with the flow, not against it."</p>
+                          <p className="text-[10px] text-slate-400">Price must be <span className="text-green-400 font-bold">ABOVE</span> the Pink EMA 50 line. The EMA should be sloping UP. This is your primary filter.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 2: The Pullback</p>
-                          <p className="text-[10px] text-slate-500">Wait for price to return to the EMA. We want to see <span className="text-white">Bullish Rejection</span> (long lower wicks) touching or near the EMA line.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 2: The EMA Bounce</p>
+                          <p className="text-[10px] text-slate-400">Wait for price to return (pullback) to the EMA 50. Look for <span className="text-green-400 font-bold">Wick Rejection</span>: long lower wicks touching or near the line. This shows buyers are defending the level.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 3: MACD Confirmation</p>
-                          <p className="text-[10px] text-slate-500">The MACD Histogram must be <span className="text-green-400">Green</span> and preferably increasing in height, showing that buyers are regaining control after the dip.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 3: MACD Green Momentum</p>
+                          <p className="text-[10px] text-slate-400">MACD Histogram must be <span className="text-green-400 font-bold">Green</span>. If it was red, wait for it to flip to green or show a clear shrinking of red bars as price bounces off the EMA.</p>
                         </div>
                       </div>
                     </div>
 
-                    {/* BEARISH SCENARIO */}
+                    {/* BEARISH SCENARIO - BELOW EMA 50 */}
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 pb-2 border-b border-red-500/20">
                         <TrendingDown className="h-4 w-4 text-red-500" />
@@ -362,25 +363,71 @@ export default function Strategies() {
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]" />
                           <p className="text-[10px] font-black text-white uppercase">Step 1: Trend Alignment</p>
-                          <p className="text-[10px] text-slate-500">Price must be <span className="text-red-400">BELOW</span> EMA 50. This confirms a bearish environment. Look for the EMA to be angling downwards.</p>
+                          <p className="text-[10px] text-slate-500 italic">"Follow the gravity."</p>
+                          <p className="text-[10px] text-slate-400">Price must be <span className="text-red-400 font-bold">BELOW</span> the Pink EMA 50 line. The EMA should be sloping DOWN. This is your primary filter.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 2: The Pullback</p>
-                          <p className="text-[10px] text-slate-500">Wait for price to "breathe" back up towards the EMA. We want to see <span className="text-white">Bearish Rejection</span> (long upper wicks) as it hits the resistance of the EMA.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 2: The EMA Resistance</p>
+                          <p className="text-[10px] text-slate-400">Wait for price to return (pullback) UP to the EMA 50. Look for <span className="text-red-400 font-bold">Wick Rejection</span>: long upper wicks hitting or near the line. This shows sellers are defending the level.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 3: MACD Confirmation</p>
-                          <p className="text-[10px] text-slate-500">The MACD Histogram must be <span className="text-red-400">Red</span> and increasing in downward momentum, confirming that the trend is ready to resume lower.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 3: MACD Red Momentum</p>
+                          <p className="text-[10px] text-slate-400">MACD Histogram must be <span className="text-red-400 font-bold">Red</span>. If it was green, wait for it to flip to red or show a clear shrinking of green bars as price rejects the EMA.</p>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* TRAP AWARENESS BOX */}
-                  <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-lg">
-                    <p className="text-[10px] font-black text-red-500 uppercase flex items-center gap-2 mb-2">
+                  {/* ADDITIONAL SCENARIO: BULLISH REVERSAL (BELOW EMA 50) */}
+                  <div className="bg-blue-500/5 border border-blue-500/10 p-6 rounded-xl mt-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-blue-500/10 rounded-lg">
+                        <TrendingUp className="h-5 w-5 text-blue-500" />
+                      </div>
+                      <h4 className="text-xs font-black text-white uppercase tracking-widest">Advanced Setup: Buying BELOW EMA 50 (The Oversold Snap)</h4>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-blue-500 uppercase">01. Oversold Check</p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">Price is <span className="text-white">BELOW</span> EMA 50 but extremely far from it. Look for the "exhaustion gap" where sellers are tired and profit-taking begins.</p>
+                      </div>
+                      <div className="space-y-2 border-x border-white/5 px-6">
+                        <p className="text-[10px] font-black text-blue-500 uppercase">02. Bullish Rejection</p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">Look for <span className="text-green-400 font-bold">Bullish Pin Bars</span> (long lower wicks) at the bottom. This signals institutional "buy-back" is starting.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-blue-500 uppercase">03. Momentum Flip</p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">Wait for MACD to show <span className="text-green-400">Green Bars</span> or a bullish cross. Enter a <span className="text-white font-bold">4-Min CALL</span> targeting a return to the EMA 50 Magnet.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-orange-500/5 border border-orange-500/10 p-6 rounded-xl mt-8">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="p-2 bg-orange-500/10 rounded-lg">
+                        <TrendingDown className="h-5 w-5 text-orange-500" />
+                      </div>
+                      <h4 className="text-xs font-black text-white uppercase tracking-widest">Advanced Setup: Selling ABOVE EMA 50 (The Magnet Reversal)</h4>
+                    </div>
+                    
+                    <div className="grid md:grid-cols-3 gap-6">
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-orange-500 uppercase">01. Overextension Check</p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">Price is <span className="text-white">ABOVE</span> EMA 50 but extremely far from it. Think of the EMA as a magnet. If the rubber band stretches too far, it must snap back.</p>
+                      </div>
+                      <div className="space-y-2 border-x border-white/5 px-6">
+                        <p className="text-[10px] font-black text-orange-500 uppercase">02. The Exhaustion Wick</p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">Look for <span className="text-white font-bold">Bearish Rejection</span> (long upper wicks) at the peak. This shows the upward energy is depleted and smart money is starting to sell.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-[10px] font-black text-orange-500 uppercase">03. The Confirmation</p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">MACD Histogram must start printing <span className="text-red-400">Red Bars</span>. Enter a <span className="text-white font-bold">4-Min PUT</span> on the first clear red candle. Target is a return to the EMA line.</p>
+                      </div>
+                    </div>
+                  </div>
                       <AlertTriangle className="h-3 w-3" />
                       Institutional Trap Checklist (The "NO TRADE" Zone)
                     </p>
