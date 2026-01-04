@@ -319,6 +319,81 @@ export default function Strategies() {
                 <div className="bg-slate-950 p-6 rounded-xl border border-white/5 space-y-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-lg">
+                      <Zap className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">
+                      Mechanical Execution Lessons (M15 / 4-Min Binary)
+                    </h3>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* BULLISH SCENARIO */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-green-500/20">
+                        <TrendingUp className="h-4 w-4 text-green-500" />
+                        <h4 className="text-[11px] font-black text-green-500 uppercase">Bullish Setup: The Momentum Ride</h4>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="relative pl-6 border-l border-white/10 space-y-1">
+                          <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
+                          <p className="text-[10px] font-black text-white uppercase">Step 1: Trend Alignment</p>
+                          <p className="text-[10px] text-slate-500">Price must be <span className="text-green-400">ABOVE</span> EMA 50. The EMA slope should be positive ({">"} 20°). If flat, the "Trend Trap" is active—STAY OUT.</p>
+                        </div>
+                        <div className="relative pl-6 border-l border-white/10 space-y-1">
+                          <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
+                          <p className="text-[10px] font-black text-white uppercase">Step 2: The MACD Squeeze</p>
+                          <p className="text-[10px] text-slate-500">Wait for MACD Histogram to print <span className="text-green-400">Dark Green</span> bars above the zero line. This confirms institutional buy pressure is accelerating.</p>
+                        </div>
+                        <div className="relative pl-6 border-l border-white/10 space-y-1">
+                          <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
+                          <p className="text-[10px] font-black text-white uppercase">Step 3: Entry & Expiry</p>
+                          <p className="text-[10px] text-slate-500">Enter at the <span className="text-white font-bold underline">First Green Candle</span> after a pullback. <span className="text-primary font-black">4-Min Expiry</span> covers the initial impulse + 1 minor fluctuation candle.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* BEARISH SCENARIO */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 pb-2 border-b border-red-500/20">
+                        <TrendingDown className="h-4 w-4 text-red-500" />
+                        <h4 className="text-[11px] font-black text-red-500 uppercase">Bearish Setup: The Institutional Dump</h4>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="relative pl-6 border-l border-white/10 space-y-1">
+                          <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]" />
+                          <p className="text-[10px] font-black text-white uppercase">Step 1: Gravity Check</p>
+                          <p className="text-[10px] text-slate-500">Price <span className="text-red-400">BELOW</span> EMA 50. EMA must be sloping down. Avoid "Liquidity Grabs" where price spikes 2 pips above EMA then reverses.</p>
+                        </div>
+                        <div className="relative pl-6 border-l border-white/10 space-y-1">
+                          <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
+                          <p className="text-[10px] font-black text-white uppercase">Step 2: Momentum Exhaustion</p>
+                          <p className="text-[10px] text-slate-500">RSI should be <span className="text-red-400">BELOW 50</span> and falling. If RSI is {">"} 70 and you see a sell signal, it's a "Counter-Trend Trap"—Ignore it.</p>
+                        </div>
+                        <div className="relative pl-6 border-l border-white/10 space-y-1">
+                          <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
+                          <p className="text-[10px] font-black text-white uppercase">Step 3: The 240s Rule</p>
+                          <p className="text-[10px] text-slate-500">Execute on the <span className="text-white font-bold underline">First Red Candle</span>. 4 minutes (240s) allows price to clear the "Volatility Noise" and hit the target zone.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* TRAP AWARENESS BOX */}
+                  <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-lg">
+                    <p className="text-[10px] font-black text-red-500 uppercase flex items-center gap-2 mb-2">
+                      <AlertTriangle className="h-3 w-3" />
+                      Institutional Trap Checklist (The "NO TRADE" Zone)
+                    </p>
+                    <div className="grid grid-cols-2 gap-4 text-[9px] text-slate-400">
+                      <p>• <span className="text-white">Divergence Trap</span>: Price makes a new high, but MACD makes a lower high. (REVERSAL RISK)</p>
+                      <p>• <span className="text-white">Consolidation Trap</span>: Price is squeezing between EMA 50 and 200. (NO DIRECTION)</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950 p-6 rounded-xl border border-white/5 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
                       <BarChart3 className="h-5 w-5 text-primary" />
                     </div>
                     <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">
