@@ -1,5 +1,15 @@
 # GILGALO Trading - AI-Powered Forex Signal Generator
 
+## ⚡ AGENT PROJECT MEMORY (READ THIS FIRST)
+This project is optimized for Replit Agent efficiency. To save usage:
+1. **Reference `replit.md`**: All architectural decisions and features are documented here.
+2. **Key Files**:
+   - `server/forexService.ts`: Core signal generation logic.
+   - `server/ml/`: Machine Learning modules.
+   - `client/src/pages/strategies.tsx`: Strategy documentation.
+3. **Session EAT**: Kenya Time (UTC+3) is the primary time zone for scanning.
+4. **Usage Note**: When importing to a new account, the Agent should read this file and `server/forexService.ts` first to avoid redundant indexing.
+
 ## Project Overview
 Gilgalo Trading is an advanced forex trading signal generator with machine learning-powered pattern recognition, multi-timeframe analysis, and sentiment scoring. The system generates high-confidence CALL/PUT trading signals for forex pairs while tracking session statistics and managing risk through daily profit targets and maximum drawdown limits.
 

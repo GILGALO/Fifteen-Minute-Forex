@@ -43,6 +43,11 @@ export function AppSidebar({ isAdmin }: AppSidebarProps) {
       icon: Home,
     },
     {
+      title: "Strategies",
+      url: "/strategies",
+      icon: Shield,
+    },
+    {
       title: "Trading Journal",
       url: "/trading-journal",
       icon: BookOpen,
