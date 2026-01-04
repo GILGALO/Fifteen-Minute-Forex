@@ -11,7 +11,8 @@ import {
   ArrowRightCircle,
   Activity,
   Maximize2,
-  Timer
+  Timer,
+  BarChart3
 } from "lucide-react";
 
 export default function Strategies() {
