@@ -92,7 +92,7 @@ export default function Strategies() {
                 </Card>
               </div>
 
-              {/* RIGHT COLUMN: VISUAL SIMULATION */}
+              {/* RIGHT COLUMN: VISUAL SIMULATION (SELL) */}
               <div className="lg:col-span-7">
                 <Card className="bg-slate-950 border-white/5 h-full relative overflow-hidden flex flex-col">
                   {/* CHART HEADER */}
@@ -101,88 +101,87 @@ export default function Strategies() {
                       <Badge className="bg-red-500/20 text-red-400 border-red-500/30 font-black">SELL SETUP</Badge>
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">BHD/CNY OTC • M1</span>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-end">
-                        <span className="text-[9px] font-bold text-slate-500 uppercase">Current Price</span>
-                        <span className="text-xs font-black text-white tabular-nums">18.82574</span>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* CHART CONTENT - RECREATING SCREENSHOT LOGIC */}
-                  <div className="flex-1 p-8 flex flex-col gap-12 relative min-h-[400px]">
-                    {/* GRID BACKGROUND */}
+                  {/* CHART CONTENT - RECREATING SCREENSHOT LOGIC (SELL) */}
+                  <div className="flex-1 p-8 flex flex-col gap-12 relative min-h-[300px]">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] bg-[size:24px_24px]" />
-                    
-                    {/* CANDLESTICK VISUALIZATION */}
                     <div className="relative h-48 flex items-end gap-1.5 px-4">
-                      {/* PRE-DIP */}
                       <div className="w-5 h-20 bg-red-500/30 border border-red-500/50 rounded-sm" />
-                      <div className="w-5 h-24 bg-red-500/50 border border-red-500/50 rounded-sm" />
                       <div className="w-5 h-28 bg-red-500 border border-red-400 rounded-sm" />
-                      
-                      {/* THE PULLBACK (BLUE/GREEN) */}
                       <div className="w-5 h-16 bg-blue-500/20 border border-blue-400/30 rounded-sm ml-2" />
-                      <div className="w-5 h-20 bg-blue-500/40 border border-blue-400/50 rounded-sm" />
                       <div className="w-5 h-24 bg-blue-500/60 border border-blue-400/80 rounded-sm relative group">
                         <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-px h-6 bg-blue-400/50" />
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-[8px] font-black text-blue-400 uppercase opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">REJECTION WICK</div>
                       </div>
-
-                      {/* ENTRY CANDLE */}
                       <div className="w-6 h-28 bg-red-600 border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.2)] rounded-sm relative animate-pulse">
                          <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
                             <ArrowRightCircle className="h-6 w-6 text-white rotate-90 mb-1" />
                             <span className="text-[9px] font-black text-white uppercase bg-red-600 px-2 py-0.5 rounded shadow-lg">SELL ENTRY</span>
                          </div>
                       </div>
-
-                      {/* INDICATORS OVERLAY */}
                       <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-                        {/* EMA 50 (PINK) */}
                         <path d="M 0 40 Q 150 50, 250 120 T 450 130" fill="none" stroke="#ec4899" strokeWidth="2.5" className="opacity-80" />
-                        {/* TRENDLINE (YELLOW) */}
                         <line x1="100" y1="20" x2="350" y2="120" stroke="#eab308" strokeWidth="1.5" strokeDasharray="4 4" />
                       </svg>
                     </div>
-
-                    {/* MACD SUB-WINDOW */}
                     <div className="bg-slate-900/50 border border-white/5 rounded-lg p-3 space-y-2">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[8px] font-black text-slate-500 uppercase">MACD MOMENTUM (12, 26, 9)</span>
-                      </div>
                       <div className="h-12 flex items-end gap-1 px-2">
-                        {[0.2, 0.4, 0.7, 0.9, 1.0, 0.8, 0.5, 0.3].map((val, i) => (
-                          <div 
-                            key={i} 
-                            style={{ height: `${val * 100}%` }} 
-                            className={`flex-1 rounded-t-sm transition-all duration-500 ${val > 0.6 ? 'bg-green-500/50' : 'bg-green-500/20'}`}
-                          />
+                        {[0.2, 0.4, 0.7, 0.9, 1.0, 0.8].map((val, i) => (
+                          <div key={i} style={{ height: `${val * 100}%` }} className="flex-1 bg-green-500/50 rounded-t-sm" />
                         ))}
                         <div className="w-px h-full bg-white/10 mx-1" />
                         {[0.2, 0.5, 0.8, 0.6].map((val, i) => (
-                          <div 
-                            key={i} 
-                            style={{ height: `${val * 100}%` }} 
-                            className="flex-1 bg-red-500/40 rounded-t-sm" 
-                          />
+                          <div key={i} style={{ height: `${val * 100}%` }} className="flex-1 bg-red-500/40 rounded-t-sm" />
                         ))}
                       </div>
                     </div>
                   </div>
+                </Card>
+              </div>
+            </div>
 
-                  {/* BOTTOM INFO PANEL */}
-                  <div className="p-4 bg-slate-900/80 border-t border-white/5 grid grid-cols-2 gap-4">
+            {/* NEW VISUAL SIMULATION (BUY) */}
+            <div className="grid lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-5 hidden lg:block" />
+              <div className="lg:col-span-7">
+                <Card className="bg-slate-950 border-white/5 h-full relative overflow-hidden flex flex-col">
+                  <div className="p-4 border-b border-white/5 flex items-center justify-between bg-slate-900/50">
                     <div className="flex items-center gap-3">
-                      <Timer className="h-5 w-5 text-accent" />
-                      <div>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase leading-none">Expiry Time</p>
-                        <p className="text-sm font-black text-white italic tracking-widest">00:04:00</p>
-                      </div>
+                      <Badge className="bg-green-500/20 text-green-400 border-green-500/30 font-black">BUY SETUP</Badge>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">BHD/CNY OTC • M1</span>
                     </div>
-                    <div className="flex flex-col justify-center items-end">
-                       <p className="text-[9px] font-black text-green-500 uppercase tracking-tighter italic">ITM Expectation: 82%</p>
-                       <p className="text-[8px] text-slate-500 uppercase">Based on Mechanical Edge</p>
+                  </div>
+
+                  <div className="flex-1 p-8 flex flex-col gap-12 relative min-h-[300px]">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] bg-[size:24px_24px]" />
+                    <div className="relative h-48 flex items-end gap-1.5 px-4">
+                      <div className="w-5 h-28 bg-green-500/30 border border-green-500/50 rounded-sm" />
+                      <div className="w-5 h-20 bg-green-500 border border-green-400 rounded-sm" />
+                      <div className="w-5 h-24 bg-red-500/20 border border-red-400/30 rounded-sm ml-2" />
+                      <div className="w-5 h-20 bg-red-500/60 border border-red-400/80 rounded-sm relative group">
+                        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-px h-6 bg-red-400/50" />
+                      </div>
+                      <div className="w-6 h-32 bg-green-600 border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.2)] rounded-sm relative animate-pulse">
+                         <div className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center">
+                            <ArrowRightCircle className="h-6 w-6 text-white -rotate-90 mb-1" />
+                            <span className="text-[9px] font-black text-white uppercase bg-green-600 px-2 py-0.5 rounded shadow-lg">BUY ENTRY</span>
+                         </div>
+                      </div>
+                      <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
+                        <path d="M 0 130 Q 150 120, 250 50 T 450 40" fill="none" stroke="#ec4899" strokeWidth="2.5" className="opacity-80" />
+                        <line x1="100" y1="130" x2="350" y2="30" stroke="#eab308" strokeWidth="1.5" strokeDasharray="4 4" />
+                      </svg>
+                    </div>
+                    <div className="bg-slate-900/50 border border-white/5 rounded-lg p-3 space-y-2">
+                      <div className="h-12 flex items-end gap-1 px-2">
+                        {[0.2, 0.5, 0.8, 0.6].map((val, i) => (
+                          <div key={i} style={{ height: `${val * 100}%` }} className="flex-1 bg-red-500/50 rounded-t-sm" />
+                        ))}
+                        <div className="w-px h-full bg-white/10 mx-1" />
+                        {[0.2, 0.4, 0.7, 0.9, 1.0, 0.8].map((val, i) => (
+                          <div key={i} style={{ height: `${val * 100}%` }} className="flex-1 bg-green-500/40 rounded-t-sm" />
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </Card>
