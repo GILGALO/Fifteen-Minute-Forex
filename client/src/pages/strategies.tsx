@@ -227,6 +227,75 @@ export default function Strategies() {
              </Card>
           </section>
 
+          {/* NEW: FAKE BREAKOUT TRAP (OTC KILLER) */}
+          <section id="fake-breakout" className="space-y-6">
+            <div className="flex items-center gap-3 border-l-4 border-yellow-500 pl-4">
+              <div className="h-10 w-10 rounded-xl bg-yellow-500/20 flex items-center justify-center border border-yellow-500/30">
+                <ShieldCheck className="h-6 w-6 text-yellow-500" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-black tracking-tight text-white uppercase italic">🧠 The Fake Breakout Trap</h2>
+                <p className="text-[10px] text-yellow-500 font-black uppercase tracking-tighter">OTC KILLER • INSTITUTIONAL BAIT DETECTION</p>
+              </div>
+            </div>
+
+            <Card className="bg-slate-900/40 border-yellow-500/20 backdrop-blur-md overflow-hidden">
+              <CardContent className="p-8 space-y-8">
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-black text-white uppercase flex items-center gap-2">
+                      <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                      What is a "Trap"?
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      In OTC and high-volatility markets, institutions often push price above a trendline or resistance level to trigger <span className="text-white">"Breakout Buy"</span> orders. 
+                      Once liquidity is grabbed, they immediately reverse the price. This is where most retail traders lose.
+                    </p>
+                    <div className="bg-slate-950 p-4 rounded-md border border-white/5 space-y-3">
+                      <p className="text-[10px] font-black text-yellow-500 uppercase">How to Spot the Trap:</p>
+                      <ul className="text-[10px] space-y-2 text-slate-500 font-medium">
+                        <li>• <span className="text-white font-bold">The Slow Poke</span>: Price breaks level with a tiny candle and no volume.</li>
+                        <li>• <span className="text-white font-bold">The Wick Return</span>: Price breaks but closes <span className="text-red-400">inside</span> the level with a long wick.</li>
+                        <li>• <span className="text-white font-bold">EMA Distance</span>: If price is too far from the EMA 50 during a breakout, it is "stretched" and likely to fail.</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* VISUAL TRAP SIMULATION */}
+                  <div className="bg-black rounded-xl border border-yellow-500/20 p-6 relative flex flex-col justify-end min-h-[250px]">
+                    <div className="absolute top-4 left-4 flex flex-col gap-1">
+                      <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-[9px] uppercase font-black">Trap Simulation</Badge>
+                      <span className="text-[8px] text-slate-500 uppercase font-bold tracking-widest">Resistance Level: 18.83185</span>
+                    </div>
+
+                    {/* CHART VISUAL */}
+                    <div className="relative h-32 flex items-end gap-1.5">
+                      <div className="w-5 h-20 bg-green-500/40 border border-green-500/30 rounded-sm" />
+                      <div className="w-5 h-28 bg-green-500/60 border border-green-500/40 rounded-sm" />
+                      
+                      {/* THE TRAP CANDLE */}
+                      <div className="w-6 h-36 bg-green-500 border-2 border-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.3)] rounded-sm relative group">
+                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-px h-16 bg-white/50" />
+                        <div className="absolute -top-14 left-1/2 -translate-x-1/2 bg-yellow-500 text-black text-[9px] font-black px-2 py-0.5 rounded animate-pulse whitespace-nowrap italic">FAKE BREAKOUT!</div>
+                      </div>
+
+                      {/* THE REVERSAL */}
+                      <div className="w-5 h-24 bg-red-500 border border-red-400 rounded-sm animate-bounce" />
+                      
+                      {/* RESISTANCE LINE */}
+                      <div className="absolute top-[25%] left-0 w-full h-px bg-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+                    </div>
+
+                    <div className="mt-6 p-3 bg-yellow-500/10 rounded border border-yellow-500/20">
+                      <p className="text-[9px] font-black text-yellow-500 uppercase mb-1 italic">The "OTC Killer" Secret:</p>
+                      <p className="text-[10px] text-slate-300">Never trade the initial breakout candle. Wait for a retest OR for the MACD to fully cross above zero. If it doesn't retest, it was a trap.</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+
         </div>
       </ScrollArea>
     </div>
