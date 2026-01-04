@@ -331,23 +331,23 @@ export default function Strategies() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 pb-2 border-b border-green-500/20">
                         <TrendingUp className="h-4 w-4 text-green-500" />
-                        <h4 className="text-[11px] font-black text-green-500 uppercase">Bullish Setup: The Momentum Ride</h4>
+                        <h4 className="text-[11px] font-black text-green-500 uppercase">Bullish Setup: Buying Above EMA 50</h4>
                       </div>
                       <div className="space-y-4">
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]" />
                           <p className="text-[10px] font-black text-white uppercase">Step 1: Trend Alignment</p>
-                          <p className="text-[10px] text-slate-500">Price must be <span className="text-green-400">ABOVE</span> EMA 50. The EMA slope should be positive ({">"} 20°). If flat, the "Trend Trap" is active—STAY OUT.</p>
+                          <p className="text-[10px] text-slate-500">Price must be <span className="text-green-400">ABOVE</span> EMA 50. This confirms a bullish environment. Look for the EMA to be angling upwards.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 2: The MACD Squeeze</p>
-                          <p className="text-[10px] text-slate-500">Wait for MACD Histogram to print <span className="text-green-400">Dark Green</span> bars above the zero line. This confirms institutional buy pressure is accelerating.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 2: The Pullback</p>
+                          <p className="text-[10px] text-slate-500">Wait for price to return to the EMA. We want to see <span className="text-white">Bullish Rejection</span> (long lower wicks) touching or near the EMA line.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 3: Entry & Expiry</p>
-                          <p className="text-[10px] text-slate-500">Enter at the <span className="text-white font-bold underline">First Green Candle</span> after a pullback. <span className="text-primary font-black">4-Min Expiry</span> covers the initial impulse + 1 minor fluctuation candle.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 3: MACD Confirmation</p>
+                          <p className="text-[10px] text-slate-500">The MACD Histogram must be <span className="text-green-400">Green</span> and preferably increasing in height, showing that buyers are regaining control after the dip.</p>
                         </div>
                       </div>
                     </div>
@@ -356,23 +356,23 @@ export default function Strategies() {
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 pb-2 border-b border-red-500/20">
                         <TrendingDown className="h-4 w-4 text-red-500" />
-                        <h4 className="text-[11px] font-black text-red-500 uppercase">Bearish Setup: The Institutional Dump</h4>
+                        <h4 className="text-[11px] font-black text-red-500 uppercase">Bearish Setup: Selling Below EMA 50</h4>
                       </div>
                       <div className="space-y-4">
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 1: Gravity Check</p>
-                          <p className="text-[10px] text-slate-500">Price <span className="text-red-400">BELOW</span> EMA 50. EMA must be sloping down. Avoid "Liquidity Grabs" where price spikes 2 pips above EMA then reverses.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 1: Trend Alignment</p>
+                          <p className="text-[10px] text-slate-500">Price must be <span className="text-red-400">BELOW</span> EMA 50. This confirms a bearish environment. Look for the EMA to be angling downwards.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 2: Momentum Exhaustion</p>
-                          <p className="text-[10px] text-slate-500">RSI should be <span className="text-red-400">BELOW 50</span> and falling. If RSI is {">"} 70 and you see a sell signal, it's a "Counter-Trend Trap"—Ignore it.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 2: The Pullback</p>
+                          <p className="text-[10px] text-slate-500">Wait for price to "breathe" back up towards the EMA. We want to see <span className="text-white">Bearish Rejection</span> (long upper wicks) as it hits the resistance of the EMA.</p>
                         </div>
                         <div className="relative pl-6 border-l border-white/10 space-y-1">
                           <div className="absolute -left-1.5 top-0 w-3 h-3 rounded-full bg-slate-800 border border-white/10" />
-                          <p className="text-[10px] font-black text-white uppercase">Step 3: The 240s Rule</p>
-                          <p className="text-[10px] text-slate-500">Execute on the <span className="text-white font-bold underline">First Red Candle</span>. 4 minutes (240s) allows price to clear the "Volatility Noise" and hit the target zone.</p>
+                          <p className="text-[10px] font-black text-white uppercase">Step 3: MACD Confirmation</p>
+                          <p className="text-[10px] text-slate-500">The MACD Histogram must be <span className="text-red-400">Red</span> and increasing in downward momentum, confirming that the trend is ready to resume lower.</p>
                         </div>
                       </div>
                     </div>
