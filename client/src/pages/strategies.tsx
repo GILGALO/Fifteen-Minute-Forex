@@ -282,10 +282,14 @@ export default function Strategies() {
                            <div className="bg-yellow-500 text-black text-[8px] font-black px-2 py-0.5 rounded animate-pulse shadow-xl">LIQUIDITY GRAB</div>
                            <div className="h-4 w-px bg-yellow-500" />
                         </div>
+                        {/* LIQUIDITY PARTICLES ANIMATION */}
+                        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1 bg-yellow-400/50 blur-[2px] animate-ping" />
+                        </div>
                       </div>
 
                       {/* THE TRAP REVERSAL (INSTITUTIONAL SELL) */}
-                      <div className="w-6 h-32 bg-red-600 border border-red-400 rounded-sm relative group animate-in fade-in slide-in-from-top-4 duration-1000">
+                      <div className="w-6 h-32 bg-red-600 border border-red-400 rounded-sm relative group animate-in fade-in slide-in-from-top-4 duration-1000 delay-500">
                          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="text-[9px] font-black text-red-500 uppercase">Smart Money Sell</span>
                             <ArrowRightCircle className="h-4 w-4 text-red-500 rotate-90" />
@@ -307,6 +311,55 @@ export default function Strategies() {
                         <p className="text-[8px] font-black text-slate-500 uppercase mb-1">Institutional Reality</p>
                         <p className="text-[10px] text-red-400 font-bold italic">"Generating Liquidity to Sell"</p>
                       </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-slate-950 p-6 rounded-xl border border-white/5 space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <BarChart3 className="h-5 w-5 text-primary" />
+                    </div>
+                    <h3 className="text-xs font-black text-white uppercase tracking-[0.2em]">
+                      Volume-Price Exhaustion Guide
+                    </h3>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
+                      <div className="p-4 bg-black/40 rounded-lg border border-white/5 space-y-2">
+                        <p className="text-[10px] font-black text-red-500 uppercase flex items-center gap-2">
+                          <AlertTriangle className="h-3 w-3" />
+                          Type A: Climax Exhaustion
+                        </p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                          Massive volume spike with a small candle body. Indicates institutions are absorbing all buy orders. <span className="text-white font-bold underline">Reversal Imminent.</span>
+                        </p>
+                      </div>
+                      <div className="p-4 bg-black/40 rounded-lg border border-white/5 space-y-2">
+                        <p className="text-[10px] font-black text-yellow-500 uppercase flex items-center gap-2">
+                          <Activity className="h-3 w-3" />
+                          Type B: No Demand Breakout
+                        </p>
+                        <p className="text-[10px] text-slate-400 leading-relaxed">
+                          Price breaks level with <span className="text-white font-bold">Falling Volume</span>. There is no fuel behind the move. It will fall back into the range (The Trap).
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-black/60 rounded-xl border border-white/5 p-4 flex flex-col justify-between">
+                      <p className="text-[9px] font-black text-slate-500 uppercase mb-4 tracking-widest text-center">Volume Profile Breakdown</p>
+                      <div className="flex items-end justify-center gap-2 h-24">
+                        <div className="w-4 h-[40%] bg-slate-700/30 rounded-t-sm" />
+                        <div className="w-4 h-[60%] bg-slate-700/50 rounded-t-sm" />
+                        <div className="w-4 h-[100%] bg-primary/80 rounded-t-sm animate-pulse shadow-[0_0_15px_rgba(var(--primary),0.3)]">
+                          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-black text-primary uppercase">Spike</div>
+                        </div>
+                        <div className="w-4 h-[20%] bg-red-500/80 rounded-t-sm">
+                           <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-[8px] font-black text-red-500 uppercase">Drop</div>
+                        </div>
+                      </div>
+                      <p className="text-[9px] text-center text-slate-500 mt-4 italic">"Volume is the fuel. Price is the car."</p>
                     </div>
                   </div>
                 </div>
