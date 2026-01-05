@@ -7,12 +7,12 @@ import {
   ShieldCheck, 
   Zap, 
   Target, 
-  ArrowRightCircle,
-  Activity,
-  AlertCircle,
+  AlertCircle, 
   Info,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Activity,
+  Timer
 } from "lucide-react";
 
 export default function Strategies() {
