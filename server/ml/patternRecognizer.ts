@@ -45,11 +45,11 @@ export function detectPatterns(candles: CandleData[]): PatternScore {
   };
 
   // Calculate weighted overall score
-  const overallScore = Object.values(scores).reduce((a, b) => a + b, 0) / 8;
+  const overallScore = Object.values(scores).reduce((a, b) => a + b, 0) / 4; // Increased sensitivity by reducing divisor
   const direction =
-    overallScore > 10
+    overallScore > 5 // Lowered from 10
       ? "BULLISH"
-      : overallScore < -10
+      : overallScore < -5 // Lowered from -10
         ? "BEARISH"
         : "NEUTRAL";
 
@@ -79,9 +79,9 @@ function detectBullishEngulfing(candles: CandleData[]): number {
     current.close > current.open &&
     current.close > previous.open &&
     current.open < previous.close &&
-    getBodySize(current) > getBodySize(previous) * 1.2 // Stricter requirement
+    getBodySize(current) > getBodySize(previous) * 0.9 // Relaxed from 1.2
   ) {
-    return 85;
+    return 75;
   }
   return 0;
 }
@@ -95,9 +95,9 @@ function detectBearishEngulfing(candles: CandleData[]): number {
     current.close < current.open &&
     current.open > previous.close &&
     current.close < previous.open &&
-    getBodySize(current) > getBodySize(previous) * 1.2 // Stricter requirement
+    getBodySize(current) > getBodySize(previous) * 0.9 // Relaxed from 1.2
   ) {
-    return -85;
+    return -75;
   }
   return 0;
 }

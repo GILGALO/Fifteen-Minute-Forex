@@ -396,9 +396,9 @@ export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
 
 function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" | "SKIPPED" {
   if (exhausted) return "SKIPPED";
-  if (adx > 32 && macdAligned && supertrendAligned && htfAligned) return "A";
-  if (adx >= 28 && (macdAligned && supertrendAligned)) return "B";
-  return "SKIPPED";
+  if (adx > 28 && macdAligned && supertrendAligned && htfAligned) return "A";
+  if (adx >= 20 && (macdAligned || supertrendAligned)) return "B";
+  return "C";
 }
 
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
@@ -447,20 +447,22 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  // STRICT: Increased to filter out low-quality noise and "B" setups
-  if (accuracy === "HIGH") return 85; 
-  if (accuracy === "MEDIUM") return 88;
-  return 90;
+  // BALANCED: Lowered to increase signal frequency while maintaining base quality
+  if (accuracy === "HIGH") return 75; 
+  if (accuracy === "MEDIUM") return 78;
+  return 82;
 }
 
-function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "SKIPPED" {
+function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
   // A+ Setup (Institutional Powerhouse)
-  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 30) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A";
 
   // A- Setup (High Quality)
-  if (htfAligned && Math.abs(mlScore) >= 45 && adx >= 25) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 30 && adx >= 20) return "A-";
 
-  // B+ Setup (REMOVED - ONLY A/A- ALLOWED)
+  // B+ Setup (RE-ENABLED - Active Trend Follower)
+  if (htfAligned && Math.abs(mlScore) >= 15) return "B+";
+
   return "SKIPPED";
 }
 
@@ -859,7 +861,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const minConfidenceThreshold = getMinConfidence(pair);
 
   // Refined Grading Logic - move up before use
-  const finalGrade: "A" | "A-" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "A-" ? "A-" : "SKIPPED");
+  const finalGrade: "A" | "A-" | "B+" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "A-" ? "A-" : (tacticalGrade === "B+" ? "B+" : "SKIPPED"));
 
   const analysisResult: SignalAnalysis = { 
     pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: finalGrade, 
@@ -892,9 +894,9 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     }
   };
 
-  // ONLY DISPATCH A and A- GRADES
-  if (finalGrade !== "A" && finalGrade !== "A-") {
-    reasoning.push(`❌ GRADE ${finalGrade}: Below institutional requirements.`);
+  // ONLY DISPATCH A, A-, AND B+ GRADES
+  if (finalGrade !== "A" && finalGrade !== "A-" && finalGrade !== "B+") {
+    reasoning.push(`❌ GRADE ${finalGrade}: Below active trading requirements.`);
     return { 
       pair, 
       currentPrice, 
@@ -930,8 +932,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     isGhost: false
   });
 
-  // AGGRESSIVE: Lowered auto-dispatch requirements. B+ now only needs 55% confidence.
-  const dispatchThreshold = finalGrade === "A" ? 82 : 85;
+  // AGGRESSIVE: Balanced auto-dispatch requirements. B+ now only needs 70% confidence.
+  const dispatchThreshold = finalGrade === "A" ? 70 : 72;
   
   if (confidence < dispatchThreshold) {
     reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires ${dispatchThreshold}%+ Confidence for Telegram auto-dispatch.`);
@@ -939,10 +941,10 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   // Final validation for signal quality
-  const isQualitySignal = ["A", "A-"].includes(finalGrade as string);
+  const isQualitySignal = ["A", "A-", "B+"].includes(finalGrade as string);
   if (!isQualitySignal && (signalGrade === "SKIPPED" || Math.abs(mlScore) < 5)) {
     const skipReason = Math.abs(mlScore) < 5 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE";
-    reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A setups.`);
+    reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 75%+ accuracy requires active A/B+ setups.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
 
