@@ -942,7 +942,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const isQualitySignal = ["A", "A-"].includes(finalGrade as string);
   if (!isQualitySignal && (signalGrade === "SKIPPED" || Math.abs(mlScore) < 5)) {
     const skipReason = Math.abs(mlScore) < 5 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE";
-    reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A/B+ setups.`);
+    reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A setups.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
 
