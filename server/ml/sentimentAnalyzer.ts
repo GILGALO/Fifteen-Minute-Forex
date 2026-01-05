@@ -50,13 +50,13 @@ export function analyzeSentiment(technicals: TechnicalAnalysis): SentimentScore 
 
 function scoreRSI(rsi: number): number {
   // RSI: 30-70 is neutral, <30 oversold (bearish), >70 overbought (bullish)
-  if (rsi < 30) return -80; // Strong oversold (bearish reversal)
-  if (rsi < 40) return -40; // Weak
-  if (rsi < 50) return -20; // Mild bearish
-  if (rsi < 60) return 20; // Mild bullish
-  if (rsi < 70) return 40; // Weak bullish
-  if (rsi <= 85) return 70; // Strong bullish
-  return 40; // Extreme overbought (caution)
+  if (rsi < 30) return -60; // Reduced intensity from -80 to prevent excessive neutrality
+  if (rsi < 40) return -30; // Reduced from -40
+  if (rsi < 50) return -15; // Reduced from -20
+  if (rsi < 60) return 15;  // Reduced from 20
+  if (rsi < 70) return 30;  // Reduced from 40
+  if (rsi <= 85) return 60; // Reduced from 70
+  return 30; // Reduced from 40
 }
 
 function scoreMACD(macd: { macdLine: number; signalLine: number; histogram: number }): number {

@@ -350,7 +350,7 @@ function calculateADX(candles: CandleData[], period: number = 14): number {
     dmM.push(lD > hD && lD > 0 ? lD : 0);
     tr.push(Math.max(candles[i].high - candles[i].low, Math.abs(candles[i].high - candles[i - 1].close), Math.abs(candles[i].low - candles[i - 1].close)));
   }
-  const sTr = tr.slice(-period).reduce((a, b) => a + b, 0), diP = (dmP.slice(-period).reduce((a, b) => a + b, 0) / sTr) * 100, diM = (dmM.slice(-period).reduce((a, b) => a + b, 0) / sTr) * 100;
+  const sTr = tr.slice(-period).reduce((a, b) => a + b, 0), diP = (dmP.slice(-period).reduce((a, b) => a + b, 0) / (sTr || 1)) * 100, diM = (dmM.slice(-period).reduce((a, b) => a + b, 0) / (sTr || 1)) * 100;
   return Math.abs(diP - diM) / (diP + diM || 1) * 100;
 }
 
@@ -447,23 +447,23 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 85;
-  if (accuracy === "MEDIUM") return 88;
-  return 92;
+  if (accuracy === "HIGH") return 75; // Lowered from 85 to catch more signals
+  if (accuracy === "MEDIUM") return 80; // Lowered from 88
+  return 85; // Lowered from 92
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
   const isHighVolumeSession = getCurrentSessionTime() !== "EVENING"; // Afternoon/Morning are higher volume
-  const mlThreshold = isHighVolumeSession ? 15 : 20; // Lowered from 20/30 to catch more B+ setups
+  const mlThreshold = isHighVolumeSession ? 10 : 15; // Lowered from 15/20 to catch more signals
   
   // A+ Setup (The Original Powerhouse)
-  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 25) return "A"; // Lowered from 70/28
+  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A"; // Lowered ML from 60 to 50
 
   // A- Setup (High Quality)
-  if (htfAligned && Math.abs(mlScore) >= 40 && adx >= 22) return "A-"; // Lowered from 60/25
+  if (htfAligned && Math.abs(mlScore) >= 30 && adx >= 20) return "A-"; // Lowered from 40/22
 
   // B+ Setup (Tactical Opportunity)
-  if (Math.abs(mlScore) >= mlThreshold && adx >= 15) return "B+"; // Removed htfAligned requirement for B+
+  if (Math.abs(mlScore) >= mlThreshold && adx >= 12) return "B+"; // Lowered adx from 15 to 12
 
   return "SKIPPED";
 }
