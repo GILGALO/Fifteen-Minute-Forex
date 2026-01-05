@@ -50,11 +50,19 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
           theme: theme,
           style: "1",
           locale: "en",
+          enable_publishing: false,
           allow_symbol_change: true,
-          hide_side_toolbar: true,
-          hide_top_toolbar: true,
-          save_image: false,
-          calendar: false,
+          hide_side_toolbar: false,
+          hide_top_toolbar: false,
+          save_image: true,
+          container_id: "tradingview_chart",
+          studies: [
+            "RSI@tv-basicstudies",
+            "MASimple@tv-basicstudies"
+          ],
+          show_popup_button: true,
+          popup_width: "1000",
+          popup_height: "650",
           support_host: "https://www.tradingview.com"
         });
 
@@ -92,19 +100,24 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
   }, [symbol]);
 
   return (
-    <Card className="glass-panel border-primary/40 h-full rounded-2xl overflow-hidden flex flex-col relative" data-testid="card-trading-chart">
-      <CardHeader className="border-b border-primary/30 py-3 bg-gradient-to-r from-primary/10 via-transparent to-accent/10 z-10 relative flex-shrink-0">
-        <div className="flex justify-between items-center gap-2">
-          <CardTitle className="font-mono text-sm font-bold flex items-center gap-3 uppercase tracking-widest flex-wrap">
-            <div className="flex items-center gap-2 glass-panel px-3 py-2 rounded-xl border border-primary/30">
-              <BarChart3 className="w-4 h-4 text-primary" />
-              <span className="gradient-text">LIVE MARKET</span>
+    <Card className="glass-panel border-primary/40 h-full rounded-2xl overflow-hidden flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.5)]" data-testid="card-trading-chart">
+      <CardHeader className="border-b border-primary/30 py-4 bg-gradient-to-r from-slate-900 via-slate-950 to-slate-900 z-10 relative flex-shrink-0 shadow-lg">
+        <div className="flex justify-between items-center gap-4">
+          <CardTitle className="font-mono text-sm font-bold flex items-center gap-4 uppercase tracking-[0.2em] flex-wrap">
+            <div className="flex items-center gap-3 bg-primary/20 px-4 py-2 rounded-xl border border-primary/30 backdrop-blur-md">
+              <BarChart3 className="w-5 h-5 text-primary animate-pulse" />
+              <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent font-black">ADVANCED ANALYTICS</span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500" />
-              <span className="text-primary font-black">{pair}</span>
+            <div className="flex items-center gap-3 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
+              <span className="text-emerald-400 font-black text-lg">{pair}</span>
             </div>
           </CardTitle>
+          <div className="hidden md:flex items-center gap-2 bg-slate-900/80 px-3 py-1.5 rounded-lg border border-white/5 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+            <span>5M Interval</span>
+            <span className="w-1 h-1 rounded-full bg-slate-700" />
+            <span>Real-time Data</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 p-0 relative bg-gradient-to-br from-black via-background to-black min-h-0">
