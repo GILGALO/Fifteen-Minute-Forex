@@ -206,7 +206,7 @@ export default function Strategies() {
                     "CRITICAL: Must show a visible LOWER WICK rejection (Price Rejection).",
                     "MACD MOMENTUM: MACD Histogram must be GREEN (Bullish Momentum) on M1.",
                     "TRENDLINE CHECK: Price must be breaking ABOVE any local resistance trendlines.",
-                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bullish for a safer 5-min ride.",
+                    "NEW: Check M5 Trend Alignment - Ensure M5 EMA 50 & M5 MACD are also Bullish for a safer 5-min ride.",
                     "ENTRY: Buy for 5 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
@@ -241,7 +241,7 @@ export default function Strategies() {
                     "CRITICAL: Must show a visible UPPER WICK rejection (Price Rejection).",
                     "MACD MOMENTUM: MACD Histogram must be RED (Bearish Momentum) on M1.",
                     "TRENDLINE CHECK: Price must be breaking BELOW any local support trendlines.",
-                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bearish for a safer 5-min ride.",
+                    "NEW: Check M5 Trend Alignment - Ensure M5 EMA 50 & M5 MACD are also Bearish for a safer 5-min ride.",
                     "ENTRY: Sell for 5 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
@@ -313,10 +313,9 @@ export default function Strategies() {
                 <Target className="h-6 w-6 text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">5-Min Expiry Rule</h3>
+                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">M5 Alignment</h3>
                 <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                  The strategy is optimized for 5 minutes. This allows enough time for the market to move away from the EMA line.
-                  <span className="block mt-2 text-emerald-400 font-bold uppercase tracking-widest">Tip: Avoid entering in the last 15 seconds of a candle.</span>
+                  Confirm the higher timeframe (M5) has the same MACD color and price is on the correct side of the M5 EMA 50. This ensures you aren't trading against a major wall.
                 </p>
               </div>
             </Card>
