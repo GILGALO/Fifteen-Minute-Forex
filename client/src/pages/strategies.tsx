@@ -10,7 +10,9 @@ import {
   ArrowRightCircle,
   Activity,
   AlertCircle,
-  Info
+  Info,
+  Clock,
+  CheckCircle2
 } from "lucide-react";
 
 export default function Strategies() {
@@ -74,6 +76,29 @@ export default function Strategies() {
             </div>
           </section>
 
+          {/* NEW: EXPIRY & TIMING ENGINE */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <Clock className="h-6 w-6 text-primary" />
+              <h2 className="text-xl font-black text-white uppercase italic">Expiration & Timing Engine</h2>
+            </div>
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { title: "M1 Chart Only", desc: "Analysis happens on the 1-minute time-frame exclusively.", icon: Activity },
+                { title: "4-Minute Expiry", desc: "Set your broker timer to exactly 4:00 minutes for every trade.", icon: Timer },
+                { title: "Candle Close Rule", desc: "Never enter mid-candle. The signal is only valid on the close.", icon: ShieldCheck },
+              ].map((item, i) => (
+                <div key={i} className="bg-slate-900/40 border border-white/5 p-4 rounded-xl space-y-2 hover:bg-white/5 transition-colors">
+                  <div className="flex items-center gap-2">
+                    <item.icon className="h-4 w-4 text-primary" />
+                    <h4 className="text-[11px] font-black text-white uppercase tracking-widest">{item.title}</h4>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* SELL SEQUENCE EXAMPLES */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
@@ -91,22 +116,16 @@ export default function Strategies() {
                 <div className="p-8 bg-black relative min-h-[350px] flex items-center justify-center">
                   <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 100 Q 250 120, 500 160" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
                   <div className="flex items-end gap-2 pt-12">
-                    {/* DROP */}
                     <div className="w-4 h-32 bg-rose-600/40 rounded-sm" />
                     <div className="w-4 h-24 bg-rose-600/30 rounded-sm" />
-                    {/* STAIRCASE PULLBACK */}
                     <div className="w-4 h-12 bg-green-500/20 rounded-sm translate-y-2" />
                     <div className="w-4 h-16 bg-green-500/30 rounded-sm translate-y-1" />
                     <div className="w-4 h-20 bg-green-500/40 rounded-sm" />
-                    {/* THE TRAP CANDLE */}
                     <div className="relative">
                       <div className="w-6 h-36 bg-rose-600 border-2 border-white rounded-sm shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse" />
-                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-px h-28 bg-white" /> {/* MASSIVE WICK */}
+                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-px h-28 bg-white" />
                       <Badge className="absolute -top-16 left-1/2 -translate-x-1/2 bg-rose-500 text-[8px] font-black uppercase">REJECTION</Badge>
                     </div>
-                  </div>
-                  <div className="absolute bottom-4 left-4 right-4 text-center">
-                    <p className="text-[10px] text-slate-500 font-bold italic">"Staircase pullback into the EMA followed by an immediate rejection wick."</p>
                   </div>
                 </div>
               </Card>
@@ -121,20 +140,14 @@ export default function Strategies() {
                   <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 140 Q 250 160, 500 200" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
                   <div className="flex items-end gap-3 pt-12">
                     <div className="w-5 h-40 bg-rose-700/80 rounded-sm" />
-                    {/* THE SPIKE */}
                     <div className="w-8 h-12 bg-green-500/60 border border-green-400 rounded-sm relative">
                        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-px h-16 bg-white" />
-                       <div className="absolute -top-20 left-1/2 -translate-x-1/2 bg-yellow-500 text-black text-[7px] font-black px-1 rounded">FAST SPIKE</div>
                     </div>
-                    {/* THE REVERSAL */}
                     <div className="relative">
                       <div className="w-7 h-44 bg-rose-600 border-2 border-white rounded-sm animate-pulse" />
                       <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-px h-20 bg-white" />
                       <Badge className="absolute -top-14 left-1/2 -translate-x-1/2 bg-rose-500 text-[8px] font-black uppercase">SELL NOW</Badge>
                     </div>
-                  </div>
-                  <div className="absolute bottom-4 left-4 right-4 text-center">
-                    <p className="text-[10px] text-slate-500 font-bold italic">"Violent spike into EMA that fails instantly. Pure institutional manipulation."</p>
                   </div>
                 </div>
               </Card>
@@ -160,18 +173,13 @@ export default function Strategies() {
                   <div className="flex items-end gap-2 pb-12">
                     <div className="w-4 h-28 bg-green-500/40 rounded-sm" />
                     <div className="w-4 h-32 bg-green-500/50 rounded-sm" />
-                    {/* THE DIP */}
                     <div className="w-4 h-16 bg-rose-500/30 rounded-sm translate-y-1" />
                     <div className="w-4 h-12 bg-rose-500/40 rounded-sm translate-y-2" />
-                    {/* THE BOUNCE */}
                     <div className="relative">
                       <div className="w-6 h-36 bg-green-600 border-2 border-white rounded-sm shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse" />
                       <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-px h-28 bg-white" />
                       <Badge className="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-500 text-[8px] font-black uppercase">BOUNCE ENTRY</Badge>
                     </div>
-                  </div>
-                  <div className="absolute bottom-4 left-4 right-4 text-center">
-                    <p className="text-[10px] text-slate-500 font-bold italic">"Three-candle dip into the Magenta line. The fourth candle rejects the EMA perfectly."</p>
                   </div>
                 </div>
               </Card>
@@ -186,31 +194,45 @@ export default function Strategies() {
                   <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 240 Q 250 220, 500 180" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
                   <div className="flex items-end gap-3 pb-12">
                     <div className="w-5 h-36 bg-green-700/60 rounded-sm" />
-                    {/* THE REJECTION */}
                     <div className="relative">
                       <div className="w-7 h-10 bg-white border-2 border-green-500 rounded-sm animate-bounce" />
-                      <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-px h-40 bg-white" /> {/* EXTREME WICK */}
+                      <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-px h-40 bg-white" />
                       <Badge className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-600 text-[8px] font-black uppercase">ULTRA SNIPER</Badge>
                     </div>
                     <div className="w-5 h-44 bg-green-600 rounded-sm" />
-                  </div>
-                  <div className="absolute bottom-4 left-4 right-4 text-center">
-                    <p className="text-[10px] text-slate-500 font-bold italic">"Extreme volatility poke below EMA that gets absorbed instantly. Strongest Buy signal."</p>
                   </div>
                 </div>
               </Card>
             </div>
           </section>
 
-          {/* FINAL TRADING RULE */}
+          {/* NEW: RISK MANAGEMENT PROTOCOL */}
+          <section className="bg-rose-500/5 border border-rose-500/20 p-6 rounded-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <CheckCircle2 className="h-6 w-6 text-rose-500" />
+              <h2 className="text-xl font-black text-white uppercase italic">Risk Management Protocol</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h4 className="text-[11px] font-black text-white uppercase tracking-widest">Fixed Investment</h4>
+                <p className="text-[10px] text-slate-400 italic leading-relaxed">"Never risk more than 1-2% of your total balance per trade. Compounding is better than gambling."</p>
+              </div>
+              <div className="space-y-2 border-l border-white/5 pl-6">
+                <h4 className="text-[11px] font-black text-white uppercase tracking-widest">3-Loss Halt</h4>
+                <p className="text-[10px] text-slate-400 italic leading-relaxed">"If you lose 3 trades in a row, close the broker. Market conditions have shifted. Stop for the day."</p>
+              </div>
+            </div>
+          </section>
+
+          {/* THE 4-MINUTE GOLD RULE */}
           <Card className="bg-primary/10 border-primary/30 p-6 rounded-xl flex items-center gap-6">
              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center border border-primary/40 shrink-0">
                 <Info className="h-6 w-6 text-primary" />
              </div>
              <div>
-                <h3 className="text-lg font-black text-white uppercase italic leading-none mb-2">The 4-Minute Gold Rule</h3>
+                <h3 className="text-lg font-black text-white uppercase italic leading-none mb-2">The Golden Mechanical Rule</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                   Pattern Recognition is key. Observe the <span className="text-white font-bold underline">PREVIOUS 3 CANDLES</span>. If they show a gradual move toward the EMA followed by a rejection, your win rate increases significantly. Always wait for the <span className="text-primary font-bold">M1 CLOSE</span>.
+                   Analysis is useless without discipline. Observe the <span className="text-white font-bold underline">PREVIOUS 3 CANDLES</span>. If they show a gradual move toward the EMA followed by a rejection, your win rate increases. Always wait for the <span className="text-primary font-bold">M1 CLOSE</span>.
                 </p>
              </div>
           </Card>
