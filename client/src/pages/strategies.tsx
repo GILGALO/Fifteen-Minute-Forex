@@ -25,22 +25,22 @@ interface CandleProps {
 }
 
 const Candle = ({ type, height, wickTop = 0, wickBottom = 0, label, highlight = false }: CandleProps) => (
-  <div className="flex flex-col items-center relative group min-w-[32px] sm:min-w-[40px]">
+  <div className="flex flex-col items-center relative group min-w-[64px] sm:min-w-[80px]">
     {label && (
-      <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <span className="text-[8px] sm:text-[9px] font-black text-white uppercase whitespace-nowrap bg-slate-900/95 border border-white/20 px-2 py-1 rounded shadow-[0_0_10px_rgba(0,0,0,0.5)]">
+      <div className="absolute -top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <span className="text-[8px] sm:text-[10px] font-black text-white uppercase whitespace-nowrap bg-slate-950 border-2 border-white/40 px-3 py-1.5 rounded-md shadow-[0_0_20px_rgba(0,0,0,0.8)]">
           {label}
         </span>
-        <div className="w-px h-3 bg-white/30 mx-auto" />
+        <div className="w-[2px] h-8 bg-white/50 mx-auto" />
       </div>
     )}
-    <div className="w-px bg-slate-500/30 absolute" style={{ height: `${wickTop + height + wickBottom}px`, top: `-${wickTop}px` }} />
+    <div className="w-[3px] bg-white absolute opacity-80 z-0 shadow-[0_0_10px_rgba(255,255,255,0.3)]" style={{ height: `${wickTop + height + wickBottom}px`, top: `-${wickTop}px` }} />
     <div 
-      className={`w-4 sm:w-6 rounded-sm border-2 transition-all duration-300 ${
+      className={`w-6 sm:w-8 rounded-sm border-2 transition-all duration-300 relative z-10 ${
         type === 'bull' 
-          ? 'bg-emerald-500/90 border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.2)]' 
-          : 'bg-rose-500/90 border-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.2)]'
-      } ${highlight ? 'ring-2 ring-white shadow-[0_0_20px_rgba(255,255,255,0.4)] scale-110 z-10' : 'opacity-80'}`} 
+          ? 'bg-emerald-500 border-emerald-200 shadow-[0_0_20px_rgba(16,185,129,0.5)]' 
+          : 'bg-rose-500 border-rose-200 shadow-[0_0_20px_rgba(244,63,94,0.5)]'
+      } ${highlight ? 'ring-2 ring-white shadow-[0_0_40px_rgba(255,255,255,0.8)] scale-110 z-20' : 'opacity-100'}`} 
       style={{ height: `${height}px` }} 
     />
   </div>
