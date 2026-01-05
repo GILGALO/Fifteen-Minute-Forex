@@ -198,7 +198,8 @@ export default function Strategies() {
                     "Price must be ABOVE the Magenta EMA 50 line.",
                     "Wait for a pullback (The Dip) down to the Magenta line.",
                     "Look for a Bullish Candle to touch or bounce off the line.",
-                    "CRITICAL: Must show a visible LOWER WICK rejection.",
+                    "CRITICAL: Must show a visible LOWER WICK rejection (Price Rejection).",
+                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bullish for a safer 4-min ride.",
                     "ENTRY: Buy for 4 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
@@ -230,7 +231,8 @@ export default function Strategies() {
                     "Price must be BELOW the Magenta EMA 50 line.",
                     "Wait for a rally (The Retest) up to the Magenta line.",
                     "Look for a Bearish Candle to touch or hit the line.",
-                    "CRITICAL: Must show a visible UPPER WICK rejection.",
+                    "CRITICAL: Must show a visible UPPER WICK rejection (Price Rejection).",
+                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bearish for a safer 4-min ride.",
                     "ENTRY: Sell for 4 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
@@ -288,9 +290,10 @@ export default function Strategies() {
                 <Target className="h-6 w-6 text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">4-Min Expiry</h3>
+                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">4-Min Expiry Rule</h3>
                 <p className="text-xs text-slate-400 leading-relaxed font-medium">
                   The strategy is optimized for 4 minutes. This allows enough time for the market to move away from the EMA line.
+                  <span className="block mt-2 text-emerald-400 font-bold uppercase tracking-widest">Tip: Avoid entering in the last 15 seconds of a candle.</span>
                 </p>
               </div>
             </Card>
@@ -300,9 +303,9 @@ export default function Strategies() {
                 <AlertCircle className="h-6 w-6 text-amber-400" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">Risk Note</h3>
+                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">The "Flat Line" Filter</h3>
                 <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                  If price crosses and closes on the opposite side of the EMA, the trend has changed. Do not enter.
+                  If the EMA 50 line is horizontal (flat), it indicates a ranging market. This strategy ONLY works when the EMA is sloping clearly up or down.
                 </p>
               </div>
             </Card>
