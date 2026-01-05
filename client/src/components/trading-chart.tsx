@@ -45,7 +45,7 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
         script.innerHTML = JSON.stringify({
           autosize: true,
           symbol: `FX:${symbol}`,
-          interval: "1",
+          interval: "5",
           timezone: "Etc/UTC",
           theme: theme,
           style: "1",
@@ -58,27 +58,12 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
           container_id: "tradingview_chart",
           studies: [
             "RSI@tv-basicstudies",
-            "MASimple@tv-basicstudies",
-            "StochasticRSI@tv-basicstudies"
+            "MASimple@tv-basicstudies"
           ],
           show_popup_button: true,
           popup_width: "1000",
           popup_height: "650",
-          support_host: "https://www.tradingview.com",
-          overrides: {
-            "mainSeriesProperties.candleStyle.upColor": "#10b981",
-            "mainSeriesProperties.candleStyle.downColor": "#ef4444",
-            "mainSeriesProperties.candleStyle.drawWick": true,
-            "mainSeriesProperties.candleStyle.drawBorder": true,
-            "mainSeriesProperties.candleStyle.borderColor": "#374151",
-            "mainSeriesProperties.candleStyle.borderUpColor": "#10b981",
-            "mainSeriesProperties.candleStyle.borderDownColor": "#ef4444",
-            "mainSeriesProperties.candleStyle.wickUpColor": "#10b981",
-            "mainSeriesProperties.candleStyle.wickDownColor": "#ef4444",
-            "paneProperties.background": theme === "dark" ? "#020617" : "#ffffff",
-            "paneProperties.vertGridProperties.color": theme === "dark" ? "#1e293b" : "#f1f5f9",
-            "paneProperties.horzGridProperties.color": theme === "dark" ? "#1e293b" : "#f1f5f9"
-          }
+          support_host: "https://www.tradingview.com"
         });
 
         script.onload = () => {
