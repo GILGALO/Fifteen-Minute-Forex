@@ -916,8 +916,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   // A+ Institutional Filter: Auto-dispatch only if grade is A or B
   const isDispatchable = ["A", "A-", "B+"].includes(finalGrade);
-  // AGGRESSIVE: Lowered auto-dispatch requirements. B+ now only needs 60% confidence.
-  const dispatchThreshold = finalGrade === "A" ? 75 : finalGrade === "A-" ? 65 : 60;
+  // AGGRESSIVE: Lowered auto-dispatch requirements. B+ now only needs 55% confidence.
+  const dispatchThreshold = finalGrade === "A" ? 70 : finalGrade === "A-" ? 60 : 55;
   
   if (!isDispatchable || confidence < dispatchThreshold) {
     reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires ${dispatchThreshold}%+ Confidence for Telegram auto-dispatch.`);
