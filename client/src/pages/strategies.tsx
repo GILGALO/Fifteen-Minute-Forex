@@ -161,14 +161,14 @@ export default function Strategies() {
             <ShieldCheck className="w-6 h-6 text-primary" />
           </div>
           <h1 className="text-3xl sm:text-5xl font-black tracking-tighter text-white uppercase italic leading-none">
-            M1 → <span className="text-primary">4-MINUTE</span> BINARY MASTER
+            M1 → <span className="text-primary">5-MINUTE</span> BINARY MASTER
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-3 mt-2">
           <Badge className="bg-primary/20 text-primary border-primary/30 hover:bg-primary/30 transition-colors uppercase text-[10px] tracking-widest px-3">Master Strategy</Badge>
           <div className="flex items-center gap-2 text-slate-500 text-[10px] uppercase tracking-[0.2em] font-black">
             <Timer className="w-3 h-3" />
-            <span>4 MIN EXPIRY</span>
+            <span>5 MIN EXPIRY</span>
             <span className="w-1 h-1 rounded-full bg-slate-700" />
             <Clock className="w-3 h-3" />
             <span>M1 TIMEFRAME</span>
@@ -199,8 +199,8 @@ export default function Strategies() {
                     "Wait for a pullback (The Dip) down to the Magenta line.",
                     "Look for a Bullish Candle to touch or bounce off the line.",
                     "CRITICAL: Must show a visible LOWER WICK rejection (Price Rejection).",
-                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bullish for a safer 4-min ride.",
-                    "ENTRY: Buy for 4 Minutes ON THE OPEN of the very next candle."
+                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bullish for a safer 5-min ride.",
+                    "ENTRY: Buy for 5 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
                       <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-[10px] font-black text-emerald-400 shrink-0 mt-0.5 group-hover/item:bg-emerald-500 group-hover/item:text-white transition-all">
@@ -232,8 +232,8 @@ export default function Strategies() {
                     "Wait for a rally (The Retest) up to the Magenta line.",
                     "Look for a Bearish Candle to touch or hit the line.",
                     "CRITICAL: Must show a visible UPPER WICK rejection (Price Rejection).",
-                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bearish for a safer 4-min ride.",
-                    "ENTRY: Sell for 4 Minutes ON THE OPEN of the very next candle."
+                    "NEW: Check M5 Trend Alignment - Ensure M5 is also Bearish for a safer 5-min ride.",
+                    "ENTRY: Sell for 5 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
                       <div className="w-6 h-6 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-[10px] font-black text-rose-400 shrink-0 mt-0.5 group-hover/item:bg-rose-500 group-hover/item:text-white transition-all">
@@ -290,9 +290,9 @@ export default function Strategies() {
                 <Target className="h-6 w-6 text-emerald-400" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">4-Min Expiry Rule</h3>
+                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">5-Min Expiry Rule</h3>
                 <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                  The strategy is optimized for 4 minutes. This allows enough time for the market to move away from the EMA line.
+                  The strategy is optimized for 5 minutes. This allows enough time for the market to move away from the EMA line.
                   <span className="block mt-2 text-emerald-400 font-bold uppercase tracking-widest">Tip: Avoid entering in the last 15 seconds of a candle.</span>
                 </p>
               </div>
