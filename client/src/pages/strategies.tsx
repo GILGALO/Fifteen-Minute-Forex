@@ -25,13 +25,13 @@ interface CandleProps {
 }
 
 const Candle = ({ type, height, wickTop = 0, wickBottom = 0, label, highlight = false }: CandleProps) => (
-  <div className="flex flex-col items-center relative group min-w-[24px]">
+  <div className="flex flex-col items-center relative group min-w-[32px] sm:min-w-[40px]">
     {label && (
-      <div className="absolute -top-12 left-1/2 -translate-x-1/2 z-20">
-        <span className="text-[9px] font-black text-white uppercase whitespace-nowrap bg-slate-900 border border-white/10 px-2 py-0.5 rounded shadow-lg">
+      <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <span className="text-[8px] sm:text-[9px] font-black text-white uppercase whitespace-nowrap bg-slate-900/95 border border-white/20 px-2 py-1 rounded shadow-[0_0_10px_rgba(0,0,0,0.5)]">
           {label}
         </span>
-        <div className="w-px h-2 bg-white/20 mx-auto" />
+        <div className="w-px h-3 bg-white/30 mx-auto" />
       </div>
     )}
     <div className="w-px bg-slate-500/30 absolute" style={{ height: `${wickTop + height + wickBottom}px`, top: `-${wickTop}px` }} />
