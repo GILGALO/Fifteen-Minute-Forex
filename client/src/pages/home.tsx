@@ -179,13 +179,6 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
             </span>
           </div>
         )}
-        <ErrorBoundary fallback={<div className="h-[32px] sm:h-[40px] md:h-[52px] bg-background" />}>
-          <Suspense fallback={<Skeleton className="h-[32px] sm:h-[40px] md:h-[52px] w-full" />}>
-            <div className="hidden sm:block">
-              <MarketTicker />
-            </div>
-          </Suspense>
-        </ErrorBoundary>
       </div>
 
       <main className="w-full px-2 sm:px-4 md:px-8 py-2 sm:py-4 relative z-10">
