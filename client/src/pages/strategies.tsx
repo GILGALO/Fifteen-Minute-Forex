@@ -90,9 +90,14 @@ const StrategyChart = ({ title, type, candles, emaPath, signalIndex }: {
           <div key={idx} className="relative">
             <Candle {...candle} />
             {idx === signalIndex && (
-              <div className="absolute -top-24 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                <Badge className={`${type === 'BUY' ? 'bg-emerald-500' : 'bg-rose-500'} text-white font-black animate-bounce shadow-xl whitespace-nowrap px-4 py-1 text-xs border-2 border-white/20`}>
-                  {type} 4-MIN NOW
+              <div className="absolute inset-0 -m-2 border-4 border-white/40 rounded-xl animate-pulse pointer-events-none z-30" />
+            )}
+            {idx === signalIndex + 1 && (
+              <div className="absolute -top-24 left-1/2 -translate-x-1/2 flex flex-col items-center z-40">
+                <div className="absolute inset-0 -m-4 border-4 border-yellow-400 rounded-full animate-ping opacity-20" />
+                <div className="absolute inset-0 -m-4 border-4 border-yellow-400 rounded-full shadow-[0_0_30px_rgba(250,204,21,0.5)]" />
+                <Badge className={`${type === 'BUY' ? 'bg-emerald-500' : 'bg-rose-500'} text-white font-black animate-bounce shadow-xl whitespace-nowrap px-4 py-1 text-xs border-2 border-white/20 relative`}>
+                  ENTER {type} HERE
                 </Badge>
                 <div className={`w-0.5 h-8 ${type === 'BUY' ? 'bg-emerald-500' : 'bg-rose-500'} animate-pulse`} />
               </div>
@@ -104,11 +109,11 @@ const StrategyChart = ({ title, type, candles, emaPath, signalIndex }: {
       <div className="absolute bottom-6 left-6 right-6 flex flex-col gap-2">
         <div className="bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-2xl">
           <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${type === 'BUY' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]'} animate-pulse`} />
+            <div className={`w-3 h-3 rounded-full ${type === 'BUY' ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]'} animate-pulse`} />
             <p className="text-[11px] font-bold text-slate-200 uppercase tracking-tight leading-relaxed">
-              {type === 'BUY' 
-                ? "BULLISH TREND DETECTED: Price bounced off Magenta EMA line with a clear Lower Wick rejection. Momentum confirmed."
-                : "BEARISH TREND DETECTED: Price rejected at Magenta EMA line with a clear Upper Wick. Downward pressure confirmed."}
+              <span className="text-yellow-400 font-black">ACTION:</span> {type === 'BUY' 
+                ? "BULLISH TREND DETECTED: Price bounced off Magenta EMA line. Wait for close, then ENTER BUY on the Yellow-Circled candle."
+                : "BEARISH TREND DETECTED: Price rejected at Magenta EMA line. Wait for close, then ENTER SELL on the Yellow-Circled candle."}
             </p>
           </div>
         </div>
