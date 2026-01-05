@@ -112,7 +112,7 @@ export interface SignalAnalysis {
   currentPrice: number;
   signalType: "CALL" | "PUT";
   confidence: number;
-  signalGrade: "A" | "B" | "C" | "SKIPPED";
+  signalGrade: "A" | "A-" | "B+" | "B" | "C" | "SKIPPED";
   entry: number;
   stopLoss: number;
   takeProfit: number;
