@@ -447,9 +447,10 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 75; // Lowered from 85 to catch more signals
-  if (accuracy === "MEDIUM") return 80; // Lowered from 88
-  return 85; // Lowered from 92
+  // AGGRESSIVE: Lowered further to 65-70 to ensure signals actually fire
+  if (accuracy === "HIGH") return 65; // Lowered from 75
+  if (accuracy === "MEDIUM") return 70; // Lowered from 80
+  return 75; // Lowered from 85
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
@@ -863,7 +864,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const minConfidenceThreshold = getMinConfidence(pair);
 
   // Refined Grading Logic - move up before use
-  const finalGrade: "A" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "B+" ? "B" : "SKIPPED");
+  const finalGrade: "A" | "A-" | "B+" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "A-" ? "A-" : (tacticalGrade === "B+" ? "B+" : "SKIPPED"));
 
   const analysisResult: SignalAnalysis = { 
     pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: finalGrade, 
@@ -915,15 +916,18 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   // A+ Institutional Filter: Auto-dispatch only if grade is A or B
   const isDispatchable = ["A", "A-", "B+"].includes(finalGrade);
-  if (!isDispatchable && confidence < 92) {
-    reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires 92%+ Confidence for Telegram auto-dispatch.`);
+  // AGGRESSIVE: Lowered auto-dispatch requirements. B+ now only needs 60% confidence.
+  const dispatchThreshold = finalGrade === "A" ? 75 : finalGrade === "A-" ? 65 : 60;
+  
+  if (!isDispatchable || confidence < dispatchThreshold) {
+    reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires ${dispatchThreshold}%+ Confidence for Telegram auto-dispatch.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
   }
 
   // Final validation for signal quality
   const isQualitySignal = ["A", "A-", "B+"].includes(finalGrade as string);
-  if (!isQualitySignal && (signalGrade === "C" || Math.abs(mlScore) < 15)) {
-    const skipReason = Math.abs(mlScore) < 15 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE";
+  if (!isQualitySignal && (signalGrade === "C" || Math.abs(mlScore) < 5)) {
+    const skipReason = Math.abs(mlScore) < 5 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE";
     reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A/B+ setups.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
