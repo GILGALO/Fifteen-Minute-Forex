@@ -194,7 +194,7 @@ export default function Strategies() {
                     "Wait for a pullback (The Dip) down to the Magenta line.",
                     "Look for a Bullish Candle to touch or bounce off the line.",
                     "CRITICAL: Must show a visible LOWER WICK rejection.",
-                    "ENTRY: Call/Buy for 4 Minutes on candle close."
+                    "ENTRY: Buy for 4 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
                       <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-[10px] font-black text-emerald-400 shrink-0 mt-0.5 group-hover/item:bg-emerald-500 group-hover/item:text-white transition-all">
@@ -226,7 +226,7 @@ export default function Strategies() {
                     "Wait for a rally (The Retest) up to the Magenta line.",
                     "Look for a Bearish Candle to touch or hit the line.",
                     "CRITICAL: Must show a visible UPPER WICK rejection.",
-                    "ENTRY: Put/Sell for 4 Minutes on candle close."
+                    "ENTRY: Sell for 4 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
                     <div key={i} className="flex gap-4 items-start group/item">
                       <div className="w-6 h-6 rounded-full bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-[10px] font-black text-rose-400 shrink-0 mt-0.5 group-hover/item:bg-rose-500 group-hover/item:text-white transition-all">
