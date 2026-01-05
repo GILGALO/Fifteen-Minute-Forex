@@ -9,7 +9,8 @@ import {
   Target, 
   ArrowRightCircle,
   Activity,
-  AlertCircle
+  AlertCircle,
+  Info
 } from "lucide-react";
 
 export default function Strategies() {
@@ -28,7 +29,7 @@ export default function Strategies() {
       <ScrollArea className="flex-1 pr-4">
         <div className="flex flex-col gap-12 pb-12">
           
-          {/* CORE LOGIC SECTION */}
+          {/* THE MASTER LOGIC */}
           <section className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="bg-slate-900/40 border-emerald-500/20 backdrop-blur-md">
@@ -40,24 +41,12 @@ export default function Strategies() {
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="space-y-2">
-                    <p className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">When to Buy:</p>
+                    <p className="text-[11px] font-black text-emerald-400 uppercase tracking-widest">Buy Conditions:</p>
                     <ul className="text-xs text-slate-300 space-y-3">
-                      <li className="flex gap-2">
-                        <span className="text-emerald-500 font-bold">01.</span>
-                        <span>Price is strictly <span className="text-white font-bold underline decoration-emerald-500">ABOVE</span> the Magenta EMA 50 line. The line must be angled upward.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-emerald-500 font-bold">02.</span>
-                        <span>Wait for a <span className="text-white font-bold italic underline">Pullback</span>. Candles must move back toward the EMA without breaking below it.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-emerald-500 font-bold">03.</span>
-                        <span>Look for <span className="text-emerald-400 font-bold underline">Rejection Wicks</span>. Long wicks touching the EMA show buyers are stepping in.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-emerald-500 font-bold">04.</span>
-                        <span>MACD Confirmation: MACD Histogram must be <span className="text-emerald-400 font-bold underline">GREEN</span> and crossover must be Bullish.</span>
-                      </li>
+                      <li className="flex gap-2"><span className="text-emerald-500 font-bold">01.</span><span>Price strictly ABOVE angled Magenta EMA 50.</span></li>
+                      <li className="flex gap-2"><span className="text-emerald-500 font-bold">02.</span><span>Wait for a "Pullback" to touch or get near EMA.</span></li>
+                      <li className="flex gap-2"><span className="text-emerald-500 font-bold">03.</span><span>Rejection Wick must form on the touch.</span></li>
+                      <li className="flex gap-2"><span className="text-emerald-500 font-bold">04.</span><span>MACD must be Bullish (Green).</span></li>
                     </ul>
                   </div>
                 </CardContent>
@@ -72,24 +61,12 @@ export default function Strategies() {
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
                   <div className="space-y-2">
-                    <p className="text-[11px] font-black text-rose-400 uppercase tracking-widest">When to Sell:</p>
+                    <p className="text-[11px] font-black text-rose-400 uppercase tracking-widest">Sell Conditions:</p>
                     <ul className="text-xs text-slate-300 space-y-3">
-                      <li className="flex gap-2">
-                        <span className="text-rose-500 font-bold">01.</span>
-                        <span>Price is strictly <span className="text-white font-bold underline decoration-rose-500">BELOW</span> the Magenta EMA 50 line. The line must be angled downward.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-rose-500 font-bold">02.</span>
-                        <span>Wait for a <span className="text-white font-bold italic underline">Retest</span>. Candles must "breathe" back up toward the EMA line.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-rose-500 font-bold">03.</span>
-                        <span>Look for <span className="text-rose-400 font-bold underline">Upper Wick Rejection</span>. Candles that poke through the EMA but close below it are prime signals.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-rose-500 font-bold">04.</span>
-                        <span>MACD Confirmation: MACD Histogram must be <span className="text-rose-400 font-bold underline">RED</span> and crossover must be Bearish.</span>
-                      </li>
+                      <li className="flex gap-2"><span className="text-rose-500 font-bold">01.</span><span>Price strictly BELOW angled Magenta EMA 50.</span></li>
+                      <li className="flex gap-2"><span className="text-rose-500 font-bold">02.</span><span>Wait for a "Retest" upward to the EMA line.</span></li>
+                      <li className="flex gap-2"><span className="text-rose-500 font-bold">03.</span><span>Upper Wick Rejection must form at EMA.</span></li>
+                      <li className="flex gap-2"><span className="text-rose-500 font-bold">04.</span><span>MACD must be Bearish (Red).</span></li>
                     </ul>
                   </div>
                 </CardContent>
@@ -97,125 +74,160 @@ export default function Strategies() {
             </div>
           </section>
 
-          {/* DETAILED CHART ANALYSIS (SELL SCENARIO FROM SCREENSHOT) */}
+          {/* CANDLE SCENARIOS - BATCH 1 (SELL TRAPS) */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
-              <ShieldCheck className="h-6 w-6 text-primary" />
-              <h2 className="text-xl font-black text-white uppercase italic">Mechanical Chart Analysis (As per Screenshot)</h2>
+              <AlertCircle className="h-6 w-6 text-rose-400" />
+              <h2 className="text-xl font-black text-white uppercase italic">Sell Scenarios (Below EMA 50)</h2>
             </div>
             
-            <Card className="bg-slate-950 border-white/5 overflow-hidden">
-              <CardContent className="p-0">
-                <div className="grid lg:grid-cols-2">
-                  <div className="p-8 space-y-6 bg-slate-900/20 border-r border-white/5">
-                    <div className="space-y-2">
-                      <Badge className="bg-rose-500 text-white font-black">SELL VERDICT</Badge>
-                      <h3 className="text-sm font-black text-white uppercase tracking-widest">Why we Sell in your Screenshot:</h3>
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* SCENARIO A: THE PERFECT REJECTION */}
+              <Card className="bg-slate-950 border-white/5 overflow-hidden">
+                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
+                   <CardTitle className="text-xs font-black uppercase text-rose-400">Scenario A: The Perfect Rejection</CardTitle>
+                   <Badge variant="outline" className="text-[8px] bg-rose-500/10 text-rose-500 border-rose-500/20">HIGH PROBABILITY</Badge>
+                </CardHeader>
+                <div className="p-8 bg-black relative min-h-[300px] flex items-center justify-center">
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 120 Q 250 140, 500 180" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
+                  <div className="flex items-end gap-3 pt-12">
+                    <div className="w-5 h-20 bg-green-500/20 border border-green-500/30 rounded-sm" /> {/* Pullback */}
+                    <div className="relative">
+                      <div className="w-6 h-32 bg-rose-600 border-2 border-white rounded-sm shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse" />
+                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-px h-24 bg-white" /> {/* LONG UPPER WICK */}
+                      <Badge className="absolute -top-16 left-1/2 -translate-x-1/2 bg-rose-500 text-[8px] font-black uppercase">SELL NOW</Badge>
                     </div>
-                    
-                    <div className="space-y-4">
-                      <div className="bg-slate-950 p-4 rounded-lg border border-rose-500/20 space-y-3">
-                        <div className="flex items-start gap-3">
-                          <AlertCircle className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
-                          <div className="space-y-1">
-                            <p className="text-[11px] font-black text-white uppercase">The EMA Trap</p>
-                            <p className="text-[10px] text-slate-400">In your screenshot, notice how price tried to break ABOVE the Magenta line but immediately produced a <span className="text-rose-400 font-bold italic underline">long upper wick</span> and closed back below. This is a rejection.</p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3">
-                          <Activity className="h-4 w-4 text-rose-400 mt-0.5 shrink-0" />
-                          <div className="space-y-1">
-                            <p className="text-[11px] font-black text-white uppercase">MACD Convergence</p>
-                            <p className="text-[10px] text-slate-400">The MACD histogram (the bars at the bottom) is turning <span className="text-rose-400 font-bold">RED</span>. The green momentum is dying, and the fast line is crossing below the slow line.</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-                        <p className="text-[10px] font-black text-primary uppercase mb-2 tracking-tighter">Pro Tip for 4-Min Expiry:</p>
-                        <p className="text-[10px] text-slate-300 leading-relaxed italic">"Do not enter the moment it touches the line. Wait for the candle to CLOSE. If it closes below the line with a wick poking through, enter for 4 minutes."</p>
-                      </div>
-                    </div>
+                    <div className="w-5 h-24 bg-rose-700/60 border border-rose-500/40 rounded-sm" />
                   </div>
-
-                  {/* VISUAL RECREATION OF SCREENSHOT LOGIC */}
-                  <div className="p-8 relative flex flex-col justify-center min-h-[400px] bg-black">
-                    <div className="absolute inset-0 opacity-20 pointer-events-none overflow-hidden">
-                       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.05)_1px,transparent_0)] bg-[size:32px_32px]" />
-                    </div>
-                    
-                    {/* EMA LINE RECREATION */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                       <path d="M 0 150 Q 200 140, 400 180 T 600 200" fill="none" stroke="#d946ef" strokeWidth="3" className="drop-shadow-[0_0_8px_rgba(217,70,239,0.5)]" />
-                    </svg>
-
-                    <div className="relative flex items-center justify-center gap-4">
-                      {/* BULLISH PULLBACK */}
-                      <div className="flex flex-col items-center gap-1 opacity-40">
-                         <div className="w-5 h-24 bg-green-500/50 border border-green-400/50 rounded-sm" />
-                         <span className="text-[8px] text-slate-500 font-black uppercase">Pullback</span>
-                      </div>
-
-                      {/* THE REJECTION CANDLE */}
-                      <div className="relative group">
-                        <div className="w-6 h-32 bg-rose-600 border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.3)] rounded-sm animate-pulse z-10 relative">
-                           <div className="absolute -top-16 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                              <Badge className="bg-rose-500 text-white border-none text-[10px] font-black px-2 shadow-xl animate-bounce">SELL ENTRY</Badge>
-                              <div className="h-6 w-px bg-white" />
-                              <ArrowRightCircle className="h-5 w-5 text-white rotate-90" />
-                           </div>
-                           <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-px h-24 bg-white/60" /> {/* THE WICK */}
-                        </div>
-                        <div className="absolute inset-0 bg-rose-500/20 blur-xl animate-pulse" />
-                      </div>
-
-                      {/* RESULT CANDLES */}
-                      <div className="flex flex-col items-center gap-1 mt-12 opacity-80">
-                         <div className="w-5 h-20 bg-rose-700/60 border border-rose-500/40 rounded-sm" />
-                         <div className="w-5 h-24 bg-rose-700/60 border border-rose-500/40 rounded-sm" />
-                         <span className="text-[8px] text-emerald-400 font-black uppercase tracking-widest">Profit Zone</span>
-                      </div>
-                    </div>
-
-                    <div className="mt-12 space-y-4">
-                       <div className="h-12 flex items-end gap-1 px-4 bg-slate-900/50 rounded border border-white/5 overflow-hidden">
-                          {[0.8, 0.6, 0.4, 0.2].map((v, i) => (
-                            <div key={i} style={{ height: `${v*100}%` }} className="flex-1 bg-green-500/30" />
-                          ))}
-                          <div className="w-1 h-full bg-white/20 mx-1" />
-                          {[0.3, 0.6, 0.9, 1.0].map((v, i) => (
-                            <div key={i} style={{ height: `${v*100}%` }} className="flex-1 bg-rose-500/80" />
-                          ))}
-                       </div>
-                       <p className="text-[9px] text-slate-500 text-center font-bold uppercase tracking-widest">MACD Timing Confirmation (Sell Bias)</p>
-                    </div>
+                  <div className="absolute bottom-4 left-4 right-4 text-center">
+                    <p className="text-[10px] text-slate-500 font-bold italic">"Candle pokes ABOVE EMA but CLOSES BELOW with a long wick."</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </Card>
+
+              {/* SCENARIO B: THE MOMENTUM BREAK */}
+              <Card className="bg-slate-950 border-white/5 overflow-hidden">
+                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
+                   <CardTitle className="text-xs font-black uppercase text-rose-400">Scenario B: Momentum Break</CardTitle>
+                   <Badge variant="outline" className="text-[8px] bg-yellow-500/10 text-yellow-500 border-yellow-500/20">WAIT FOR RE-TEST</Badge>
+                </CardHeader>
+                <div className="p-8 bg-black relative min-h-[300px] flex items-center justify-center">
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 80 Q 250 100, 500 140" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
+                  <div className="flex items-end gap-3 pt-12">
+                    <div className="w-6 h-40 bg-green-500 border-2 border-green-400 rounded-sm" /> {/* STRONG BREAK UP */}
+                    <div className="flex flex-col items-center">
+                       <div className="w-5 h-28 bg-rose-500/30 border border-rose-400/30 rounded-sm" />
+                       <Badge variant="outline" className="mt-2 text-[8px] font-black text-yellow-500">NO TRADE (Broken Trend)</Badge>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4 text-center">
+                    <p className="text-[10px] text-slate-500 font-bold italic">"Full body candle closes ABOVE EMA. Wait for re-break below."</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </section>
 
-          {/* FINAL SUMMARY */}
-          <section className="bg-primary/5 border border-primary/20 p-6 rounded-xl">
-             <div className="flex items-center gap-3 mb-4">
-                <Zap className="h-6 w-6 text-primary" />
-                <h2 className="text-xl font-black text-white uppercase italic">Execution Summary</h2>
+          {/* CANDLE SCENARIOS - BATCH 2 (BUY OPPORTUNITIES) */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-3">
+              <TrendingUp className="h-6 w-6 text-emerald-400" />
+              <h2 className="text-xl font-black text-white uppercase italic">Buy Scenarios (Above EMA 50)</h2>
+            </div>
+            
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* SCENARIO C: THE BOUNCE */}
+              <Card className="bg-slate-950 border-white/5 overflow-hidden">
+                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
+                   <CardTitle className="text-xs font-black uppercase text-emerald-400">Scenario C: The EMA Bounce</CardTitle>
+                   <Badge variant="outline" className="text-[8px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20">HIGH PROBABILITY</Badge>
+                </CardHeader>
+                <div className="p-8 bg-black relative min-h-[300px] flex items-center justify-center">
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 180 Q 250 160, 500 120" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
+                  <div className="flex items-end gap-3 pb-12">
+                    <div className="w-5 h-20 bg-rose-500/20 border border-rose-500/30 rounded-sm" /> {/* Pullback */}
+                    <div className="relative">
+                      <div className="w-6 h-32 bg-green-600 border-2 border-white rounded-sm shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse" />
+                      <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-px h-24 bg-white" /> {/* LONG LOWER WICK */}
+                      <Badge className="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-500 text-[8px] font-black uppercase">BUY NOW</Badge>
+                    </div>
+                    <div className="w-5 h-24 bg-green-700/60 border border-green-500/40 rounded-sm" />
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4 text-center">
+                    <p className="text-[10px] text-slate-500 font-bold italic">"Lower wick touches EMA line. Candle closes GREEN."</p>
+                  </div>
+                </div>
+              </Card>
+
+              {/* SCENARIO D: THE PIN BAR TRAP */}
+              <Card className="bg-slate-950 border-white/5 overflow-hidden">
+                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
+                   <CardTitle className="text-xs font-black uppercase text-emerald-400">Scenario D: Institutional Pin Bar</CardTitle>
+                   <Badge variant="outline" className="text-[8px] bg-cyan-500/10 text-cyan-500 border-cyan-500/20">ULTRA SNIPER</Badge>
+                </CardHeader>
+                <div className="p-8 bg-black relative min-h-[300px] flex items-center justify-center">
+                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 200 Q 250 180, 500 140" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
+                  <div className="flex items-end gap-3 pb-12">
+                    <div className="w-5 h-16 bg-rose-500/20 rounded-sm" />
+                    <div className="w-5 h-12 bg-rose-500/40 rounded-sm" />
+                    <div className="relative">
+                      <div className="w-6 h-8 bg-white border-2 border-green-500 rounded-sm shadow-[0_0_20px_rgba(34,197,94,0.3)] animate-bounce" />
+                      <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 w-px h-32 bg-white" /> {/* MASSIVE LOWER WICK */}
+                      <Badge className="absolute -top-8 left-1/2 -translate-x-1/2 bg-green-600 text-[8px] font-black uppercase">MASTER ENTRY</Badge>
+                    </div>
+                  </div>
+                  <div className="absolute bottom-4 left-4 right-4 text-center">
+                    <p className="text-[10px] text-slate-500 font-bold italic">"Massive lower wick rejection. Institutions are BUYING the dip."</p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </section>
+
+          {/* MACD CROSSOVER CHEATSHEET */}
+          <section className="bg-slate-900/40 border border-white/5 p-6 rounded-xl">
+             <div className="flex items-center gap-3 mb-6">
+                <Activity className="h-6 w-6 text-primary" />
+                <h2 className="text-xl font-black text-white uppercase italic">MACD Crossover Confirmation</h2>
              </div>
-             <div className="grid sm:grid-cols-3 gap-6">
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-primary uppercase">Trend Filter</p>
-                   <p className="text-[11px] text-slate-400 italic">"Magenta Line is your Compass."</p>
+             <div className="grid sm:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                   <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                      <TrendingUp className="h-3 w-3" /> Bullish Confirm
+                   </h4>
+                   <div className="h-20 flex items-end gap-1 px-4 bg-slate-950 rounded border border-emerald-500/10">
+                      {[0.2, 0.4, 0.6, 0.8, 1.0, 1.1].map((v, i) => (
+                        <div key={i} style={{ height: `${v*80}%` }} className="flex-1 bg-emerald-500 animate-pulse" />
+                      ))}
+                   </div>
+                   <p className="text-[10px] text-slate-400">Histogram bars grow <span className="text-emerald-400 font-bold uppercase">Green</span> and expand upward. This is your green light for Buy trades.</p>
                 </div>
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-primary uppercase">Entry Trigger</p>
-                   <p className="text-[11px] text-slate-400 italic">"Wait for the Rejection Wick."</p>
-                </div>
-                <div className="space-y-1">
-                   <p className="text-[10px] font-black text-primary uppercase">Confirmation</p>
-                   <p className="text-[11px] text-slate-400 italic">"MACD Histogram color match."</p>
+                <div className="space-y-4">
+                   <h4 className="text-[10px] font-black text-rose-400 uppercase tracking-widest flex items-center gap-2">
+                      <TrendingDown className="h-3 w-3" /> Bearish Confirm
+                   </h4>
+                   <div className="h-20 flex items-end gap-1 px-4 bg-slate-950 rounded border border-rose-500/10">
+                      {[0.2, 0.4, 0.6, 0.8, 1.0, 1.1].map((v, i) => (
+                        <div key={i} style={{ height: `${v*80}%` }} className="flex-1 bg-rose-500 animate-pulse" />
+                      ))}
+                   </div>
+                   <p className="text-[10px] text-slate-400">Histogram bars grow <span className="text-rose-400 font-bold uppercase">Red</span> and expand downward. This is your green light for Sell trades.</p>
                 </div>
              </div>
           </section>
+
+          {/* FINAL TRADING RULE */}
+          <Card className="bg-primary/10 border-primary/30 p-6 rounded-xl flex items-center gap-6">
+             <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center border border-primary/40 shrink-0">
+                <Info className="h-6 w-6 text-primary" />
+             </div>
+             <div>
+                <h3 className="text-lg font-black text-white uppercase italic leading-none mb-2">The 4-Minute Gold Rule</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                   Never enter mid-candle. Always wait for the <span className="text-white font-bold underline">M1 Candle to CLOSE</span>. If it closes as a rejection wick at the EMA 50, you enter for exactly <span className="text-primary font-black uppercase tracking-widest underline">4-Minute Expiration</span>.
+                </p>
+             </div>
+          </Card>
         </div>
       </ScrollArea>
     </div>
