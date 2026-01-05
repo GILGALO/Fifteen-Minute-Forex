@@ -199,6 +199,8 @@ export default function Strategies() {
                     "Wait for a pullback (The Dip) down to the Magenta line.",
                     "Look for a Bullish Candle to touch or bounce off the line.",
                     "CRITICAL: Must show a visible LOWER WICK rejection (Price Rejection).",
+                    "MACD MOMENTUM: MACD Histogram must be GREEN (Bullish Momentum) on M1.",
+                    "TRENDLINE CHECK: Price must be breaking ABOVE any local resistance trendlines.",
                     "NEW: Check M5 Trend Alignment - Ensure M5 is also Bullish for a safer 5-min ride.",
                     "ENTRY: Buy for 5 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
@@ -232,6 +234,8 @@ export default function Strategies() {
                     "Wait for a rally (The Retest) up to the Magenta line.",
                     "Look for a Bearish Candle to touch or hit the line.",
                     "CRITICAL: Must show a visible UPPER WICK rejection (Price Rejection).",
+                    "MACD MOMENTUM: MACD Histogram must be RED (Bearish Momentum) on M1.",
+                    "TRENDLINE CHECK: Price must be breaking BELOW any local support trendlines.",
                     "NEW: Check M5 Trend Alignment - Ensure M5 is also Bearish for a safer 5-min ride.",
                     "ENTRY: Sell for 5 Minutes ON THE OPEN of the very next candle."
                   ].map((text, i) => (
@@ -278,9 +282,21 @@ export default function Strategies() {
                 <Info className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">Wait For Close</h3>
+                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">MACD Filter</h3>
                 <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                  NEVER enter before the candle finishes. The wick must be confirmed on the close of the 1-minute candle.
+                  The EMA bounce is the entry, but MACD is the engine. Only enter CALLs if MACD histogram is growing bullishly, and PUTs if it's growing bearishly.
+                </p>
+              </div>
+            </Card>
+
+            <Card className="bg-rose-500/5 border-rose-500/20 p-6 rounded-2xl border-2 flex flex-col gap-4">
+              <div className="h-12 w-12 rounded-xl bg-rose-500/20 flex items-center justify-center border border-rose-500/40 shadow-lg">
+                <Activity className="h-6 w-6 text-rose-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-white uppercase italic mb-2 tracking-tight">Resistance Check</h3>
+                <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                  Draw trendlines on the local M1 peaks. A winning trade often requires a breakout of the immediate trendline resistance concurrent with the EMA bounce.
                 </p>
               </div>
             </Card>
