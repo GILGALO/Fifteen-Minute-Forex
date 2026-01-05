@@ -447,25 +447,20 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  // AGGRESSIVE: Lowered further to 65-70 to ensure signals actually fire
-  if (accuracy === "HIGH") return 65; // Lowered from 75
-  if (accuracy === "MEDIUM") return 70; // Lowered from 80
-  return 75; // Lowered from 85
+  // STRICT: Increased to filter out low-quality noise
+  if (accuracy === "HIGH") return 82; 
+  if (accuracy === "MEDIUM") return 85;
+  return 88;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  const isHighVolumeSession = getCurrentSessionTime() !== "EVENING"; // Afternoon/Morning are higher volume
-  const mlThreshold = isHighVolumeSession ? 5 : 10; // Lowered from 10/15 to catch more signals
-  
-  // A+ Setup (The Original Powerhouse)
-  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 20) return "A"; // Lowered ML from 50 to 35, adx from 25 to 20
+  // A+ Setup (Institutional Powerhouse)
+  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A";
 
   // A- Setup (High Quality)
-  if (htfAligned && Math.abs(mlScore) >= 20 && adx >= 15) return "A-"; // Lowered ML from 30 to 20, adx from 20 to 15
+  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 20) return "A-";
 
-  // B+ Setup (Tactical Opportunity)
-  if (Math.abs(mlScore) >= mlThreshold && adx >= 10) return "B+"; // Lowered adx from 12 to 10
-
+  // B+ Setup (REMOVED - ONLY A/A- ALLOWED)
   return "SKIPPED";
 }
 
@@ -897,6 +892,27 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     }
   };
 
+  // ONLY DISPATCH A and A- GRADES
+  if (finalGrade !== "A" && finalGrade !== "A-") {
+    reasoning.push(`❌ GRADE ${finalGrade}: Below institutional requirements.`);
+    return { 
+      pair, 
+      currentPrice, 
+      signalType: signalTypeVal, 
+      confidence, 
+      signalGrade: "SKIPPED", 
+      entry: 0, 
+      stopLoss: 0, 
+      takeProfit: 0, 
+      technicals, 
+      reasoning, 
+      ruleChecklist, 
+      mlPatternScore,
+      sentimentScore,
+      mlConfidenceBoost
+    };
+  }
+
   // Priority 1: The "Ghost" Trade Optimizer - log EVERYTHING for accuracy analysis
   logTrade({
     pair,
@@ -911,15 +927,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT",
     session: getCurrentSessionTime(),
     pairAccuracy: pairAccuracyValue,
-    isGhost: finalGrade === "SKIPPED" || confidence < minConfidenceThreshold
+    isGhost: false
   });
 
-  // A+ Institutional Filter: Auto-dispatch only if grade is A or B
-  const isDispatchable = ["A", "A-", "B+"].includes(finalGrade);
   // AGGRESSIVE: Lowered auto-dispatch requirements. B+ now only needs 55% confidence.
-  const dispatchThreshold = finalGrade === "A" ? 70 : finalGrade === "A-" ? 60 : 55;
+  const dispatchThreshold = finalGrade === "A" ? 82 : 85;
   
-  if (!isDispatchable || confidence < dispatchThreshold) {
+  if (confidence < dispatchThreshold) {
     reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires ${dispatchThreshold}%+ Confidence for Telegram auto-dispatch.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
   }

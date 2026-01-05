@@ -29,8 +29,8 @@ export function analyzeSentiment(technicals: TechnicalAnalysis): SentimentScore 
     rsiSentiment * 0.15,
     macdSentiment * 0.2,
     stochasticSentiment * 0.15,
-    trendSentiment * 0.25,
-    volatilitySentiment * 0.1,
+    trendSentiment * 0.3,
+    volatilitySentiment * 0.05,
     momentumSentiment * 0.15,
   ];
 
