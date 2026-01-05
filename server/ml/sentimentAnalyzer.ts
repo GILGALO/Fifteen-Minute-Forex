@@ -50,13 +50,14 @@ export function analyzeSentiment(technicals: TechnicalAnalysis): SentimentScore 
 
 function scoreRSI(rsi: number): number {
   // RSI: 30-70 is neutral, <30 oversold (bearish), >70 overbought (bullish)
-  if (rsi < 30) return -60; // Reduced intensity from -80 to prevent excessive neutrality
-  if (rsi < 40) return -30; // Reduced from -40
-  if (rsi < 50) return -15; // Reduced from -20
-  if (rsi < 60) return 15;  // Reduced from 20
-  if (rsi < 70) return 30;  // Reduced from 40
-  if (rsi <= 85) return 60; // Reduced from 70
-  return 30; // Reduced from 40
+  // REDUCED: More aggressive scoring to prevent excessive neutrality
+  if (rsi < 30) return -40; // Lowered from -60
+  if (rsi < 40) return -20; // Lowered from -30
+  if (rsi < 50) return -10; // Lowered from -15
+  if (rsi < 60) return 10;  // Lowered from 15
+  if (rsi < 70) return 20;  // Lowered from 30
+  if (rsi <= 85) return 40; // Lowered from 60
+  return 20; // Lowered from 30
 }
 
 function scoreMACD(macd: { macdLine: number; signalLine: number; histogram: number }): number {

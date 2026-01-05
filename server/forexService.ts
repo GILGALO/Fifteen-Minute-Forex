@@ -454,16 +454,16 @@ function getMinConfidence(pair: string): number {
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
   const isHighVolumeSession = getCurrentSessionTime() !== "EVENING"; // Afternoon/Morning are higher volume
-  const mlThreshold = isHighVolumeSession ? 10 : 15; // Lowered from 15/20 to catch more signals
+  const mlThreshold = isHighVolumeSession ? 5 : 10; // Lowered from 10/15 to catch more signals
   
   // A+ Setup (The Original Powerhouse)
-  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A"; // Lowered ML from 60 to 50
+  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 20) return "A"; // Lowered ML from 50 to 35, adx from 25 to 20
 
   // A- Setup (High Quality)
-  if (htfAligned && Math.abs(mlScore) >= 30 && adx >= 20) return "A-"; // Lowered from 40/22
+  if (htfAligned && Math.abs(mlScore) >= 20 && adx >= 15) return "A-"; // Lowered ML from 30 to 20, adx from 20 to 15
 
   // B+ Setup (Tactical Opportunity)
-  if (Math.abs(mlScore) >= mlThreshold && adx >= 12) return "B+"; // Lowered adx from 15 to 12
+  if (Math.abs(mlScore) >= mlThreshold && adx >= 10) return "B+"; // Lowered adx from 12 to 10
 
   return "SKIPPED";
 }
@@ -570,8 +570,9 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   let baseConfidence = 65, sessionThreshold = 60, confidence = baseConfidence;
   
   // A+ Institutional Filter: ML Consensus Requirement
-  const isBullishML = mlScore >= 40;
-  const isBearishML = mlScore <= -40;
+  // REDUCED: Lowered from 40 to 25 to capture more early moves
+  const isBullishML = mlScore >= 25;
+  const isBearishML = mlScore <= -25;
   const hasMLConsensus = isBullishML || isBearishML;
 
   const newsStatusResult = isNewsEventTime() as any;
