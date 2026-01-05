@@ -79,9 +79,9 @@ function detectBullishEngulfing(candles: CandleData[]): number {
     current.close > current.open &&
     current.close > previous.open &&
     current.open < previous.close &&
-    getBodySize(current) > getBodySize(previous) * 0.8
+    getBodySize(current) > getBodySize(previous) * 1.2 // Stricter requirement
   ) {
-    return 75;
+    return 85;
   }
   return 0;
 }
@@ -95,9 +95,9 @@ function detectBearishEngulfing(candles: CandleData[]): number {
     current.close < current.open &&
     current.open > previous.close &&
     current.close < previous.open &&
-    getBodySize(current) > getBodySize(previous) * 0.8
+    getBodySize(current) > getBodySize(previous) * 1.2 // Stricter requirement
   ) {
-    return -75;
+    return -85;
   }
   return 0;
 }
@@ -183,9 +183,10 @@ function detectThreeSoldiers(candles: CandleData[]): number {
     c2.close > c1.close &&
     c3.close > c2.close &&
     c2.open > c1.open &&
-    c3.open > c2.open
+    c3.open > c2.open &&
+    getBodySize(c3) > getBodySize(c1) // Added momentum check
   ) {
-    return 65;
+    return 75; // Increased score
   }
   return 0;
 }
@@ -203,9 +204,10 @@ function detectThreeCrows(candles: CandleData[]): number {
     c2.close < c1.close &&
     c3.close < c2.close &&
     c2.open < c1.open &&
-    c3.open < c2.open
+    c3.open < c2.open &&
+    getBodySize(c3) > getBodySize(c1) // Added momentum check
   ) {
-    return -65;
+    return -75; // Increased score
   }
   return 0;
 }

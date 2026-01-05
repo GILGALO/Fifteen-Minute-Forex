@@ -394,11 +394,11 @@ export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
   return { isOpen: true, nextAction: "Saturday at 00:00 EAT" };
 }
 
-function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" {
-  if (exhausted) return "C";
-  if (adx > 28 && macdAligned && supertrendAligned && htfAligned) return "A";
-  if (adx >= 24 && (macdAligned || supertrendAligned)) return "B";
-  return "C";
+function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" | "SKIPPED" {
+  if (exhausted) return "SKIPPED";
+  if (adx > 32 && macdAligned && supertrendAligned && htfAligned) return "A";
+  if (adx >= 28 && (macdAligned && supertrendAligned)) return "B";
+  return "SKIPPED";
 }
 
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
@@ -447,18 +447,18 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  // STRICT: Increased to filter out low-quality noise
-  if (accuracy === "HIGH") return 82; 
-  if (accuracy === "MEDIUM") return 85;
-  return 88;
+  // STRICT: Increased to filter out low-quality noise and "B" setups
+  if (accuracy === "HIGH") return 85; 
+  if (accuracy === "MEDIUM") return 88;
+  return 90;
 }
 
-function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
+function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "SKIPPED" {
   // A+ Setup (Institutional Powerhouse)
-  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 30) return "A";
 
   // A- Setup (High Quality)
-  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 20) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 45 && adx >= 25) return "A-";
 
   // B+ Setup (REMOVED - ONLY A/A- ALLOWED)
   return "SKIPPED";
@@ -859,7 +859,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const minConfidenceThreshold = getMinConfidence(pair);
 
   // Refined Grading Logic - move up before use
-  const finalGrade: "A" | "A-" | "B+" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "A-" ? "A-" : (tacticalGrade === "B+" ? "B+" : "SKIPPED"));
+  const finalGrade: "A" | "A-" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "A-" ? "A-" : "SKIPPED");
 
   const analysisResult: SignalAnalysis = { 
     pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: finalGrade, 
@@ -939,8 +939,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   // Final validation for signal quality
-  const isQualitySignal = ["A", "A-", "B+"].includes(finalGrade as string);
-  if (!isQualitySignal && (signalGrade === "C" || Math.abs(mlScore) < 5)) {
+  const isQualitySignal = ["A", "A-"].includes(finalGrade as string);
+  if (!isQualitySignal && (signalGrade === "SKIPPED" || Math.abs(mlScore) < 5)) {
     const skipReason = Math.abs(mlScore) < 5 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE";
     reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 85%+ accuracy requires strict A/B+ setups.`);
     return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
