@@ -76,155 +76,162 @@ export default function Strategies() {
             </div>
           </section>
 
-          {/* NEW: EXPIRY & TIMING ENGINE */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-3">
-              <Clock className="h-6 w-6 text-primary" />
-              <h2 className="text-xl font-black text-white uppercase italic">Expiration & Timing Engine</h2>
-            </div>
-            <div className="grid md:grid-cols-3 gap-4">
-              {[
-                { title: "M1 Chart Only", desc: "Analysis happens on the 1-minute time-frame exclusively.", icon: Activity },
-                { title: "4-Minute Expiry", desc: "Set your broker timer to exactly 4:00 minutes for every trade.", icon: Timer },
-                { title: "Candle Close Rule", desc: "Never enter mid-candle. The signal is only valid on the close.", icon: ShieldCheck },
-              ].map((item, i) => (
-                <div key={i} className="bg-slate-900/40 border border-white/5 p-4 rounded-xl space-y-2 hover:bg-white/5 transition-colors">
-                  <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-primary" />
-                    <h4 className="text-[11px] font-black text-white uppercase tracking-widest">{item.title}</h4>
-                  </div>
-                  <p className="text-[10px] text-slate-400 leading-relaxed">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* SELL SEQUENCE EXAMPLES */}
+          {/* ADVANCED SELL SCENARIOS */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
               <AlertCircle className="h-6 w-6 text-rose-400" />
-              <h2 className="text-xl font-black text-white uppercase italic text-rose-400">Sell Sequences (Institutional Traps)</h2>
+              <h2 className="text-xl font-black text-white uppercase italic text-rose-400">Institutional Sell Patterns</h2>
             </div>
             
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* THE GRADUAL PULLBACK SELL */}
+            <div className="grid lg:grid-cols-3 gap-4">
+              {/* THE LIQUIDITY GRAB */}
               <Card className="bg-slate-950 border-white/5 overflow-hidden">
-                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
-                   <CardTitle className="text-xs font-black uppercase text-rose-400">Gradual Pullback Sequence</CardTitle>
-                   <Badge variant="outline" className="text-[8px] bg-rose-500/10 text-rose-500 border-rose-500/20">CONSERVATIVE ENTRY</Badge>
-                </CardHeader>
-                <div className="p-8 bg-black relative min-h-[350px] flex items-center justify-center">
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 100 Q 250 120, 500 160" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
-                  <div className="flex items-end gap-2 pt-12">
-                    <div className="w-4 h-32 bg-rose-600/40 rounded-sm" />
-                    <div className="w-4 h-24 bg-rose-600/30 rounded-sm" />
-                    <div className="w-4 h-12 bg-green-500/20 rounded-sm translate-y-2" />
-                    <div className="w-4 h-16 bg-green-500/30 rounded-sm translate-y-1" />
-                    <div className="w-4 h-20 bg-green-500/40 rounded-sm" />
+                <div className="p-4 bg-slate-900/40 border-b border-white/5 flex justify-between items-center">
+                   <span className="text-[9px] font-black text-rose-400 uppercase">A: Liquidity Grab</span>
+                   <Badge className="text-[7px] bg-rose-500/10">TRAP</Badge>
+                </div>
+                <div className="h-48 bg-black relative flex items-center justify-center p-4">
+                  <svg className="absolute inset-0 w-full h-full opacity-20"><path d="M 0 100 Q 150 110, 300 130" fill="none" stroke="#d946ef" strokeWidth="2" /></svg>
+                  <div className="flex items-end gap-1 pt-8">
+                    <div className="w-3 h-20 bg-green-500/20" />
+                    <div className="w-3 h-24 bg-green-500/30" />
                     <div className="relative">
-                      <div className="w-6 h-36 bg-rose-600 border-2 border-white rounded-sm shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse" />
-                      <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-px h-28 bg-white" />
-                      <Badge className="absolute -top-16 left-1/2 -translate-x-1/2 bg-rose-500 text-[8px] font-black uppercase">REJECTION</Badge>
+                      <div className="w-4 h-32 bg-rose-600 border border-white" />
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 w-px h-24 bg-white" />
                     </div>
                   </div>
+                  <div className="absolute bottom-2 text-[8px] text-slate-500 uppercase font-black">Spike Above → Close Below</div>
                 </div>
               </Card>
 
-              {/* THE FAST SPIKE TRAP */}
+              {/* THE EMA SLIDE */}
               <Card className="bg-slate-950 border-white/5 overflow-hidden">
-                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
-                   <CardTitle className="text-xs font-black uppercase text-rose-400">The Fast Spike Trap</CardTitle>
-                   <Badge variant="outline" className="text-[8px] bg-rose-500/10 text-rose-500 border-rose-500/20">AGGRESSIVE ENTRY</Badge>
-                </CardHeader>
-                <div className="p-8 bg-black relative min-h-[350px] flex items-center justify-center">
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 140 Q 250 160, 500 200" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
-                  <div className="flex items-end gap-3 pt-12">
-                    <div className="w-5 h-40 bg-rose-700/80 rounded-sm" />
-                    <div className="w-8 h-12 bg-green-500/60 border border-green-400 rounded-sm relative">
-                       <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-px h-16 bg-white" />
-                    </div>
-                    <div className="relative">
-                      <div className="w-7 h-44 bg-rose-600 border-2 border-white rounded-sm animate-pulse" />
-                      <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-px h-20 bg-white" />
-                      <Badge className="absolute -top-14 left-1/2 -translate-x-1/2 bg-rose-500 text-[8px] font-black uppercase">SELL NOW</Badge>
-                    </div>
+                <div className="p-4 bg-slate-900/40 border-b border-white/5 flex justify-between items-center">
+                   <span className="text-[9px] font-black text-rose-400 uppercase">B: The EMA Slide</span>
+                   <Badge className="text-[7px] bg-rose-500/10">TREND</Badge>
+                </div>
+                <div className="h-48 bg-black relative flex items-center justify-center p-4">
+                  <svg className="absolute inset-0 w-full h-full opacity-20"><path d="M 0 80 L 300 160" fill="none" stroke="#d946ef" strokeWidth="2" /></svg>
+                  <div className="flex items-end gap-1 pt-8">
+                    <div className="w-3 h-12 bg-green-500/20 translate-y-2" />
+                    <div className="w-3 h-12 bg-rose-600 border border-white" />
+                    <div className="w-3 h-16 bg-rose-600/60" />
                   </div>
+                  <div className="absolute bottom-2 text-[8px] text-slate-500 uppercase font-black">Clean Rejection → Slide</div>
+                </div>
+              </Card>
+
+              {/* THE DOUBLE TOUCH */}
+              <Card className="bg-slate-950 border-white/5 overflow-hidden">
+                <div className="p-4 bg-slate-900/40 border-b border-white/5 flex justify-between items-center">
+                   <span className="text-[9px] font-black text-rose-400 uppercase">C: Double Touch</span>
+                   <Badge className="text-[7px] bg-rose-500/10">CONFIRM</Badge>
+                </div>
+                <div className="h-48 bg-black relative flex items-center justify-center p-4">
+                  <svg className="absolute inset-0 w-full h-full opacity-20"><path d="M 0 120 H 300" fill="none" stroke="#d946ef" strokeWidth="2" /></svg>
+                  <div className="flex items-end gap-1 pt-8">
+                    <div className="w-3 h-20 bg-rose-600/20" />
+                    <div className="w-3 h-20 bg-rose-600 border border-white" />
+                    <div className="w-3 h-20 bg-rose-600/80" />
+                  </div>
+                  <div className="absolute bottom-2 text-[8px] text-slate-500 uppercase font-black">Resistance Confirmed</div>
                 </div>
               </Card>
             </div>
           </section>
 
-          {/* BUY SEQUENCE EXAMPLES */}
+          {/* ADVANCED BUY SCENARIOS */}
           <section className="space-y-6">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-6 w-6 text-emerald-400" />
-              <h2 className="text-xl font-black text-white uppercase italic text-emerald-400">Buy Sequences (Institutional Support)</h2>
+              <h2 className="text-xl font-black text-white uppercase italic text-emerald-400">Institutional Buy Patterns</h2>
             </div>
             
-            <div className="grid lg:grid-cols-2 gap-6">
-              {/* THE DIP & BOUNCE */}
+            <div className="grid lg:grid-cols-3 gap-4">
+              {/* THE SNIPER BOUNCE */}
               <Card className="bg-slate-950 border-white/5 overflow-hidden">
-                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
-                   <CardTitle className="text-xs font-black uppercase text-emerald-400">The Dip & Bounce</CardTitle>
-                   <Badge variant="outline" className="text-[8px] bg-emerald-500/10 text-emerald-500 border-emerald-500/20">TREND CONTINUATION</Badge>
-                </CardHeader>
-                <div className="p-8 bg-black relative min-h-[350px] flex items-center justify-center">
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 200 Q 250 180, 500 140" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
-                  <div className="flex items-end gap-2 pb-12">
-                    <div className="w-4 h-28 bg-green-500/40 rounded-sm" />
-                    <div className="w-4 h-32 bg-green-500/50 rounded-sm" />
-                    <div className="w-4 h-16 bg-rose-500/30 rounded-sm translate-y-1" />
-                    <div className="w-4 h-12 bg-rose-500/40 rounded-sm translate-y-2" />
+                <div className="p-4 bg-slate-900/40 border-b border-white/5 flex justify-between items-center">
+                   <span className="text-[9px] font-black text-emerald-400 uppercase">D: Sniper Bounce</span>
+                   <Badge className="text-[7px] bg-emerald-500/10">PERFECT</Badge>
+                </div>
+                <div className="h-48 bg-black relative flex items-center justify-center p-4">
+                  <svg className="absolute inset-0 w-full h-full opacity-20"><path d="M 0 160 Q 150 140, 300 120" fill="none" stroke="#d946ef" strokeWidth="2" /></svg>
+                  <div className="flex items-end gap-1 pb-8">
+                    <div className="w-3 h-16 bg-rose-500/20" />
                     <div className="relative">
-                      <div className="w-6 h-36 bg-green-600 border-2 border-white rounded-sm shadow-[0_0_15px_rgba(255,255,255,0.4)] animate-pulse" />
-                      <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-px h-28 bg-white" />
-                      <Badge className="absolute -top-6 left-1/2 -translate-x-1/2 bg-green-500 text-[8px] font-black uppercase">BOUNCE ENTRY</Badge>
+                      <div className="w-4 h-32 bg-green-600 border border-white" />
+                      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-px h-24 bg-white" />
                     </div>
+                    <div className="w-3 h-36 bg-green-600/80" />
                   </div>
+                  <div className="absolute bottom-2 text-[8px] text-slate-500 uppercase font-black">Touch EMA → Rocket</div>
                 </div>
               </Card>
 
-              {/* THE VOLATILITY REJECTION */}
+              {/* THE PULLBACK CLAIRTY */}
               <Card className="bg-slate-950 border-white/5 overflow-hidden">
-                <CardHeader className="bg-slate-900/40 p-4 border-b border-white/5 flex flex-row justify-between items-center">
-                   <CardTitle className="text-xs font-black uppercase text-emerald-400">Volatility Rejection</CardTitle>
-                   <Badge variant="outline" className="text-[8px] bg-cyan-500/10 text-cyan-500 border-cyan-500/20">HIGH VOLATILITY SNIPER</Badge>
-                </CardHeader>
-                <div className="p-8 bg-black relative min-h-[350px] flex items-center justify-center">
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-20"><path d="M 0 240 Q 250 220, 500 180" fill="none" stroke="#d946ef" strokeWidth="3" /></svg>
-                  <div className="flex items-end gap-3 pb-12">
-                    <div className="w-5 h-36 bg-green-700/60 rounded-sm" />
-                    <div className="relative">
-                      <div className="w-7 h-10 bg-white border-2 border-green-500 rounded-sm animate-bounce" />
-                      <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-px h-40 bg-white" />
-                      <Badge className="absolute -top-10 left-1/2 -translate-x-1/2 bg-green-600 text-[8px] font-black uppercase">ULTRA SNIPER</Badge>
-                    </div>
-                    <div className="w-5 h-44 bg-green-600 rounded-sm" />
+                <div className="p-4 bg-slate-900/40 border-b border-white/5 flex justify-between items-center">
+                   <span className="text-[9px] font-black text-emerald-400 uppercase">E: Pullback Clarity</span>
+                   <Badge className="text-[7px] bg-emerald-500/10">STAIRS</Badge>
+                </div>
+                <div className="h-48 bg-black relative flex items-center justify-center p-4">
+                  <svg className="absolute inset-0 w-full h-full opacity-20"><path d="M 0 180 L 300 100" fill="none" stroke="#d946ef" strokeWidth="2" /></svg>
+                  <div className="flex items-end gap-1 pb-8">
+                    <div className="w-3 h-8 bg-rose-500/20 translate-y-2" />
+                    <div className="w-3 h-10 bg-rose-500/30 translate-y-1" />
+                    <div className="w-4 h-32 bg-green-600 border border-white" />
                   </div>
+                  <div className="absolute bottom-2 text-[8px] text-slate-500 uppercase font-black">Controlled Dip → Expansion</div>
+                </div>
+              </Card>
+
+              {/* THE V-REJECTION */}
+              <Card className="bg-slate-950 border-white/5 overflow-hidden">
+                <div className="p-4 bg-slate-900/40 border-b border-white/5 flex justify-between items-center">
+                   <span className="text-[9px] font-black text-emerald-400 uppercase">F: V-Rejection</span>
+                   <Badge className="text-[7px] bg-emerald-500/10">STRONG</Badge>
+                </div>
+                <div className="h-48 bg-black relative flex items-center justify-center p-4">
+                  <svg className="absolute inset-0 w-full h-full opacity-20"><path d="M 0 140 H 300" fill="none" stroke="#d946ef" strokeWidth="2" /></svg>
+                  <div className="flex items-end gap-1 pb-8">
+                    <div className="w-3 h-40 bg-rose-500/40" />
+                    <div className="w-4 h-12 bg-white border-2 border-green-500 animate-bounce" />
+                    <div className="w-3 h-44 bg-green-600" />
+                  </div>
+                  <div className="absolute bottom-2 text-[8px] text-slate-500 uppercase font-black">Absorption → Reversal</div>
                 </div>
               </Card>
             </div>
           </section>
 
-          {/* NEW: RISK MANAGEMENT PROTOCOL */}
-          <section className="bg-rose-500/5 border border-rose-500/20 p-6 rounded-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <CheckCircle2 className="h-6 w-6 text-rose-500" />
-              <h2 className="text-xl font-black text-white uppercase italic">Risk Management Protocol</h2>
-            </div>
-            <div className="grid sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <h4 className="text-[11px] font-black text-white uppercase tracking-widest">Fixed Investment</h4>
-                <p className="text-[10px] text-slate-400 italic leading-relaxed">"Never risk more than 1-2% of your total balance per trade. Compounding is better than gambling."</p>
+          {/* RISK & TIMING MODULES */}
+          <section className="grid md:grid-cols-2 gap-6">
+            <Card className="bg-slate-900/40 border-white/5 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Clock className="h-5 w-5 text-primary" />
+                <h3 className="text-sm font-black text-white uppercase italic">Timing Engine</h3>
               </div>
-              <div className="space-y-2 border-l border-white/5 pl-6">
-                <h4 className="text-[11px] font-black text-white uppercase tracking-widest">3-Loss Halt</h4>
-                <p className="text-[10px] text-slate-400 italic leading-relaxed">"If you lose 3 trades in a row, close the broker. Market conditions have shifted. Stop for the day."</p>
+              <ul className="text-[10px] text-slate-400 space-y-2">
+                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-primary rounded-full" /> M1 Timeframe Only</li>
+                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-primary rounded-full" /> 4-Minute Expiration</li>
+                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-primary rounded-full" /> Candle Close Verification</li>
+              </ul>
+            </Card>
+
+            <Card className="bg-rose-500/5 border border-rose-500/20 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <CheckCircle2 className="h-5 w-5 text-rose-500" />
+                <h3 className="text-sm font-black text-white uppercase italic">Risk Protocol</h3>
               </div>
-            </div>
+              <ul className="text-[10px] text-slate-400 space-y-2">
+                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-rose-500 rounded-full" /> 1-2% Max Per Trade</li>
+                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-rose-500 rounded-full" /> Stop Loss: 3 Daily</li>
+                <li className="flex items-center gap-2"><div className="w-1 h-1 bg-rose-500 rounded-full" /> No News Trading (+/- 30m)</li>
+              </ul>
+            </Card>
           </section>
 
-          {/* THE 4-MINUTE GOLD RULE */}
+          {/* FINAL TRADING RULE */}
           <Card className="bg-primary/10 border-primary/30 p-6 rounded-xl flex items-center gap-6">
              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center border border-primary/40 shrink-0">
                 <Info className="h-6 w-6 text-primary" />
@@ -232,7 +239,7 @@ export default function Strategies() {
              <div>
                 <h3 className="text-lg font-black text-white uppercase italic leading-none mb-2">The Golden Mechanical Rule</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                   Analysis is useless without discipline. Observe the <span className="text-white font-bold underline">PREVIOUS 3 CANDLES</span>. If they show a gradual move toward the EMA followed by a rejection, your win rate increases. Always wait for the <span className="text-primary font-bold">M1 CLOSE</span>.
+                   Analysis is useless without discipline. Observe the <span className="text-white font-bold underline">PREVIOUS 3 CANDLES</span>. If they show a controlled move toward the EMA followed by a rejection, your win rate increases. Always wait for the <span className="text-primary font-bold">M1 CLOSE</span>.
                 </p>
              </div>
           </Card>
