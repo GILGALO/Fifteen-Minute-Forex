@@ -64,7 +64,6 @@ export interface TechnicalAnalysis {
 export type PairAccuracy = "HIGH" | "MEDIUM" | "LOW";
 export type SessionTime = "MORNING" | "AFTERNOON" | "EVENING";
 
-// SESSION-AWARE PAIR FILTERING
 const SESSION_PAIRS = {
   ASIAN: ["USD/JPY", "AUD/JPY", "GBP/JPY", "EUR/JPY", "AUD/USD"],
   LONDON: ["EUR/USD", "GBP/USD", "EUR/GBP", "USD/CHF", "EUR/JPY", "GBP/JPY"],
@@ -263,7 +262,6 @@ function generateRealisticCandles(pair: string, count: number): CandleData[] {
   return candles;
 }
 
-// Technical Indicators
 function calculateSMA(prices: number[], period: number): number {
   if (prices.length < period) return prices[prices.length - 1];
   return prices.slice(-period).reduce((a, b) => a + b, 0) / period;
@@ -377,28 +375,10 @@ export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
   const now = new Date();
   const day = now.getUTCDay();
   const hour = now.getUTCHours();
-
-  // Friday close: 21:00 UTC (Saturday 00:00 EAT)
-  if (day === 5 && hour >= 21) {
-    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
-  }
-  // Saturday: Closed all day
-  if (day === 6) {
-    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
-  }
-  // Sunday open: 21:00 UTC (Monday 00:00 EAT)
-  if (day === 0 && hour < 21) {
-    return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
-  }
-
+  if (day === 5 && hour >= 21) return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
+  if (day === 6) return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
+  if (day === 0 && hour < 21) return { isOpen: false, nextAction: "Monday at 00:00 EAT" };
   return { isOpen: true, nextAction: "Saturday at 00:00 EAT" };
-}
-
-function gradeSignal(adx: number, volatility: string, exhausted: boolean, macdAligned: boolean, supertrendAligned: boolean, htfAligned: boolean): "A" | "B" | "C" | "SKIPPED" {
-  if (exhausted) return "SKIPPED";
-  if (adx > 28 && macdAligned && supertrendAligned && htfAligned) return "A";
-  if (adx >= 20 && (macdAligned || supertrendAligned)) return "B";
-  return "C";
 }
 
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
@@ -417,12 +397,10 @@ export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
   const adx = calculateADX(candles);
   const supertrend = calculateSupertrend(candles);
   const candlePattern = detectCandlePattern(candles);
-
   const trend = supertrend.direction;
   const momentum = adx > 25 ? "STRONG" : (adx > 15 ? "MODERATE" : "WEAK");
   const volatility = atr > (prices[prices.length - 1] * 0.001) ? "HIGH" : "MEDIUM";
   const marketRegime = adx > 20 ? "TRENDING" : "RANGING";
-
   return {
     rsi, macd, sma20, sma50, sma200, ema12, ema26,
     bollingerBands: { ...bollingerBands, breakout: prices[prices.length - 1] > bollingerBands.upper || prices[prices.length - 1] < bollingerBands.lower },
@@ -431,9 +409,8 @@ export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
   };
 }
 
-// Signal Cool-down tracking
 const signalHistory: Map<string, number> = new Map();
-const COOLDOWN_PERIOD = 15 * 60 * 1000; // 15 minutes
+const COOLDOWN_PERIOD = 15 * 60 * 1000;
 
 function isPairInCooldown(pair: string): boolean {
   const lastSignal = signalHistory.get(pair);
@@ -447,84 +424,35 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  // OPTIMIZED: Slightly increased thresholds for higher accuracy signals
   if (accuracy === "HIGH") return 80; 
   if (accuracy === "MEDIUM") return 82;
   return 85;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  // A+ Setup (Institutional Powerhouse)
   if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 28) return "A";
-
-  // A- Setup (High Quality)
   if (htfAligned && Math.abs(mlScore) >= 40 && adx >= 22) return "A-";
-
-  // B+ Setup (Optimized Trend Follower)
   if (htfAligned && Math.abs(mlScore) >= 25 && adx >= 18) return "B+";
-
   return "SKIPPED";
 }
 
 function getStakeAdvice(confidence: number, grade: string, pair: string): { recommendation: "HIGH" | "MEDIUM" | "LOW" | "CAUTION"; reason: string; size: string } {
-  if (grade === "A" && confidence >= 92) {
-    return {
-      recommendation: "HIGH",
-      reason: "💎 A+ Institutional Setup: Multi-TF Alignment + ML Pattern Consensus + High Confidence.",
-      size: "2.0% - 3.0% of Balance"
-    };
-  }
-  if (confidence >= 88) {
-    return {
-      recommendation: "MEDIUM",
-      reason: "✨ High Probability Tactical Setup: Strong momentum with H1 alignment.",
-      size: "1.0% - 1.5% of Balance"
-    };
-  }
-  return {
-    recommendation: "LOW",
-    reason: "⚖️ Standard Setup: Follow strict risk management. Momentum is stable but not explosive.",
-    size: "0.5% - 1.0% of Balance"
-  };
-}
-
-function detectPivotLevels(candles: any[]): { isNearPivot: boolean; type: "SUPPORT" | "RESISTANCE" | null } {
-  if (candles.length < 20) return { isNearPivot: false, type: null };
-  const currentPrice = candles[candles.length - 1].close;
-  const high = Math.max(...candles.map(c => c.high));
-  const low = Math.min(...candles.map(c => c.low));
-  const buffer = (high - low) * 0.05;
-
-  if (Math.abs(currentPrice - high) < buffer) return { isNearPivot: true, type: "RESISTANCE" };
-  if (Math.abs(currentPrice - low) < buffer) return { isNearPivot: true, type: "SUPPORT" };
-  return { isNearPivot: false, type: null };
-}
-
-function isVolumeClimax(candles: any[]): boolean {
-  if (candles.length < 10) return false;
-  const lastCandle = candles[candles.length - 1];
-  const avgVol = candles.slice(-10, -1).reduce((s, c) => s + (c.volume || 0), 0) / 9;
-  return (lastCandle.volume || 0) > avgVol * 2.5;
+  if (grade === "A" && confidence >= 92) return { recommendation: "HIGH", reason: "💎 Institutional A+", size: "2-3%" };
+  if (confidence >= 88) return { recommendation: "MEDIUM", reason: "✨ Tactical Alignment", size: "1-1.5%" };
+  return { recommendation: "LOW", reason: "⚖️ Standard Entry", size: "0.5-1%" };
 }
 
 function getAdaptiveThreshold(technicals: any): number {
   const isChoppy = technicals.adx < 20 && Math.abs(technicals.rsi - 50) < 10;
-  const volatility = technicals.volatility;
-  // LOWER threshold in stable markets (M5 predictability)
-  if (volatility === "LOW" || (volatility === "MEDIUM" && !isChoppy)) {
-    return 72; // Reduced from 85/75 to unlock more frequent signals
-  }
+  if (technicals.volatility === "LOW" || (technicals.volatility === "MEDIUM" && !isChoppy)) return 72;
   return isChoppy ? 85 : 78;
 }
 
 function detectMeanReversion(technicals: TechnicalAnalysis, currentPrice: number): { isReversion: boolean; direction: "CALL" | "PUT" | null } {
-  const sma20 = technicals.sma20;
-  const deviation = Math.abs(currentPrice - sma20) / sma20;
-  const threshold = 0.0008; // 0.08% deviation for M5
-
-  if (deviation > threshold) {
-    if (currentPrice < sma20 && technicals.rsi < 25) return { isReversion: true, direction: "CALL" };
-    if (currentPrice > sma20 && technicals.rsi > 75) return { isReversion: true, direction: "PUT" };
+  const deviation = Math.abs(currentPrice - technicals.sma20) / technicals.sma20;
+  if (deviation > 0.0008) {
+    if (currentPrice < technicals.sma20 && technicals.rsi < 25) return { isReversion: true, direction: "CALL" };
+    if (currentPrice > technicals.sma20 && technicals.rsi > 75) return { isReversion: true, direction: "PUT" };
   }
   return { isReversion: false, direction: null };
 }
@@ -533,551 +461,59 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const { isOpen, nextAction } = isMarketOpen();
   const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: false, marketRegime: false, trendExhaustion: true };
   const reasoning: string[] = [];
-
-  if (!isOpen) {
-    reasoning.push(`🛑 MARKET CLOSED: No signals generated until ${nextAction}`);
-    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
-  }
-
-  const sessionHour = getKenyaHour(), sessionForPair = getSessionForPair(pair, sessionHour);
-  ruleChecklist.sessionFilter = sessionForPair !== null;
-
-  const { blocked, event, remainingMinutes, allowWithWarning } = isNewsEventTime() as any;
-  if (blocked && !allowWithWarning) {
-    const remainingText = remainingMinutes ? ` (${remainingMinutes}m left)` : "";
-    reasoning.push(`🚫 NEWS EVENT BLOCK: ${event?.name}${remainingText}`);
-    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
-  }
-
-  if (allowWithWarning) {
-    reasoning.push(`⚠️ HIGH VOLATILITY WARNING: ${event?.name} event active (${remainingMinutes}m remaining). Scanners are still active but risk is higher.`);
-  }
-
-  const stats = sessionTracker.getStats();
-  if (sessionTracker.hasReachedDailyGoal() || sessionTracker.hasExceededMaxDrawdown()) {
-    reasoning.push(`🛑 TRADING HALTED: Goal or Drawdown reached`);
-    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
-  }
-
-  // Cool-down filter
-  if (isPairInCooldown(pair)) {
-    reasoning.push(`⏳ COOL-DOWN: Skipping signal for ${pair} (15m window)`);
-    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning, ruleChecklist };
-  }
-
-  const [candles, candlesM15, candlesH1] = await Promise.all([
-    getForexCandles(pair, "5min", apiKey),
-    getForexCandles(pair, "15min", apiKey),
-    getForexCandles(pair, "60min", apiKey)
-  ]);
-  const technicals = analyzeTechnicals(candles);
-  const technicalsM15 = analyzeTechnicals(candlesM15);
-  const technicalsH1 = analyzeTechnicals(candlesH1);
-
-  // ML Pattern Recognition Consensus Requirement
-  const mlPatternScore = detectPatterns(candles);
-  const mlScore = mlPatternScore.overallScore;
-
-  // GHOST FRONT-RUNNING: Detect "About to Align"
-  const m5Trend = technicals.supertrend.direction;
-  const rsiApproaching = (m5Trend === "BULLISH" && technicals.rsi < 35) || (m5Trend === "BEARISH" && technicals.rsi > 65);
-  const macdApproaching = Math.abs(technicals.macd.histogram) < 0.00005;
-  const isFrontRunning = rsiApproaching && macdApproaching;
-
-  const m15Trend = technicalsM15.supertrend.direction;
-  const h1Trend = technicalsH1.supertrend.direction;
-
-  let baseConfidence = 65, sessionThreshold = 60, confidence = baseConfidence;
+  if (!isOpen) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`🛑 MARKET CLOSED: ${nextAction}`], ruleChecklist };
+  if (isPairInCooldown(pair)) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`⏳ COOL-DOWN`], ruleChecklist };
+  if (sessionTracker.hasReachedDailyGoal() || sessionTracker.hasExceededMaxDrawdown()) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`🛑 HALTED`], ruleChecklist };
   
-  // A+ Institutional Filter: ML Consensus Requirement
-  // REDUCED: Lowered from 40 to 25 to capture more early moves
-  const isBullishML = mlScore >= 25;
-  const isBearishML = mlScore <= -25;
-  const hasMLConsensus = isBullishML || isBearishML;
-
-  const newsStatusResult = isNewsEventTime() as any;
-  const newsBlocked = newsStatusResult.blocked;
-  const isNewsWarning = newsStatusResult.allowWithWarning;
-  
-  if (newsBlocked && isNewsWarning) {
-    reasoning.push(`⚠️ VOLATILITY WARNING: Active ${newsStatusResult.event?.name} news event. Trading carries higher risk.`);
-  }
-
-  const lastCandle = candles[candles.length - 1], avgVol = candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
+  const [candles, candlesM15, candlesH1] = await Promise.all([getForexCandles(pair, "5min", apiKey), getForexCandles(pair, "15min", apiKey), getForexCandles(pair, "60min", apiKey)]);
+  const technicals = analyzeTechnicals(candles), technicalsM15 = analyzeTechnicals(candlesM15), technicalsH1 = analyzeTechnicals(candlesH1);
+  const mlPatternScore = detectPatterns(candles), sentimentScore = analyzeSentiment(technicals), mlScore = mlPatternScore.overallScore;
+  const mlConfidenceBoost = Math.floor((Math.abs(mlScore) + Math.abs(sentimentScore.overallSentiment)) / 20);
+  const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
+  const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
+  const currentPrice = candles[candles.length - 1].close;
+  const htfAligned = m5Trend === h1Trend;
+  ruleChecklist.htfAlignment = htfAligned;
 
   const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD", "USD/JPY", "USD/CAD"];
-  let hasFullCorrelation = false;
-  let currencyStrength = 0;
-  
+  let clusterConfidence = 0;
   if (majorPairs.includes(pair)) {
-    const baseCurrency = pair.split('/')[0];
-    const isBaseUsd = baseCurrency === "USD";
-    
-    // Shadow Correlation: Check if the base/quote currency is moving globally
-    const correlationResults = await Promise.all(
-      majorPairs
-        .filter(p => p !== pair)
-        .map(async p => {
-          const tech = analyzeTechnicals(await getForexCandles(p, "5min", apiKey));
-          return { pair: p, direction: tech.supertrend.direction };
-        })
-    );
-
+    const correlationResults = await Promise.all(majorPairs.filter(p => p !== pair).map(async p => ({ direction: (analyzeTechnicals(await getForexCandles(p, "5min", apiKey))).supertrend.direction })));
     const alignedCount = correlationResults.filter(r => r.direction === m5Trend).length;
-    currencyStrength = (alignedCount / correlationResults.length) * 100;
-
-    // CORRELATION CLUSTER PROMOTION
-    if (alignedCount >= correlationResults.length * 0.75) { 
-      confidence += 15; 
-      reasoning.push(`🧩 CLUSTER PROMOTION: ${alignedCount}/${correlationResults.length} pairs confirm direction`); 
-      hasFullCorrelation = true;
-    }
-    else if (alignedCount >= correlationResults.length * 0.5) { 
-      confidence += 10; 
-      reasoning.push(`📈 MARKET FLOW: Majority of ${baseCurrency} pairs aligned`); 
-    }
-    else { 
-      confidence -= 10; 
-      reasoning.push(`⚠️ DIVERGENCE: Market flow not supporting ${pair} move`); 
-    }
+    clusterConfidence = alignedCount >= correlationResults.length * 0.75 ? 15 : (alignedCount >= correlationResults.length * 0.5 ? 10 : -10);
+    reasoning.push(`🧩 CLUSTER: ${alignedCount} aligned`);
   }
 
-  const currentPrice = lastCandle.close;
-  const m5_m15_aligned = m5Trend === m15Trend;
-  const htfAligned = m5Trend === h1Trend;
-  
-  // A+ Institutional Filter: H1 Structural Alignment (Mandatory)
-  ruleChecklist.htfAlignment = htfAligned;
-  
-  const alignmentText = `M5/M15: ${m5_m15_aligned ? "✅ALIGNED" : "❌CONFLICT"} | H1: ${htfAligned ? "✅ALIGNED" : "⚠️CONTRA"}`;
-  reasoning.push(`Trend Analysis: ${alignmentText} | Direction: ${m5Trend}`);
-  
-  // Momentum Safety Guard (RSI 88/12)
-  const isRsiOverExtended = (m5Trend === "BULLISH" && technicals.rsi > 88) || (m5Trend === "BEARISH" && technicals.rsi < 12);
-  ruleChecklist.momentumSafety = !isRsiOverExtended;
-
-  if (isRsiOverExtended) {
-    reasoning.push(`⚠️ MOMENTUM EXHAUSTION: RSI ${technicals.rsi.toFixed(1)} is over-extended. Avoiding end-of-move entry.`);
-  }
-
-  // Core A+ Filter Logic
-  const rsiValueLocal = technicals.rsi;
-  const meetsAplusCriteria = hasMLConsensus && htfAligned && (m5Trend === "BULLISH" ? rsiValueLocal <= 88 : rsiValueLocal >= 12);
-
-  // MEAN REVERSION MODULE (The "Dip" Entry)
-  const meanReversion = detectMeanReversion(technicals, currentPrice);
-  if (meanReversion.isReversion && meanReversion.direction === signalTypeVal) {
-    confidence += 12;
-    reasoning.push(`🧲 MEAN REVERSION: Catching extreme deviation pullback`);
-  }
-
-  // Final Grade and Dispatch Logic
-  const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
-  
-  if (isFrontRunning) {
-    confidence += 10;
-    reasoning.push(`👻 GHOST FRONT-RUNNING: Early alignment detected - prioritizing entry`);
-  }
-
-  // Clean reasoning for the user - only show high-level outcome
-  const cleanReasoning: string[] = [];
-  if (meetsAplusCriteria) {
-    cleanReasoning.push("🚀 Institutional A+ Signal Confirmed");
-  } else {
-    cleanReasoning.push("⚡ Tactical Setup Confirmed");
-  }
-
-  // Grade B and A- logic: Allow these to pass if they meet the revised criteria
+  const rsiApproaching = (m5Trend === "BULLISH" && technicals.rsi < 35) || (m5Trend === "BEARISH" && technicals.rsi > 65);
+  const frontRunningBoost = (rsiApproaching && Math.abs(technicals.macd.histogram) < 0.00005) ? 10 : 0;
+  const meetsAplusCriteria = (Math.abs(mlScore) >= 20) && htfAligned && (m5Trend === "BULLISH" ? technicals.rsi <= 88 : technicals.rsi >= 12);
   const tacticalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
-  const isAminus = tacticalGrade === "A-";
-  const isBplus = tacticalGrade === "B+";
-  const isPassable = meetsAplusCriteria || isAminus || isBplus;
+  const isPassable = meetsAplusCriteria || tacticalGrade !== "SKIPPED";
+  if (!isPassable) return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: [`❌ NO CONSENSUS (ML: ${mlScore}, Trend: ${m5Trend})`], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
 
-  if (!isPassable) {
-    if (!hasMLConsensus && !isAminus && !isBplus) reasoning.push(`❌ ML DIVERGENCE: Score ${mlScore} is too neutral for high-grade setup.`);
-    
-    return { 
-      pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", 
-      entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist,
-      mlPatternScore, sentimentScore, mlConfidenceBoost,
-      stakeAdvice: { recommendation: "CAUTION", reason: "Neutral ML Score", size: "0%" }
-    };
-  }
-  
-  // IMPROVED TREND CATCHING: Detect early trend formation with ADX crossover
-  const adxStrength = technicals.adx;
-  const isTrendForming = adxStrength > 15 && adxStrength < 25; // Early trend formation
-  const isTrendStrong = adxStrength >= 25; // Strong established trend
-  
-  if (m5_m15_aligned && htfAligned) { 
-    confidence += 18; 
-    reasoning.push(`✅ INSTITUTIONAL ALIGNMENT (M5=M15=H1=${m5Trend})`); 
-  }
- else if (isTrendForming && m5Trend === m15Trend) {
-    confidence += 8;
-    reasoning.push(`📈 TREND FORMING: Early ${m5Trend} confirmation (ADX: ${adxStrength.toFixed(1)})`);
-  } else if (isTrendStrong && technicalsM15.adx > 20) {
-    confidence += 10;
-    reasoning.push(`💪 STRONG TREND DETECTED: M5 showing ${m5Trend} (ADX: ${adxStrength.toFixed(1)})`);
-  } else if (technicalsM15.rsi > 40 && technicalsM15.rsi < 60) {
-    confidence += 4;
-    reasoning.push(`⚠️ NEUTRAL M15 (ADX: ${technicalsM15.adx.toFixed(1)}) - Scalp Mode Active`);
-  } else {
-    reasoning.push(`❌ WEAK TREND FORMATION: M5/M15 misaligned (ADX: ${adxStrength.toFixed(1)})`);
-    // Return skipped signal
-  }
+  let confidence = 65 + clusterConfidence + frontRunningBoost + (m5Trend === m15Trend ? 18 : 8) + (htfAligned ? 7 : -5);
+  const meanReversion = detectMeanReversion(technicals, currentPrice);
+  if (meanReversion.isReversion && meanReversion.direction === signalTypeVal) confidence += 12;
 
-  if (htfAligned) { confidence += 7; reasoning.push(`✅ H1 CONFLUENCE: All timeframes aligned`); } else { reasoning.push(`⚠️ H1 DIVERGENCE: ${h1Trend} vs ${m5Trend} - Scalp Mode`); }
+  const finalGrade = meetsAplusCriteria ? "A" : (tacticalGrade as "A-" | "B+");
+  const finalConfidence = Math.min(98, Math.max(0, confidence + Math.round(mlScore / 10)));
+  if (finalConfidence < getAdaptiveThreshold(technicals)) return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: ["🚫 LOW CONFIDENCE"], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
 
-  if (technicals.marketRegime !== "TRENDING" && technicals.adx < 15) {
-    reasoning.push(`❌ LOW VOLATILITY RANGE`);
-    return { pair, currentPrice, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
-  }
+  const atrVal = technicals.atr, isJpyPair = pair.includes("JPY"), pip = isJpyPair ? 0.01 : 0.0001;
+  const slPips = Math.max((atrVal / pip) * 1.5, 10);
+  const stopLoss = signalTypeVal === "CALL" ? currentPrice - (slPips * pip) : currentPrice + (slPips * pip);
+  const takeProfit = signalTypeVal === "CALL" ? currentPrice + (slPips * 1.5 * pip) : currentPrice - (slPips * 1.5 * pip);
 
-  // Weighted Scoring for RSI/Stochastic
-  const rsiVal = technicals.rsi;
-  const stochK = technicals.stochastic.k;
-
-  const isOriginalRsiOk = rsiVal >= 30 && rsiVal <= 70;
-  const isOriginalStochOk = stochK >= 20 && stochK <= 80;
-  const originalCandleConfirmed = hasThreeConsecutiveTrendCandles(candles, m5Trend);
-  const originalVolumeConfirmed = !lastCandle.volume || lastCandle.volume > avgVol * 0.5;
-  
-  // Mid-Trend Logic for Flexible Rules
-  const isMidTrend = technicals.adx > 30 && technicals.supertrend.direction === m5Trend;
-  const isFlexibleRsiOk = isMidTrend ? (rsiVal >= 25 && rsiVal <= 75) : (rsiVal >= 15 && rsiVal <= 85);
-  const isFlexibleStochOk = isMidTrend ? (stochK >= 10 && stochK <= 90) : (stochK >= 2 && stochK <= 98);
-
-  let isFlexibleMode = false;
-  let ruleSetLabel = "ORIGINAL RULES";
-
-  const sentimentScore = analyzeSentiment(technicals);
-  const mlConfidenceBoost = Math.floor((Math.abs(mlPatternScore.overallScore) + Math.abs(sentimentScore.overallSentiment)) / 20);
-
-  if (isOriginalRsiOk && isOriginalStochOk && originalCandleConfirmed && originalVolumeConfirmed) {
-    confidence += 10;
-    reasoning.push(`✅ Rule Set: ORIGINAL RULES`);
-  } else if (isFlexibleRsiOk && isFlexibleStochOk) {
-    isFlexibleMode = true;
-    ruleSetLabel = "FLEXIBLE RULES";
-    confidence -= 5; 
-    reasoning.push(`ℹ️ FLEXIBLE MODE: Secondary criteria active`);
-    reasoning.push(`✅ Rule Set: FLEXIBLE RULES`);
-    if (isMidTrend) reasoning.push(`🚀 MID-TREND BOOST: Strong momentum detected`);
-  } else {
-    // Allow scalp mode instead of rejecting
-    isFlexibleMode = true;
-    ruleSetLabel = "SCALP MODE";
-    confidence -= 15;
-    reasoning.push(`📊 SCALP MODE: Relaxed rules for lower-volatility entry (RSI: ${rsiVal.toFixed(1)}, Stoch: ${stochK.toFixed(1)})`);
-  }
-
-  // MOMENTUM FILTER: Relaxed boundaries if in flexible mode
-  const isExtremeZone = rsiVal > 99 || rsiVal < 1;
-  const rsiOk = isFlexibleMode ? (rsiVal >= 15 && rsiVal <= 85) : isOriginalRsiOk;
-  const stochOk = isFlexibleMode ? (stochK >= 2 && stochK <= 98) : isOriginalStochOk;
-  const finalCandleConfirmed = isFlexibleMode ? (originalCandleConfirmed || technicals.adx >= 20) : originalCandleConfirmed;
-  const finalVolumeConfirmed = isFlexibleMode ? true : originalVolumeConfirmed;
-
-  const candleConfirmed = finalCandleConfirmed;
-  const volumeConfirmed = finalVolumeConfirmed;
-  ruleChecklist.candleConfirmation = candleConfirmed;
-  
-  if (!candleConfirmed && technicals.adx < 20) {
-    confidence -= 8;
-    reasoning.push(`⚠️ WEAK CANDLE (ADX: ${technicals.adx.toFixed(1)}) - Confidence reduced`);
-  }
-
-  const isPerfectStructure = candleConfirmed && technicals.adx > 30;
-  
-  // EXTREME ZONE: Always block RSI 95+ and 5-, too close to reversal
-  if (isExtremeZone) {
-    reasoning.push(`❌ MOMENTUM EXTREME (RSI: ${rsiVal.toFixed(1)}) - Reversal Risk Zone`);
-    return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
-  }
-  
-  if (!rsiOk || !stochOk) {
-    confidence -= 12;
-    reasoning.push(`⚠️ MOMENTUM OUT OF RANGE (RSI: ${rsiVal.toFixed(1)}) - Confidence reduced`);
-  }
-
-  const signalType = signalTypeVal;
-  const exhausted = detectTrendExhaustion(technicals.adx, technicals.rsi, signalType);
-
-  if (signalType === "PUT") {
-    log(`[ANALYSIS] Processing PUT signal for ${pair} | Trend: ${m5Trend} | RSI: ${technicals.rsi.toFixed(1)} | ADX: ${technicals.adx.toFixed(1)}`, "forex");
-  }
-
-  // Confidence calculation for SELL (PUT) signals needs to be as robust as CALL (BUY)
-  const isPut = signalType === "PUT";
-
-  if (isPut) {
-    log(`[ANALYSIS] Processing PUT signal for ${pair} (ADX: ${technicals.adx.toFixed(1)}, RSI: ${technicals.rsi.toFixed(1)})`, "forex");
-  }
-  if (exhausted) {
-    reasoning.push(`❌ TREND EXHAUSTED`);
-    return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
-  }
-
-  if (technicals.adx > 25) confidence += 10; else if (technicals.adx < 15) confidence -= 12;
-
-  const indicatorCheck = checkMultiIndicatorAlignment(technicals, m5Trend);
-  const isPerfectAlignment = indicatorCheck.count === 4; 
-  const correlationAligned = reasoning.includes(`✅ FULL CORRELATION`) || reasoning.includes(`✅ PARTIAL CORRELATION`);
-  const institutionalQuality = isPerfectAlignment && m5_m15_aligned && volumeConfirmed && correlationAligned;
-
-    if (institutionalQuality) {
-      confidence = Math.min(98, Math.max(94, confidence + 20));
-      reasoning.push(`💎 INSTITUTIONAL GRADE A+: Triple-Verified Setup`);
-    } else if (isPerfectAlignment && m5_m15_aligned) {
-      confidence = Math.min(92, Math.max(88, confidence + 12));
-      reasoning.push(`✨ HIGH-QUALITY GRADE A: Multi-TF Alignment`);
-    }
-
-    // Macro "Impact" Awareness (News Logic)
-    const newsStatus = isNewsEventTime();
-    if (newsStatus.allowWithWarning) {
-      if (technicals.adx > 25 && !exhausted) {
-        confidence += 5;
-        reasoning.push(`📡 MACRO RECOVERY: Post-news institutional sweep detected`);
-      } else {
-        confidence -= 15;
-        reasoning.push(`⚠️ MACRO IMPACT: High volatility zone around ${newsStatus.event?.name}`);
-      }
-    }
-
-    // Institutional Pivot Logic
-    const pivots = detectPivotLevels(candles);
-    if (pivots.isNearPivot) {
-      const isReversal = (pivots.type === "SUPPORT" && signalType === "CALL") || (pivots.type === "RESISTANCE" && signalType === "PUT");
-      if (isReversal) {
-        confidence += 10;
-        reasoning.push(`🏛️ INSTITUTIONAL PIVOT: Bounce from major ${pivots.type} level`);
-      } else {
-        confidence -= 15;
-        reasoning.push(`⚠️ PIVOT DANGER: Approaching major ${pivots.type} - high reversal risk`);
-      }
-    }
-
-    // Volume Climax Filter
-    if (isVolumeClimax(candles)) {
-      confidence -= 20;
-      reasoning.push(`⚠️ VOLUME CLIMAX: Blow-off candle detected - trend may be exhausted`);
-    }
-
-    // AI Adaptive Thresholds
-    const dynamicMinConfidence = getAdaptiveThreshold(technicals);
-    if (confidence < dynamicMinConfidence && technicals.adx < 20) {
-      reasoning.push(`🧊 ADAPTIVE FILTER: Market too choppy for ${confidence}% setup (Required: ${dynamicMinConfidence}%)`);
-      // We don't return early here to allow the full analysis to complete, but the grade will be SKIPPED later
-    }
-
-    // The "Ghost" Trade Rebalancer: Dynamic Stake Sizing
-    // Fetch last 5 trades to determine "Ghost" win rate
-    const recentTrades = await storage.getTrades();
-    const last5 = recentTrades.slice(-5);
-    const ghostWinCount = last5.filter((t: any) => t.outcome === "WIN").length;
-    const ghostWinRate = last5.length > 0 ? (ghostWinCount / last5.length) * 100 : 100;
-
-    let stakeSizing = "MEDIUM";
-    if (ghostWinRate >= 80) {
-      stakeSizing = "HIGH";
-      reasoning.push(`🔥 REBALANCER: High performance streak - Sizing: HIGH`);
-    } else if (ghostWinRate <= 40) {
-      stakeSizing = "LOW";
-      reasoning.push(`🧊 REBALANCER: Cooling down after drawdown - Sizing: LOW`);
-    } else {
-      reasoning.push(`⚖️ REBALANCER: Balanced performance - Sizing: MEDIUM`);
-    }
-
-  const signalGrade = gradeSignal(technicals.adx, technicals.volatility, exhausted, signalType === "CALL" ? technicals.macd.histogram > 0 : technicals.macd.histogram < 0, technicals.supertrend.direction === (signalType === "CALL" ? "BULLISH" : "BEARISH"), htfAligned);
-  
-  // Define accuracy and minConfidence for the ghost trade logger
-  const pairAccuracyValue = getPairAccuracy(pair);
-  const minConfidenceThreshold = getMinConfidence(pair);
-
-  // Refined Grading Logic - move up before use
-  const finalGrade: "A" | "A-" | "B+" | "B" | "C" | "SKIPPED" = meetsAplusCriteria ? "A" : (tacticalGrade === "A-" ? "A-" : (tacticalGrade === "B+" ? "B+" : "SKIPPED"));
-
-  const analysisResult: SignalAnalysis = { 
-    pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: finalGrade, 
-    entry: 0, stopLoss: 0, takeProfit: 0,
-    technicals: {
-      rsi: technicals.rsi,
-      macd: technicals.macd,
-      sma20: technicals.sma20,
-      sma50: technicals.sma50,
-      sma200: technicals.sma200,
-      ema12: technicals.ema12,
-      ema26: technicals.ema26,
-      bollingerBands: technicals.bollingerBands,
-      stochastic: technicals.stochastic,
-      atr: technicals.atr,
-      adx: technicals.adx,
-      supertrend: technicals.supertrend,
-      candlePattern: technicals.candlePattern,
-      trend: technicals.supertrend.direction,
-      momentum: technicals.momentum,
-      volatility: technicals.volatility,
-      marketRegime: technicals.marketRegime
-    },
-    reasoning, ruleChecklist,
-    mlPatternScore, sentimentScore, mlConfidenceBoost,
-    stakeAdvice: {
-      recommendation: stakeSizing as "HIGH" | "MEDIUM" | "LOW",
-      reason: "Rebalancer logic applied",
-      size: stakeSizing === "HIGH" ? "2%" : stakeSizing === "MEDIUM" ? "1%" : "0.5%"
-    }
-  };
-
-  // ONLY DISPATCH A, A-, AND B+ GRADES
-  if (finalGrade !== "A" && finalGrade !== "A-" && finalGrade !== "B+") {
-    reasoning.push(`❌ GRADE ${finalGrade}: Below active trading requirements.`);
-    return { 
-      pair, 
-      currentPrice, 
-      signalType: signalTypeVal, 
-      confidence, 
-      signalGrade: "SKIPPED", 
-      entry: 0, 
-      stopLoss: 0, 
-      takeProfit: 0, 
-      technicals, 
-      reasoning, 
-      ruleChecklist, 
-      mlPatternScore,
-      sentimentScore,
-      mlConfidenceBoost
-    };
-  }
-
-  // Priority 1: The "Ghost" Trade Optimizer - log EVERYTHING for accuracy analysis
-  logTrade({
-    pair,
-    signalType: signalTypeVal,
-    entry: currentPrice,
-    stopLoss: 0,
-    takeProfit: 0,
-    confidence,
-    rsi: technicals.rsi,
-    stochastic: technicals.stochastic,
-    candlePattern: technicals.candlePattern,
-    htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT",
-    session: getCurrentSessionTime(),
-    pairAccuracy: pairAccuracyValue,
-    isGhost: false
-  });
-
-  // AGGRESSIVE: Balanced auto-dispatch requirements. B+ now only needs 70% confidence.
-  const dispatchThreshold = finalGrade === "A" ? 70 : 72;
-  
-  if (confidence < dispatchThreshold) {
-    reasoning.push(`⚠️ DISPATCH BLOCKED: Current grade (${finalGrade}) requires ${dispatchThreshold}%+ Confidence for Telegram auto-dispatch.`);
-    return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore };
-  }
-
-  // Final validation for signal quality
-  const isQualitySignal = ["A", "A-", "B+"].includes(finalGrade as string);
-  if (!isQualitySignal && (signalGrade === "SKIPPED" || Math.abs(mlScore) < 5)) {
-    const skipReason = Math.abs(mlScore) < 5 ? "ML NEUTRALITY" : "SUB-OPTIMAL GRADE";
-    reasoning.push(`❌ SKIPPED: ${skipReason}. Targeted 75%+ accuracy requires active A/B+ setups.`);
-    return { pair, currentPrice, signalType: signalTypeVal, confidence, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
-  }
-
-  // Prevent duplicate/conflicting signals in the same scan window
-  const activeSignals = sessionTracker.getStats().tradesWon + sessionTracker.getStats().tradesLost;
   updateSignalHistory(pair);
-
-  // ATR vs Spread "Dead Zone" Filter
-  const spreadVal = isJpyPair ? 0.02 : 0.00002;
-  const minAtrBuffer = spreadVal * 3; // Profit potential must be at least 3x the spread
-  if (atrVal < minAtrBuffer) {
-    reasoning.push(`⚠️ DEAD ZONE: Volatility too low relative to spread (ATR: ${atrVal.toFixed(5)})`);
-    ruleChecklist.volatilityFilter = false;
-    return { pair, currentPrice: 0, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost, stakeAdvice: { recommendation: "CAUTION", reason: "Dead zone", size: "0%" } };
-  }
-  ruleChecklist.volatilityFilter = true;
-
-  const slDistance = atrVal * volMultiplier;
-  const tpDistance = slDistance * 1.5; // 1:1.5 Risk/Reward
-
-  const entry = currentPrice;
-  const stopLoss = signalTypeVal === "CALL" ? entry - slDistance : entry + slDistance;
-  const takeProfit = signalTypeVal === "CALL" ? entry + tpDistance : entry - tpDistance;
-  const pipValue = isJpyPair ? 0.01 : 0.0001;
-  const atrPips = atrVal / pipValue;
-  const slPips = Math.max(atrPips * 1.5, 10); // Minimum 10 pips SL
-  const tpPips = slPips * 1.5; // Fixed 1:1.5 Risk/Reward
-
-  const stopLossFinal = signalTypeVal === "CALL" ? currentPrice - (slPips * pipValue) : currentPrice + (slPips * pipValue);
-  const takeProfitFinal = signalTypeVal === "CALL" ? currentPrice + (tpPips * pipValue) : currentPrice - (tpPips * pipValue);
-  
-  const riskReward = "1:1.5";
-  const confluenceScore = Math.min(95, confidence);
-  const scoreDiff = Math.abs(confidence - 65);
-  
-  reasoning.push(`Final Confluence: ${confluenceScore}% | Score diff: ${scoreDiff} | R/R: ${riskReward}`);
-
-  // ===== ML & SENTIMENT ANALYSIS =====
-  // Re-use previously computed mlPatternScore & sentimentScore from above
-  
-  // Calculate ML confidence boost
-  const patternBias = mlPatternScore.direction === m5Trend ? Math.abs(mlPatternScore.overallScore) / 10 : -Math.abs(mlPatternScore.overallScore) / 10;
-  const sentimentBias = (sentimentScore.overallSentiment > 0 && signalTypeVal === "CALL") || (sentimentScore.overallSentiment < 0 && signalTypeVal === "PUT") 
-    ? Math.abs(sentimentScore.overallSentiment) / 10 
-    : (sentimentScore.overallSentiment === 0 ? 0 : -5);
-  const finalMlConfidenceBoost = Math.round((patternBias + sentimentBias) / 2);
-  
-  // Add ML insights to reasoning
-  if (mlPatternScore.direction === m5Trend) {
-    reasoning.push(`✅ ML PATTERN: ${mlPatternScore.direction} (Score: ${mlPatternScore.overallScore})`);
-  } else {
-    reasoning.push(`⚠️ ML PATTERN DIVERGENCE: ${mlPatternScore.direction} vs Trend`);
-  }
-  reasoning.push(`📊 SENTIMENT: ${getSentimentExplanation(sentimentScore).split(" - ")[0]}`);
-  
-  // Apply ML boost to confidence
-  let finalConfidence = Math.min(98, Math.max(0, confidence + finalMlConfidenceBoost));
-  if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
-  reasoning.push(`Grade ${finalGrade} | Rule Set: ${ruleSetLabel} | ML Confidence: ${finalConfidence}%`);
-
-  // QUALITY GATE: Dynamic Confidence Floor
-  const minThreshold = getMinConfidence(pair);
-  if (finalConfidence < minThreshold) {
-    reasoning.push(`🚫 SIGNAL FILTERED: Confidence ${finalConfidence}% below ${pair} threshold (${minThreshold}%)`);
-    return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost, stakeAdvice: { recommendation: "CAUTION", reason: "Below threshold", size: "0%" } };
-  }
-
-  // Update cooldown only for successful dispatches
-  updateSignalHistory(pair);
-
-  const stakeAdvice = getStakeAdvice(finalConfidence, finalGrade, pair);
+  logTrade({ pair, signalType: signalTypeVal, entry: currentPrice, stopLoss, takeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
 
   return {
-    pair,
-    currentPrice,
-    signalType: signalTypeVal,
-    confidence: finalConfidence,
-    signalGrade: finalGrade,
-    entry: currentPrice,
-    stopLoss: stopLossFinal,
-    takeProfit: takeProfitFinal,
-    technicals,
-    reasoning: cleanReasoning,
-    ruleChecklist,
-    mlPatternScore,
-    sentimentScore,
-    mlConfidenceBoost,
-    stakeAdvice
+    pair, currentPrice, signalType: signalTypeVal, confidence: finalConfidence, signalGrade: finalGrade,
+    entry: currentPrice, stopLoss, takeProfit, technicals, reasoning: [meetsAplusCriteria ? "🚀 Institutional A+" : "⚡ Tactical"],
+    ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost,
+    stakeAdvice: getStakeAdvice(finalConfidence, finalGrade, pair)
   };
 }
-
-// Use refined version above
-/*
-export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
-  ...
-}
-*/
 
 export async function getAllQuotes(pairs: string[], apiKey?: string): Promise<ForexQuote[]> {
   return Promise.all(pairs.map(pair => getForexQuote(pair, apiKey)));

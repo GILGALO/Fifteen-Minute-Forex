@@ -18,7 +18,6 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
     if (!container) return;
 
     let mounted = true;
-
     container.innerHTML = '';
 
     const loadWidget = () => {
@@ -33,6 +32,7 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
         widgetContainer.style.cssText = 'height: 100%; width: 100%;';
 
         const widgetInner = document.createElement('div');
+        widgetInner.id = `tradingview_${symbol}_${Math.random().toString(36).substr(2, 9)}`;
         widgetInner.className = 'tradingview-widget-container__widget';
         widgetInner.style.cssText = 'height: 100%; width: 100%;';
         widgetContainer.appendChild(widgetInner);
@@ -55,7 +55,7 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
           hide_side_toolbar: false,
           hide_top_toolbar: false,
           save_image: true,
-          container_id: "tradingview_chart",
+          container_id: widgetInner.id,
           studies: [
             "RSI@tv-basicstudies",
             "MASimple@tv-basicstudies"
@@ -97,7 +97,7 @@ function TradingChart({ pair, theme = "dark" }: TradingChartProps) {
         container.innerHTML = '';
       }
     };
-  }, [symbol]);
+  }, [symbol, theme]); // Added theme to dependencies
 
   return (
     <Card className="glass-panel border-primary/40 h-full rounded-2xl overflow-hidden flex flex-col relative shadow-[0_0_50px_rgba(0,0,0,0.5)]" data-testid="card-trading-chart">
