@@ -509,7 +509,24 @@ function isVolumeClimax(candles: any[]): boolean {
 
 function getAdaptiveThreshold(technicals: any): number {
   const isChoppy = technicals.adx < 20 && Math.abs(technicals.rsi - 50) < 10;
-  return isChoppy ? 85 : 75;
+  const volatility = technicals.volatility;
+  // LOWER threshold in stable markets (M5 predictability)
+  if (volatility === "LOW" || (volatility === "MEDIUM" && !isChoppy)) {
+    return 72; // Reduced from 85/75 to unlock more frequent signals
+  }
+  return isChoppy ? 85 : 78;
+}
+
+function detectMeanReversion(technicals: TechnicalAnalysis, currentPrice: number): { isReversion: boolean; direction: "CALL" | "PUT" | null } {
+  const sma20 = technicals.sma20;
+  const deviation = Math.abs(currentPrice - sma20) / sma20;
+  const threshold = 0.0008; // 0.08% deviation for M5
+
+  if (deviation > threshold) {
+    if (currentPrice < sma20 && technicals.rsi < 25) return { isReversion: true, direction: "CALL" };
+    if (currentPrice > sma20 && technicals.rsi > 75) return { isReversion: true, direction: "PUT" };
+  }
+  return { isReversion: false, direction: null };
 }
 
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
@@ -561,7 +578,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const mlPatternScore = detectPatterns(candles);
   const mlScore = mlPatternScore.overallScore;
 
+  // GHOST FRONT-RUNNING: Detect "About to Align"
   const m5Trend = technicals.supertrend.direction;
+  const rsiApproaching = (m5Trend === "BULLISH" && technicals.rsi < 35) || (m5Trend === "BEARISH" && technicals.rsi > 65);
+  const macdApproaching = Math.abs(technicals.macd.histogram) < 0.00005;
+  const isFrontRunning = rsiApproaching && macdApproaching;
+
   const m15Trend = technicalsM15.supertrend.direction;
   const h1Trend = technicalsH1.supertrend.direction;
 
@@ -604,13 +626,14 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     const alignedCount = correlationResults.filter(r => r.direction === m5Trend).length;
     currencyStrength = (alignedCount / correlationResults.length) * 100;
 
-    if (alignedCount === correlationResults.length) { 
+    // CORRELATION CLUSTER PROMOTION
+    if (alignedCount >= correlationResults.length * 0.75) { 
       confidence += 15; 
-      reasoning.push(`💎 SHADOW CONFLUENCE: Global ${baseCurrency} Strength detected`); 
+      reasoning.push(`🧩 CLUSTER PROMOTION: ${alignedCount}/${correlationResults.length} pairs confirm direction`); 
       hasFullCorrelation = true;
     }
-    else if (alignedCount >= correlationResults.length * 0.6) { 
-      confidence += 8; 
+    else if (alignedCount >= correlationResults.length * 0.5) { 
+      confidence += 10; 
       reasoning.push(`📈 MARKET FLOW: Majority of ${baseCurrency} pairs aligned`); 
     }
     else { 
@@ -641,9 +664,21 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const rsiValueLocal = technicals.rsi;
   const meetsAplusCriteria = hasMLConsensus && htfAligned && (m5Trend === "BULLISH" ? rsiValueLocal <= 88 : rsiValueLocal >= 12);
 
+  // MEAN REVERSION MODULE (The "Dip" Entry)
+  const meanReversion = detectMeanReversion(technicals, currentPrice);
+  if (meanReversion.isReversion && meanReversion.direction === signalTypeVal) {
+    confidence += 12;
+    reasoning.push(`🧲 MEAN REVERSION: Catching extreme deviation pullback`);
+  }
+
   // Final Grade and Dispatch Logic
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   
+  if (isFrontRunning) {
+    confidence += 10;
+    reasoning.push(`👻 GHOST FRONT-RUNNING: Early alignment detected - prioritizing entry`);
+  }
+
   // Clean reasoning for the user - only show high-level outcome
   const cleanReasoning: string[] = [];
   if (meetsAplusCriteria) {
@@ -664,7 +699,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     return { 
       pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", 
       entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning, ruleChecklist,
-      mlPatternScore
+      mlPatternScore, sentimentScore, mlConfidenceBoost,
+      stakeAdvice: { recommendation: "CAUTION", reason: "Neutral ML Score", size: "0%" }
     };
   }
   
@@ -952,18 +988,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const activeSignals = sessionTracker.getStats().tradesWon + sessionTracker.getStats().tradesLost;
   updateSignalHistory(pair);
 
-  // ATR-based Dynamic SL/TP and Volatility Filter
-  const atrVal = technicals.atr;
-  const isJpyPair = pair.includes("JPY");
-  const volMultiplier = isJpyPair ? 1.5 : 2.0;
-  
   // ATR vs Spread "Dead Zone" Filter
   const spreadVal = isJpyPair ? 0.02 : 0.00002;
   const minAtrBuffer = spreadVal * 3; // Profit potential must be at least 3x the spread
   if (atrVal < minAtrBuffer) {
     reasoning.push(`⚠️ DEAD ZONE: Volatility too low relative to spread (ATR: ${atrVal.toFixed(5)})`);
     ruleChecklist.volatilityFilter = false;
-    return { pair, currentPrice: 0, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
+    return { pair, currentPrice: 0, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost, stakeAdvice: { recommendation: "CAUTION", reason: "Dead zone", size: "0%" } };
   }
   ruleChecklist.volatilityFilter = true;
 
@@ -992,7 +1023,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   
   // Calculate ML confidence boost
   const patternBias = mlPatternScore.direction === m5Trend ? Math.abs(mlPatternScore.overallScore) / 10 : -Math.abs(mlPatternScore.overallScore) / 10;
-  const sentimentBias = (sentimentScore.overallSentiment > 0 && signalType === "CALL") || (sentimentScore.overallSentiment < 0 && signalType === "PUT") 
+  const sentimentBias = (sentimentScore.overallSentiment > 0 && signalTypeVal === "CALL") || (sentimentScore.overallSentiment < 0 && signalTypeVal === "PUT") 
     ? Math.abs(sentimentScore.overallSentiment) / 10 
     : (sentimentScore.overallSentiment === 0 ? 0 : -5);
   const finalMlConfidenceBoost = Math.round((patternBias + sentimentBias) / 2);
@@ -1008,13 +1039,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   // Apply ML boost to confidence
   let finalConfidence = Math.min(98, Math.max(0, confidence + finalMlConfidenceBoost));
   if (finalConfidence < sessionThreshold) finalConfidence = Math.max(sessionThreshold - 5, finalConfidence);
-  reasoning.push(`Grade ${signalGrade} | Rule Set: ${ruleSetLabel} | ML Confidence: ${finalConfidence}%`);
+  reasoning.push(`Grade ${finalGrade} | Rule Set: ${ruleSetLabel} | ML Confidence: ${finalConfidence}%`);
 
   // QUALITY GATE: Dynamic Confidence Floor
   const minThreshold = getMinConfidence(pair);
   if (finalConfidence < minThreshold) {
     reasoning.push(`🚫 SIGNAL FILTERED: Confidence ${finalConfidence}% below ${pair} threshold (${minThreshold}%)`);
-    return { pair, currentPrice, signalType, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist };
+    return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: currentPrice, takeProfit: currentPrice, technicals, reasoning, ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost, stakeAdvice: { recommendation: "CAUTION", reason: "Below threshold", size: "0%" } };
   }
 
   // Update cooldown only for successful dispatches
@@ -1025,7 +1056,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   return {
     pair,
     currentPrice,
-    signalType,
+    signalType: signalTypeVal,
     confidence: finalConfidence,
     signalGrade: finalGrade,
     entry: currentPrice,
