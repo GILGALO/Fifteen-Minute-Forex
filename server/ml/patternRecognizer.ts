@@ -45,11 +45,11 @@ export function detectPatterns(candles: CandleData[]): PatternScore {
   };
 
   // Calculate weighted overall score
-  const overallScore = Object.values(scores).reduce((a, b) => a + b, 0) / 4; // Increased sensitivity by reducing divisor
+  const overallScore = Object.values(scores).reduce((a, b) => a + b, 0) / 3.5; // Optimized sensitivity
   const direction =
-    overallScore > 5 // Lowered from 10
+    overallScore > 8 // Slightly tighter for better accuracy
       ? "BULLISH"
-      : overallScore < -5 // Lowered from -10
+      : overallScore < -8
         ? "BEARISH"
         : "NEUTRAL";
 
@@ -184,9 +184,10 @@ function detectThreeSoldiers(candles: CandleData[]): number {
     c3.close > c2.close &&
     c2.open > c1.open &&
     c3.open > c2.open &&
-    getBodySize(c3) > getBodySize(c1) // Added momentum check
+    getBodySize(c3) > getBodySize(c1) &&
+    getWickSize(c3) < getBodySize(c3) * 0.3 // Tight wick for higher accuracy
   ) {
-    return 75; // Increased score
+    return 85; 
   }
   return 0;
 }
@@ -205,9 +206,10 @@ function detectThreeCrows(candles: CandleData[]): number {
     c3.close < c2.close &&
     c2.open < c1.open &&
     c3.open < c2.open &&
-    getBodySize(c3) > getBodySize(c1) // Added momentum check
+    getBodySize(c3) > getBodySize(c1) &&
+    getWickSize(c3) < getBodySize(c3) * 0.3 // Tight wick for higher accuracy
   ) {
-    return -75; // Increased score
+    return -85; 
   }
   return 0;
 }

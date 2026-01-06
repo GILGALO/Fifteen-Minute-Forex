@@ -447,21 +447,21 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  // BALANCED: Lowered to increase signal frequency while maintaining base quality
-  if (accuracy === "HIGH") return 75; 
-  if (accuracy === "MEDIUM") return 78;
-  return 82;
+  // OPTIMIZED: Slightly increased thresholds for higher accuracy signals
+  if (accuracy === "HIGH") return 80; 
+  if (accuracy === "MEDIUM") return 82;
+  return 85;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
   // A+ Setup (Institutional Powerhouse)
-  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 28) return "A";
 
   // A- Setup (High Quality)
-  if (htfAligned && Math.abs(mlScore) >= 30 && adx >= 20) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 40 && adx >= 22) return "A-";
 
-  // B+ Setup (RE-ENABLED - Active Trend Follower)
-  if (htfAligned && Math.abs(mlScore) >= 15) return "B+";
+  // B+ Setup (Optimized Trend Follower)
+  if (htfAligned && Math.abs(mlScore) >= 25 && adx >= 18) return "B+";
 
   return "SKIPPED";
 }
