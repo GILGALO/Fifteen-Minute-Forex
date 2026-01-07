@@ -453,15 +453,15 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 85; 
-  if (accuracy === "MEDIUM") return 88;
-  return 90;
+  if (accuracy === "HIGH") return 80; 
+  if (accuracy === "MEDIUM") return 82;
+  return 85;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  if (htfAligned && Math.abs(mlScore) >= 75 && adx >= 25) return "A";
-  if (htfAligned && Math.abs(mlScore) >= 55 && adx >= 20) return "A-";
-  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 15) return "B+";
+  if (Math.abs(mlScore) >= 75 && adx >= 25) return "A";
+  if (Math.abs(mlScore) >= 55 && adx >= 20) return "A-";
+  if (Math.abs(mlScore) >= 35 && adx >= 15) return "B+";
   return "SKIPPED";
 }
 
@@ -517,44 +517,44 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const priceChange = ((currentPrice - prevPrice) / prevPrice) * 100;
   
   // Dynamic frequency scaling: slightly more relaxed during high-quality market conditions
-  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 20 && technicalsH1.adx > 15;
+  const htfAligned = m5Trend === h1Trend || m5Trend === m15Trend;
   
   // Volume and Price Change Filters
   const hasVolume = technicals.atr > 0;
-  const isMoving = Math.abs(priceChange) > 0.001; // Minimum price movement filter
+  const isMoving = Math.abs(priceChange) > 0.0005; // More relaxed price movement filter
   
-  // High-Accuracy Filter: Only allow trades if H1 and M15 both confirm the direction
-  const isInstitutionalSetup = htfAligned && technicals.adx > 18 && technicalsH1.adx > 12 && hasVolume && isMoving;
+  // High-Accuracy Filter: Optimized for better frequency
+  const isInstitutionalSetup = (htfAligned || Math.abs(mlScore) > 20) && technicals.adx > 15 && hasVolume && isMoving;
   
   ruleChecklist.htfAlignment = htfAligned;
-  ruleChecklist.momentumSafety = technicals.adx > 18 && Math.abs(technicals.rsi - 50) > 3;
+  ruleChecklist.momentumSafety = technicals.adx > 15 && Math.abs(technicals.rsi - 50) > 2;
 
   // Refined confidence calculation for absolute accuracy
-  let baseConfidence = 45;
-  if (htfAligned) baseConfidence += 25; // Balanced weight
+  let baseConfidence = 50;
+  if (htfAligned) baseConfidence += 20; 
   if (technicals.supertrend.direction === (signalTypeVal === "CALL" ? "BULLISH" : "BEARISH")) baseConfidence += 10;
   if (Math.abs(mlScore) > 10) baseConfidence += 15;
   if (isMoving) baseConfidence += 5;
   
   // Adaptive overextension penalty (less aggressive to allow more signals)
-  if (signalTypeVal === "CALL" && (technicals.rsi > 85 || technicals.stochastic.k > 90)) baseConfidence -= 25;
-  if (signalTypeVal === "PUT" && (technicals.rsi < 15 || technicals.stochastic.k < 10)) baseConfidence -= 25;
+  if (signalTypeVal === "CALL" && (technicals.rsi > 90 || technicals.stochastic.k > 95)) baseConfidence -= 15;
+  if (signalTypeVal === "PUT" && (technicals.rsi < 10 || technicals.stochastic.k < 5)) baseConfidence -= 15;
 
   const finalConfidence = Math.min(98, Math.max(0, baseConfidence + mlConfidenceBoost));
   const finalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
 
   // LOG ALL POTENTIAL WINNERS: If it would be a signal but for cooldown or low confidence, log it as GHOST
   if (finalConfidence < getMinConfidence(pair) || isPairInCooldown(pair)) {
-    if (finalConfidence >= 75) {
+    if (finalConfidence >= 70) {
       log(`[GHOST-WIN] ${pair} ${signalTypeVal} at ${finalConfidence}% - Reason: ${isPairInCooldown(pair) ? "COOLDOWN" : "LOW_CONF"}`, "auto-scan");
     }
   }
 
-  // Prevent over-trading: Max 3 active signals at once across all pairs
+  // Prevent over-trading: Max 5 active signals at once across all pairs
   const activeSignals = await (storage as any).getSignals();
   const openSignals = activeSignals.filter((s: any) => s.status === "ACTIVE" || s.status === "active");
-  if (openSignals.length >= 3) {
-    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: ["🛑 MAX ACTIVE SIGNALS (3) REACHED"], ruleChecklist };
+  if (openSignals.length >= 5) {
+    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: ["🛑 MAX ACTIVE SIGNALS (5) REACHED"], ruleChecklist };
   }
 
   // Accurate SL/TP based on volatility
@@ -563,15 +563,15 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const calculatedStopLoss = signalTypeVal === "CALL" ? entry - (atrPips * 1.5) : entry + (atrPips * 1.5);
   const calculatedTakeProfit = signalTypeVal === "CALL" ? entry + (atrPips * 2.5) : entry - (atrPips * 2.5);
 
-  const isPassable = isInstitutionalSetup && finalConfidence >= 80;
+  const isPassable = (isInstitutionalSetup || finalConfidence >= 85) && finalConfidence >= 75;
   
   if (!isPassable) {
     let reason = "❌ NO CONSENSUS";
-    if (!isInstitutionalSetup) {
-      if (!htfAligned) reason = "❌ NO HTF ALIGNMENT";
+    if (!isInstitutionalSetup && finalConfidence < 85) {
+      if (!htfAligned && Math.abs(mlScore) <= 20) reason = "❌ NO HTF ALIGNMENT";
       else if (!isMoving) reason = "💤 LOW VOLATILITY";
       else reason = "❌ INSTITUTIONAL REJECTION";
-    } else if (finalConfidence < 80) {
+    } else if (finalConfidence < 75) {
       reason = `🚫 LOW ACCURACY (${finalConfidence}%)`;
     }
     return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: [reason], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
