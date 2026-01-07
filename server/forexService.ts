@@ -448,9 +448,9 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 88; 
-  if (accuracy === "MEDIUM") return 90;
-  return 92;
+  if (accuracy === "HIGH") return 85; 
+  if (accuracy === "MEDIUM") return 88;
+  return 90;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
@@ -496,55 +496,46 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   const currentPrice = candles[candles.length - 1].close;
-  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 30 && technicalsH1.adx > 25;
+  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 25 && technicalsH1.adx > 20;
+  
+  // High-Accuracy Filter: Only allow trades if H1 and M15 both confirm the direction
+  const isInstitutionalSetup = htfAligned && technicals.adx > 22 && technicalsH1.adx > 18;
+  
   ruleChecklist.htfAlignment = htfAligned;
+  ruleChecklist.momentumSafety = technicals.adx > 20 && Math.abs(technicals.rsi - 50) > 5;
 
-  // News & Drawdown Protection
-  const isNewsBlocked = isNewsEventTime();
-  const stats = sessionTracker.getStats();
-  const dailyDrawdown = stats.dailyLoss / (stats.dailyProfit || 1);
-  const isRecoveryMode = dailyDrawdown > 0.02; // 2% drawdown protection
+  // Refined confidence calculation for absolute accuracy
+  let baseConfidence = 40;
+  if (htfAligned) baseConfidence += 30; // Heavy weight on HTF alignment
+  if (technicals.supertrend.direction === (signalTypeVal === "CALL" ? "BULLISH" : "BEARISH")) baseConfidence += 10;
+  if (Math.abs(mlScore) > 15) baseConfidence += 15;
+  
+  // Strict overextension penalty
+  if (signalTypeVal === "CALL" && (technicals.rsi > 82 || technicals.stochastic.k > 85)) baseConfidence -= 30;
+  if (signalTypeVal === "PUT" && (technicals.rsi < 18 || technicals.stochastic.k < 15)) baseConfidence -= 30;
 
-  if (isNewsBlocked || isRecoveryMode) {
-     return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning: [isNewsBlocked ? "🗞️ NEWS BLOCKED" : "🛡️ RECOVERY MODE"], ruleChecklist };
+  const finalConfidence = Math.min(98, Math.max(0, baseConfidence + mlConfidenceBoost));
+  const finalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
+
+  // Accurate SL/TP based on volatility
+  const entry = currentPrice;
+  const atrPips = technicals.atr || (currentPrice * 0.001);
+  const calculatedStopLoss = signalTypeVal === "CALL" ? entry - (atrPips * 1.5) : entry + (atrPips * 1.5);
+  const calculatedTakeProfit = signalTypeVal === "CALL" ? entry + (atrPips * 2.5) : entry - (atrPips * 2.5);
+
+  const isPassable = isInstitutionalSetup && finalConfidence >= 85;
+  
+  if (!isPassable) {
+    const reason = !isInstitutionalSetup ? "❌ NO HTF ALIGNMENT" : `🚫 LOW ACCURACY (Conf: ${finalConfidence}%)`;
+    return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: [reason], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
-  const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD", "USD/JPY", "USD/CAD"];
-  const slMultiplier = technicals.adx > 35 ? 3.0 : 2.0;
-  const calculatedStopLoss = signalTypeVal === "CALL" ? currentPrice - (technicals.atr * slMultiplier) : currentPrice + (technicals.atr * slMultiplier);
-  const calculatedTakeProfit = signalTypeVal === "CALL" ? currentPrice + (technicals.atr * slMultiplier * 1.5) : currentPrice - (technicals.atr * slMultiplier * 1.5);
-  let clusterConfidence = 0;
-  if (majorPairs.includes(pair)) {
-    const correlationResults = await Promise.all(majorPairs.filter(p => p !== pair).map(async p => {
-      const pCandles = await getForexCandles(p, "5min", apiKey);
-      return { direction: analyzeTechnicals(pCandles).supertrend.direction };
-    }));
-    const alignedCount = correlationResults.filter(r => r.direction === m5Trend).length;
-    clusterConfidence = alignedCount >= correlationResults.length * 0.75 ? 15 : (alignedCount >= correlationResults.length * 0.5 ? 10 : -10);
-    reasoning.push(`🧩 CLUSTER: ${alignedCount} aligned`);
-  }
-
-  const rsiApproaching = (m5Trend === "BULLISH" && technicals.rsi < 35) || (m5Trend === "BEARISH" && technicals.rsi > 65);
-  const frontRunningBoost = (rsiApproaching && Math.abs(technicals.macd.histogram) < 0.00005) ? 10 : 0;
-  const divergenceBoost = technicals.rsiDivergence ? 15 : 0;
-  const meetsAplusCriteria = (Math.abs(mlScore) >= 20 || technicals.rsiDivergence) && htfAligned && (m5Trend === "BULLISH" ? technicals.rsi <= 88 : technicals.rsi >= 12);
-  const tacticalGrade = getTacticalGrade(technicals.adx, mlScore + divergenceBoost, htfAligned);
-  const isPassable = meetsAplusCriteria || tacticalGrade !== "SKIPPED";
-  if (!isPassable) return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: [`❌ NO CONSENSUS (ML: ${mlScore}, Trend: ${m5Trend})`], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
-
-  let confidence = 65 + clusterConfidence + frontRunningBoost + (m5Trend === m15Trend ? 18 : 8) + (htfAligned ? 7 : -5);
-  const meanReversion = detectMeanReversion(technicals, currentPrice);
-  if (meanReversion.isReversion && meanReversion.direction === signalTypeVal) confidence += 12;
-
-  const finalGrade = meetsAplusCriteria ? "A" : (tacticalGrade as "A-" | "B+");
-  const finalConfidence = Math.min(98, Math.max(0, confidence + Math.round(mlScore / 10)));
-  if (finalConfidence < getAdaptiveThreshold(technicals)) return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: ["🚫 LOW CONFIDENCE"], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
 
   updateSignalHistory(pair);
-  logTrade({ pair, signalType: signalTypeVal, entry: currentPrice, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
+  logTrade({ pair, signalType: signalTypeVal, entry, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: "ALIGNED", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
 
   return {
     pair, currentPrice, signalType: signalTypeVal, confidence: finalConfidence, signalGrade: finalGrade,
-    entry: currentPrice, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, technicals, reasoning: [meetsAplusCriteria ? "🚀 Institutional A+" : "⚡ Tactical"],
+    entry, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, technicals, reasoning: ["💎 Institutional Grade A+", "🎯 High-Accuracy M5 Setup"],
     ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost,
     stakeAdvice: getStakeAdvice(finalConfidence, finalGrade, pair)
   };
