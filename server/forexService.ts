@@ -448,15 +448,15 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 88; 
-  if (accuracy === "MEDIUM") return 92;
-  return 94;
+  if (accuracy === "HIGH") return 92; 
+  if (accuracy === "MEDIUM") return 94;
+  return 96;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  if (htfAligned && Math.abs(mlScore) >= 75 && adx >= 32) return "A";
-  if (htfAligned && Math.abs(mlScore) >= 55 && adx >= 25) return "A-";
-  if (htfAligned && Math.abs(mlScore) >= 40 && adx >= 20) return "B+";
+  if (htfAligned && Math.abs(mlScore) >= 85 && adx >= 35) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 65 && adx >= 28) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 45 && adx >= 22) return "B+";
   return "SKIPPED";
 }
 
@@ -496,9 +496,18 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   const currentPrice = candles[candles.length - 1].close;
-  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 25;
+  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 30 && technicalsH1.adx > 25;
   ruleChecklist.htfAlignment = htfAligned;
 
+  // News & Drawdown Protection
+  const isNewsBlocked = isNewsEventTime();
+  const dailyDrawdown = sessionTracker.getStats().dailyLoss / (sessionTracker.getStats().dailyProfit || 1);
+  const isRecoveryMode = dailyDrawdown > 0.02; // 2% drawdown protection
+
+  if (isNewsBlocked || isRecoveryMode) {
+     return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning: [isNewsBlocked ? "🗞️ NEWS BLOCKED" : "🛡️ RECOVERY MODE"], ruleChecklist };
+  }
+  const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD", "USD/JPY", "USD/CAD"];
   const pip = pair.includes("JPY") ? 0.01 : 0.0001;
   const slMultiplier = technicals.adx > 35 ? 3.0 : 2.0;
   const stopLoss = signalTypeVal === "CALL" ? currentPrice - (technicals.atr * slMultiplier) : currentPrice + (technicals.atr * slMultiplier);
