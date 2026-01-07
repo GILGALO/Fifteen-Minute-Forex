@@ -86,10 +86,14 @@ function getPairAccuracy(pair: string): PairAccuracy {
 }
 
 function getSessionForPair(pair: string, hour: number): string | null {
-  if (hour >= 7 && hour < 12) return SESSION_PAIRS.ASIAN.includes(pair) ? "ASIAN" : null;
-  if (hour >= 12 && hour < 17) return SESSION_PAIRS.LONDON.includes(pair) ? "LONDON" : null;
-  if (hour >= 18 && hour < 23) return SESSION_PAIRS.NEW_YORK.includes(pair) ? "NEW_YORK" : null;
-  if (hour >= 15 && hour < 18) return SESSION_PAIRS.LONDON_NY_OVERLAP.includes(pair) ? "OVERLAP" : null;
+  // All-session accessibility: Pairs are now available across all timeframes 
+  // but still tagged with their primary volatility session
+  if (hour >= 0 && hour < 24) {
+    if (SESSION_PAIRS.ASIAN.includes(pair)) return "ASIAN";
+    if (SESSION_PAIRS.LONDON.includes(pair)) return "LONDON";
+    if (SESSION_PAIRS.NEW_YORK.includes(pair)) return "NEW_YORK";
+    return "GLOBAL";
+  }
   return null;
 }
 
@@ -483,7 +487,7 @@ function detectMeanReversion(technicals: TechnicalAnalysis, currentPrice: number
 
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
   const { isOpen, nextAction } = isMarketOpen();
-  const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: false, marketRegime: false, trendExhaustion: true };
+  const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: true, marketRegime: false, trendExhaustion: true };
   const reasoning: string[] = [];
   if (!isOpen) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`🛑 MARKET CLOSED: ${nextAction}`], ruleChecklist };
   if (isPairInCooldown(pair)) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`⏳ COOL-DOWN`], ruleChecklist };
