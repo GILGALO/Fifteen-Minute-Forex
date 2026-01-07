@@ -448,15 +448,15 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 92; 
-  if (accuracy === "MEDIUM") return 94;
-  return 96;
+  if (accuracy === "HIGH") return 88; 
+  if (accuracy === "MEDIUM") return 90;
+  return 92;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  if (htfAligned && Math.abs(mlScore) >= 85 && adx >= 35) return "A";
-  if (htfAligned && Math.abs(mlScore) >= 65 && adx >= 28) return "A-";
-  if (htfAligned && Math.abs(mlScore) >= 45 && adx >= 22) return "B+";
+  if (htfAligned && Math.abs(mlScore) >= 75 && adx >= 25) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 55 && adx >= 20) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 15) return "B+";
   return "SKIPPED";
 }
 

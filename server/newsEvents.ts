@@ -42,7 +42,7 @@ export function isNewsEventTime(timeUTC: number = Date.now()): { blocked: boolea
       const remainingMinutes = eventEnd - minutesFromMidnight;
       // If we are in the "after" period of the news (0 to blockMinutes after event)
       const isPostEvent = minutesFromMidnight >= event.timeUTC;
-      return { blocked: false, event, remainingMinutes, allowWithWarning: true, isPostEvent };
+      return { blocked: true, event, remainingMinutes, allowWithWarning: false, isPostEvent };
     }
   }
 
