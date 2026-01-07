@@ -42,6 +42,8 @@ app.use(
   }),
 );
 
+export const logHistory: string[] = [];
+
 export function log(message: string, source = "app") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
     hour: "numeric",
@@ -52,6 +54,9 @@ export function log(message: string, source = "app") {
 
   const logMessage = `${formattedTime} [${source}] ${message}`;
   console.log(logMessage);
+  
+  logHistory.push(logMessage);
+  if (logHistory.length > 500) logHistory.shift();
 
   // Highlight important filter and verification messages
   if (source === "signal-filter" || source === "signal-verified" || source === "signal-partial") {
