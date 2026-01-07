@@ -551,8 +551,8 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   }
 
   // Prevent over-trading: Max 3 active signals at once across all pairs
-  const activeSignals = await storage.getSignals();
-  const openSignals = activeSignals.filter(s => s.status === "ACTIVE");
+  const activeSignals = await (storage as any).getSignals();
+  const openSignals = activeSignals.filter((s: any) => s.status === "ACTIVE" || s.status === "active");
   if (openSignals.length >= 3) {
     return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: ["🛑 MAX ACTIVE SIGNALS (3) REACHED"], ruleChecklist };
   }
