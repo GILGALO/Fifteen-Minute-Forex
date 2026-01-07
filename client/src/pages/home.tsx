@@ -392,111 +392,91 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
-          <div className="lg:col-span-12 space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-              <div className="xl:col-span-8">
-                <ErrorBoundary>
-                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                    <TradingChart pair={activePair} theme={theme} />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-              <div className="xl:col-span-4">
-                <ErrorBoundary>
-                  <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                    <RecentSignals signals={signals} />
-                  </Suspense>
-                </ErrorBoundary>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 md:gap-8">
-          <div className="lg:col-span-12 space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 gap-6 mt-6">
-              <ErrorBoundary>
-                <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-                  <Card className="glass-panel border-white/10 overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <Activity className="w-5 h-5 text-emerald-400" />
-                          <h3 className="text-lg font-black uppercase tracking-widest">Trade History</h3>
-                        </div>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                          <thead>
-                            <tr className="border-b border-white/5">
-                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Pair</th>
-                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Type</th>
-                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Time</th>
-                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                              <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Result</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white/5">
-                            {signals.filter(s => s.status !== 'active').length === 0 ? (
-                              <tr>
-                                <td colSpan={5} className="py-8 text-center text-slate-500 text-xs font-bold uppercase tracking-widest">
-                                  No trades in current session
-                                </td>
-                              </tr>
-                            ) : (
-                              signals.filter(s => s.status !== 'active').map((trade) => (
-                                <tr key={trade.id} className="group hover:bg-white/[0.02] transition-colors">
-                                  <td className="py-4 font-black text-xs text-slate-200">{trade.pair}</td>
-                                  <td className="py-4 font-black text-xs">
-                                    <span className={trade.type === 'CALL' ? 'text-emerald-400' : 'text-rose-400'}>
-                                      {trade.type}
-                                    </span>
-                                  </td>
-                                  <td className="py-4 text-xs text-slate-400 font-mono">{trade.startTime}</td>
-                                  <td className="py-4 uppercase tracking-tighter text-[10px] font-black text-slate-500">
-                                    Completed
-                                  </td>
-                                  <td className="py-4">
-                                    <span className={`text-[10px] font-black uppercase px-2 py-1 rounded ${
-                                      trade.status === 'won' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
-                                    }`}>
-                                      {trade.status}
-                                    </span>
-                                  </td>
-                                </tr>
-                              ))
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Suspense>
-              </ErrorBoundary>
-            </div>
-          </div>
-
-          <div className="lg:col-span-5 xl:col-span-4 space-y-4 sm:space-y-6">
-            <ErrorBoundary>
-              <Suspense fallback={<Skeleton className="h-48 w-full" />}>
-                <PriceAlerts currentQuotes={quotesData?.quotes || []} />
-              </Suspense>
-            </ErrorBoundary>
+          <div className="lg:col-span-4 space-y-4 sm:space-y-6">
             <ErrorBoundary>
               <Suspense fallback={<Skeleton className="h-96 w-full" />}>
                 <SignalGenerator onSignalGenerated={handleSignalGenerated} onPairChange={setActivePair} />
               </Suspense>
             </ErrorBoundary>
+            <ErrorBoundary>
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <RecentSignals signals={signals} />
+              </Suspense>
+            </ErrorBoundary>
+            <ErrorBoundary>
+              <Suspense fallback={<Skeleton className="h-48 w-full" />}>
+                <PriceAlerts currentQuotes={quotesData?.quotes || []} />
+              </Suspense>
+            </ErrorBoundary>
           </div>
 
-          <div className="lg:col-span-7 xl:col-span-8">
-            <div className="h-[650px] lg:h-[700px] xl:h-[750px] sticky top-4">
+          <div className="lg:col-span-8 space-y-4 sm:space-y-6">
+            <div className="h-[500px] lg:h-[600px]">
               <ErrorBoundary fallback={<Skeleton className="h-full w-full" />}>
-                <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <Suspense fallback={<Skeleton className="h-full w-full" />}>
                   <TradingChart pair={activePair} theme={theme} />
                 </Suspense>
               </ErrorBoundary>
             </div>
+
+            <ErrorBoundary>
+              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+                <Card className="glass-panel border-white/10 overflow-hidden">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <div className="flex items-center gap-3">
+                        <Activity className="w-5 h-5 text-emerald-400" />
+                        <h3 className="text-lg font-black uppercase tracking-widest">Trade History</h3>
+                      </div>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left">
+                        <thead>
+                          <tr className="border-b border-white/5">
+                            <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Pair</th>
+                            <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Type</th>
+                            <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Time</th>
+                            <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
+                            <th className="pb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Result</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {signals.filter(s => s.status !== 'active').length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="py-8 text-center text-slate-500 text-xs font-bold uppercase tracking-widest">
+                                No trades in current session
+                              </td>
+                            </tr>
+                          ) : (
+                            signals.filter(s => s.status !== 'active').map((trade) => (
+                              <tr key={trade.id} className="group hover:bg-white/[0.02] transition-colors">
+                                <td className="py-4 font-black text-xs text-slate-200">{trade.pair}</td>
+                                <td className="py-4 font-black text-xs">
+                                  <span className={trade.type === 'CALL' ? 'text-emerald-400' : 'text-rose-400'}>
+                                    {trade.type}
+                                  </span>
+                                </td>
+                                <td className="py-4 text-xs text-slate-400 font-mono">{trade.startTime}</td>
+                                <td className="py-4 uppercase tracking-tighter text-[10px] font-black text-slate-500">
+                                  Completed
+                                </td>
+                                <td className="py-4">
+                                  <span className={`text-[10px] font-black uppercase px-2 py-1 rounded ${
+                                    trade.status === 'won' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+                                  }`}>
+                                    {trade.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              </Suspense>
+            </ErrorBoundary>
           </div>
         </div>
       </main>
