@@ -138,7 +138,12 @@ export async function sendToTelegram(
     let message = `🚀 <b>GILGALO PRO SIGNAL</b> 🤖\n`;
     message += `━━━━━━━━━━━━━━━━━━━━━\n\n`;
     message += `📊 Pair: <b>${signal.pair}</b>\n`;
-    message += `🟢 Action: <b>${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}</b>\n\n`;
+    message += `🟢 Action: <b>${signal.type === "CALL" ? "BUY/CALL 📈" : "SELL/PUT 📉"}</b>\n`;
+    message += `🎯 Confidence: <b>${signal.confidence}% ${confidenceEmoji}</b>\n`;
+    if (analysis?.signalGrade) {
+      message += `🏆 Grade: <b>${analysis.signalGrade}</b>\n`;
+    }
+    message += `\n`;
 
     if (analysis?.stakeAdvice) {
       const stake = analysis.stakeAdvice;
