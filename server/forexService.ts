@@ -443,7 +443,8 @@ const COOLDOWN_PERIOD = 10 * 60 * 1000;
 function isPairInCooldown(pair: string): boolean {
   const lastSignal = signalHistory.get(pair);
   if (!lastSignal) return false;
-  return Date.now() - lastSignal < COOLDOWN_PERIOD;
+  // Reduced cooldown to 3 minutes to allow catching consecutive high-quality moves
+  return Date.now() - lastSignal < 180000;
 }
 
 function updateSignalHistory(pair: string) {
@@ -541,6 +542,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const finalConfidence = Math.min(98, Math.max(0, baseConfidence + mlConfidenceBoost));
   const finalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
+
+  // LOG ALL POTENTIAL WINNERS: If it would be a signal but for cooldown or low confidence, log it as GHOST
+  if (finalConfidence < getMinConfidence(pair) || isPairInCooldown(pair)) {
+    if (finalConfidence >= 75) {
+      log(`[GHOST-WIN] ${pair} ${signalTypeVal} at ${finalConfidence}% - Reason: ${isPairInCooldown(pair) ? "COOLDOWN" : "LOW_CONF"}`, "auto-scan");
+    }
+  }
 
   // Accurate SL/TP based on volatility
   const entry = currentPrice;
