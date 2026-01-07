@@ -410,7 +410,7 @@ export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
 }
 
 const signalHistory: Map<string, number> = new Map();
-const COOLDOWN_PERIOD = 15 * 60 * 1000;
+const COOLDOWN_PERIOD = 10 * 60 * 1000;
 
 function isPairInCooldown(pair: string): boolean {
   const lastSignal = signalHistory.get(pair);
@@ -424,15 +424,15 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 80; 
-  if (accuracy === "MEDIUM") return 82;
-  return 85;
+  if (accuracy === "HIGH") return 78; 
+  if (accuracy === "MEDIUM") return 80;
+  return 82;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  if (htfAligned && Math.abs(mlScore) >= 60 && adx >= 28) return "A";
-  if (htfAligned && Math.abs(mlScore) >= 40 && adx >= 22) return "A-";
-  if (htfAligned && Math.abs(mlScore) >= 25 && adx >= 18) return "B+";
+  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 20) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 20 && adx >= 15) return "B+";
   return "SKIPPED";
 }
 
@@ -468,7 +468,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const [candles, candlesM15, candlesH1] = await Promise.all([getForexCandles(pair, "5min", apiKey), getForexCandles(pair, "15min", apiKey), getForexCandles(pair, "60min", apiKey)]);
   const technicals = analyzeTechnicals(candles), technicalsM15 = analyzeTechnicals(candlesM15), technicalsH1 = analyzeTechnicals(candlesH1);
   const mlPatternScore = detectPatterns(candles), sentimentScore = analyzeSentiment(technicals), mlScore = mlPatternScore.overallScore;
-  const mlConfidenceBoost = Math.floor((Math.abs(mlScore) + Math.abs(sentimentScore.overallSentiment)) / 20);
+  const mlConfidenceBoost = Math.floor((Math.abs(mlScore) + Math.abs(sentimentScore.overallSentiment)) / 15);
   const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   const currentPrice = candles[candles.length - 1].close;
