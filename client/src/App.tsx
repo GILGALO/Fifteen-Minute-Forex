@@ -15,6 +15,7 @@ import TradeAlerts from "@/pages/trade-alerts";
 import TradingJournal from "@/pages/trading-journal";
 import TradingSchedulePage from "@/pages/trading-schedule";
 import Strategies from "@/pages/strategies";
+import LogsPage from "@/pages/logs";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -55,6 +56,7 @@ function Router({ isAdmin }: { isAuthenticated: boolean; isAdmin: boolean }) {
       <Route path="/trading-schedule" component={TradingSchedulePage} />
       <Route path="/risk-calculator" component={RiskCalculator} />
       <Route path="/trade-alerts" component={TradeAlerts} />
+      <Route path="/logs" component={LogsPage} />
       {isAdmin && <Route path="/admin" component={Admin} />}
       <Route component={NotFound} />
     </Switch>

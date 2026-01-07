@@ -128,6 +128,11 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/logs", (req, res) => {
+    const { logHistory } = require("./index");
+    res.json(logHistory || []);
+  });
+
   app.post("/api/forex/scan", async (req, res) => {
     try {
       const { timeframe, maxRescans = 5, minConfidenceThreshold = 70 } = req.body;
