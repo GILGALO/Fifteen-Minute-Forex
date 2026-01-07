@@ -448,15 +448,15 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 82; 
-  if (accuracy === "MEDIUM") return 85;
-  return 88;
+  if (accuracy === "HIGH") return 88; 
+  if (accuracy === "MEDIUM") return 92;
+  return 94;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  if (htfAligned && Math.abs(mlScore) >= 65 && adx >= 28) return "A";
-  if (htfAligned && Math.abs(mlScore) >= 45 && adx >= 22) return "A-";
-  if (htfAligned && Math.abs(mlScore) >= 30 && adx >= 18) return "B+";
+  if (htfAligned && Math.abs(mlScore) >= 75 && adx >= 32) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 55 && adx >= 25) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 40 && adx >= 20) return "B+";
   return "SKIPPED";
 }
 
@@ -496,10 +496,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   const currentPrice = candles[candles.length - 1].close;
-  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend;
+  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 25;
   ruleChecklist.htfAlignment = htfAligned;
 
-  const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD", "USD/JPY", "USD/CAD"];
+  const pip = pair.includes("JPY") ? 0.01 : 0.0001;
+  const slMultiplier = technicals.adx > 35 ? 3.0 : 2.0;
+  const stopLoss = signalTypeVal === "CALL" ? currentPrice - (technicals.atr * slMultiplier) : currentPrice + (technicals.atr * slMultiplier);
+  const takeProfit = signalTypeVal === "CALL" ? currentPrice + (technicals.atr * slMultiplier * 1.5) : currentPrice - (technicals.atr * slMultiplier * 1.5);
   let clusterConfidence = 0;
   if (majorPairs.includes(pair)) {
     const correlationResults = await Promise.all(majorPairs.filter(p => p !== pair).map(async p => ({ direction: (analyzeTechnicals(await getForexCandles(p, "5min", apiKey))).supertrend.direction })));
