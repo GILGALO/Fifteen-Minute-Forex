@@ -467,9 +467,9 @@ function getStakeAdvice(confidence: number, grade: string, pair: string): { reco
 }
 
 function getAdaptiveThreshold(technicals: any): number {
-  const isChoppy = technicals.adx < 20 && Math.abs(technicals.rsi - 50) < 10;
-  if (technicals.volatility === "LOW" || (technicals.volatility === "MEDIUM" && !isChoppy)) return 72;
-  return isChoppy ? 85 : 78;
+  const isChoppy = technicals.adx < 15 && Math.abs(technicals.rsi - 50) < 5;
+  if (technicals.volatility === "LOW" || (technicals.volatility === "MEDIUM" && !isChoppy)) return 68;
+  return isChoppy ? 80 : 72;
 }
 
 function detectMeanReversion(technicals: TechnicalAnalysis, currentPrice: number): { isReversion: boolean; direction: "CALL" | "PUT" | null } {
@@ -496,23 +496,24 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   const currentPrice = candles[candles.length - 1].close;
-  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 25 && technicalsH1.adx > 20;
+  // Dynamic frequency scaling: slightly more relaxed during high-quality market conditions
+  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 20 && technicalsH1.adx > 15;
   
   // High-Accuracy Filter: Only allow trades if H1 and M15 both confirm the direction
-  const isInstitutionalSetup = htfAligned && technicals.adx > 22 && technicalsH1.adx > 18;
+  const isInstitutionalSetup = htfAligned && technicals.adx > 18 && technicalsH1.adx > 12;
   
   ruleChecklist.htfAlignment = htfAligned;
-  ruleChecklist.momentumSafety = technicals.adx > 20 && Math.abs(technicals.rsi - 50) > 5;
+  ruleChecklist.momentumSafety = technicals.adx > 18 && Math.abs(technicals.rsi - 50) > 3;
 
   // Refined confidence calculation for absolute accuracy
-  let baseConfidence = 40;
-  if (htfAligned) baseConfidence += 30; // Heavy weight on HTF alignment
+  let baseConfidence = 45;
+  if (htfAligned) baseConfidence += 25; // Balanced weight
   if (technicals.supertrend.direction === (signalTypeVal === "CALL" ? "BULLISH" : "BEARISH")) baseConfidence += 10;
-  if (Math.abs(mlScore) > 15) baseConfidence += 15;
+  if (Math.abs(mlScore) > 10) baseConfidence += 15;
   
-  // Strict overextension penalty
-  if (signalTypeVal === "CALL" && (technicals.rsi > 82 || technicals.stochastic.k > 85)) baseConfidence -= 30;
-  if (signalTypeVal === "PUT" && (technicals.rsi < 18 || technicals.stochastic.k < 15)) baseConfidence -= 30;
+  // Adaptive overextension penalty (less aggressive to allow more signals)
+  if (signalTypeVal === "CALL" && (technicals.rsi > 85 || technicals.stochastic.k > 90)) baseConfidence -= 25;
+  if (signalTypeVal === "PUT" && (technicals.rsi < 15 || technicals.stochastic.k < 10)) baseConfidence -= 25;
 
   const finalConfidence = Math.min(98, Math.max(0, baseConfidence + mlConfidenceBoost));
   const finalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
@@ -523,7 +524,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const calculatedStopLoss = signalTypeVal === "CALL" ? entry - (atrPips * 1.5) : entry + (atrPips * 1.5);
   const calculatedTakeProfit = signalTypeVal === "CALL" ? entry + (atrPips * 2.5) : entry - (atrPips * 2.5);
 
-  const isPassable = isInstitutionalSetup && finalConfidence >= 85;
+  const isPassable = isInstitutionalSetup && finalConfidence >= 80;
   
   if (!isPassable) {
     const reason = !isInstitutionalSetup ? "❌ NO HTF ALIGNMENT" : `🚫 LOW ACCURACY (Conf: ${finalConfidence}%)`;
