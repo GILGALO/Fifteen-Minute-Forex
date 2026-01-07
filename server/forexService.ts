@@ -27,6 +27,7 @@ export interface CandleData {
 
 export interface TechnicalAnalysis {
   rsi: number;
+  rsiDivergence: boolean;
   macd: {
     macdLine: number;
     signalLine: number;
@@ -267,6 +268,23 @@ function calculateSMA(prices: number[], period: number): number {
   return prices.slice(-period).reduce((a, b) => a + b, 0) / period;
 }
 
+function detectRSIDivergence(prices: number[], rsiValues: number[], direction: "BULLISH" | "BEARISH"): boolean {
+  if (prices.length < 20 || rsiValues.length < 20) return false;
+  
+  const lastPrice = prices[prices.length - 1];
+  const prevPrice = prices[prices.length - 5]; // Check a few candles back
+  const lastRSI = rsiValues[rsiValues.length - 1];
+  const prevRSI = rsiValues[rsiValues.length - 5];
+
+  if (direction === "BULLISH") {
+    // Bullish Divergence: Price makes lower low, RSI makes higher low
+    return lastPrice < prevPrice && lastRSI > prevRSI;
+  } else {
+    // Bearish Divergence: Price makes higher high, RSI makes lower high
+    return lastPrice > prevPrice && lastRSI < prevRSI;
+  }
+}
+
 function calculateEMA(prices: number[], period: number): number {
   if (prices.length < period) return prices[prices.length - 1];
   const k = 2 / (period + 1);
@@ -384,7 +402,12 @@ export function isMarketOpen(): { isOpen: boolean; nextAction: string } {
 export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
   if (candles.length === 0) return {} as any;
   const prices = candles.map(c => c.close);
-  const rsi = calculateRSI(prices);
+  const rsiValues: number[] = [];
+  // Calculate historical RSI for divergence
+  for (let i = 20; i <= prices.length; i++) {
+    rsiValues.push(calculateRSI(prices.slice(0, i)));
+  }
+  const rsi = rsiValues[rsiValues.length - 1];
   const macd = calculateMACD(prices);
   const sma20 = calculateSMA(prices, 20);
   const sma50 = calculateSMA(prices, 50);
@@ -399,10 +422,11 @@ export function analyzeTechnicals(candles: CandleData[]): TechnicalAnalysis {
   const candlePattern = detectCandlePattern(candles);
   const trend = supertrend.direction;
   const momentum = adx > 25 ? "STRONG" : (adx > 15 ? "MODERATE" : "WEAK");
+  const rsiDivergence = detectRSIDivergence(prices, rsiValues, trend === "BULLISH" ? "BULLISH" : "BEARISH");
   const volatility = atr > (prices[prices.length - 1] * 0.001) ? "HIGH" : "MEDIUM";
   const marketRegime = adx > 20 ? "TRENDING" : "RANGING";
   return {
-    rsi, macd, sma20, sma50, sma200, ema12, ema26,
+    rsi, rsiDivergence, macd, sma20, sma50, sma200, ema12, ema26,
     bollingerBands: { ...bollingerBands, breakout: prices[prices.length - 1] > bollingerBands.upper || prices[prices.length - 1] < bollingerBands.lower },
     stochastic, atr, adx, supertrend,
     candlePattern, trend, momentum, volatility, marketRegime
@@ -486,8 +510,9 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   const rsiApproaching = (m5Trend === "BULLISH" && technicals.rsi < 35) || (m5Trend === "BEARISH" && technicals.rsi > 65);
   const frontRunningBoost = (rsiApproaching && Math.abs(technicals.macd.histogram) < 0.00005) ? 10 : 0;
-  const meetsAplusCriteria = (Math.abs(mlScore) >= 20) && htfAligned && (m5Trend === "BULLISH" ? technicals.rsi <= 88 : technicals.rsi >= 12);
-  const tacticalGrade = getTacticalGrade(technicals.adx, mlScore, htfAligned);
+  const divergenceBoost = technicals.rsiDivergence ? 15 : 0;
+  const meetsAplusCriteria = (Math.abs(mlScore) >= 20 || technicals.rsiDivergence) && htfAligned && (m5Trend === "BULLISH" ? technicals.rsi <= 88 : technicals.rsi >= 12);
+  const tacticalGrade = getTacticalGrade(technicals.adx, mlScore + divergenceBoost, htfAligned);
   const isPassable = meetsAplusCriteria || tacticalGrade !== "SKIPPED";
   if (!isPassable) return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: [`❌ NO CONSENSUS (ML: ${mlScore}, Trend: ${m5Trend})`], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
 
