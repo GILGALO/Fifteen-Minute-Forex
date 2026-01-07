@@ -501,20 +501,23 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
 
   // News & Drawdown Protection
   const isNewsBlocked = isNewsEventTime();
-  const dailyDrawdown = sessionTracker.getStats().dailyLoss / (sessionTracker.getStats().dailyProfit || 1);
+  const stats = sessionTracker.getStats();
+  const dailyDrawdown = stats.dailyLoss / (stats.dailyProfit || 1);
   const isRecoveryMode = dailyDrawdown > 0.02; // 2% drawdown protection
 
   if (isNewsBlocked || isRecoveryMode) {
      return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: currentPrice, stopLoss: 0, takeProfit: 0, technicals, reasoning: [isNewsBlocked ? "🗞️ NEWS BLOCKED" : "🛡️ RECOVERY MODE"], ruleChecklist };
   }
   const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD", "USD/JPY", "USD/CAD"];
-  const pip = pair.includes("JPY") ? 0.01 : 0.0001;
   const slMultiplier = technicals.adx > 35 ? 3.0 : 2.0;
-  const stopLoss = signalTypeVal === "CALL" ? currentPrice - (technicals.atr * slMultiplier) : currentPrice + (technicals.atr * slMultiplier);
-  const takeProfit = signalTypeVal === "CALL" ? currentPrice + (technicals.atr * slMultiplier * 1.5) : currentPrice - (technicals.atr * slMultiplier * 1.5);
+  const calculatedStopLoss = signalTypeVal === "CALL" ? currentPrice - (technicals.atr * slMultiplier) : currentPrice + (technicals.atr * slMultiplier);
+  const calculatedTakeProfit = signalTypeVal === "CALL" ? currentPrice + (technicals.atr * slMultiplier * 1.5) : currentPrice - (technicals.atr * slMultiplier * 1.5);
   let clusterConfidence = 0;
   if (majorPairs.includes(pair)) {
-    const correlationResults = await Promise.all(majorPairs.filter(p => p !== pair).map(async p => ({ direction: (analyzeTechnicals(await getForexCandles(p, "5min", apiKey))).supertrend.direction })));
+    const correlationResults = await Promise.all(majorPairs.filter(p => p !== pair).map(async p => {
+      const pCandles = await getForexCandles(p, "5min", apiKey);
+      return { direction: analyzeTechnicals(pCandles).supertrend.direction };
+    }));
     const alignedCount = correlationResults.filter(r => r.direction === m5Trend).length;
     clusterConfidence = alignedCount >= correlationResults.length * 0.75 ? 15 : (alignedCount >= correlationResults.length * 0.5 ? 10 : -10);
     reasoning.push(`🧩 CLUSTER: ${alignedCount} aligned`);
@@ -536,15 +539,12 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const finalConfidence = Math.min(98, Math.max(0, confidence + Math.round(mlScore / 10)));
   if (finalConfidence < getAdaptiveThreshold(technicals)) return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: ["🚫 LOW CONFIDENCE"], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
 
-  const finalStopLoss = stopLoss;
-  const finalTakeProfit = takeProfit;
-
   updateSignalHistory(pair);
-  logTrade({ pair, signalType: signalTypeVal, entry: currentPrice, stopLoss: finalStopLoss, takeProfit: finalTakeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
+  logTrade({ pair, signalType: signalTypeVal, entry: currentPrice, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
 
   return {
     pair, currentPrice, signalType: signalTypeVal, confidence: finalConfidence, signalGrade: finalGrade,
-    entry: currentPrice, stopLoss: finalStopLoss, takeProfit: finalTakeProfit, technicals, reasoning: [meetsAplusCriteria ? "🚀 Institutional A+" : "⚡ Tactical"],
+    entry: currentPrice, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, technicals, reasoning: [meetsAplusCriteria ? "🚀 Institutional A+" : "⚡ Tactical"],
     ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost,
     stakeAdvice: getStakeAdvice(finalConfidence, finalGrade, pair)
   };
