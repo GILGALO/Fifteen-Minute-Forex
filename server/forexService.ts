@@ -448,15 +448,15 @@ function updateSignalHistory(pair: string) {
 
 function getMinConfidence(pair: string): number {
   const accuracy = getPairAccuracy(pair);
-  if (accuracy === "HIGH") return 78; 
-  if (accuracy === "MEDIUM") return 80;
-  return 82;
+  if (accuracy === "HIGH") return 82; 
+  if (accuracy === "MEDIUM") return 85;
+  return 88;
 }
 
 function getTacticalGrade(adx: number, mlScore: number, htfAligned: boolean): "A" | "A-" | "B+" | "SKIPPED" {
-  if (htfAligned && Math.abs(mlScore) >= 50 && adx >= 25) return "A";
-  if (htfAligned && Math.abs(mlScore) >= 35 && adx >= 20) return "A-";
-  if (htfAligned && Math.abs(mlScore) >= 20 && adx >= 15) return "B+";
+  if (htfAligned && Math.abs(mlScore) >= 65 && adx >= 28) return "A";
+  if (htfAligned && Math.abs(mlScore) >= 45 && adx >= 22) return "A-";
+  if (htfAligned && Math.abs(mlScore) >= 30 && adx >= 18) return "B+";
   return "SKIPPED";
 }
 
@@ -496,7 +496,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   const currentPrice = candles[candles.length - 1].close;
-  const htfAligned = m5Trend === h1Trend;
+  const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend;
   ruleChecklist.htfAlignment = htfAligned;
 
   const majorPairs = ["EUR/USD", "GBP/USD", "AUD/USD", "USD/JPY", "USD/CAD"];
