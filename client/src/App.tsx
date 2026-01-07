@@ -24,23 +24,24 @@ import { AlertCircle, Clock } from "lucide-react";
 
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 
-function NewsCountdown() {
+export function NewsCountdown() {
   const { data } = useQuery<any>({
     queryKey: ["/api/forex/quotes"],
     refetchInterval: 30000,
   });
 
-  if (!data?.newsStatus?.blocked) return null;
+  const newsStatus = data?.newsStatus || data?.[0]?.newsStatus;
+  if (!newsStatus?.blocked) return null;
 
   return (
     <div className="flex items-center gap-2 px-3 py-1 bg-destructive/10 border border-destructive/20 rounded-full animate-pulse">
       <AlertCircle className="w-3.5 h-3.5 text-destructive" />
       <div className="flex flex-col">
         <span className="text-[10px] font-black text-destructive uppercase tracking-tighter leading-none">
-          News Block: {data.newsStatus.event?.name}
+          News Block: {newsStatus.event?.name}
         </span>
         <span className="text-[9px] font-bold text-destructive/80 tabular-nums">
-          {data.newsStatus.remainingMinutes}m remaining
+          {newsStatus.remainingMinutes}m remaining
         </span>
       </div>
     </div>

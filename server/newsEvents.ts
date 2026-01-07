@@ -30,7 +30,7 @@ const MAJOR_NEWS_EVENTS: NewsEvent[] = [
   { name: "UK Jobs Report", timeUTC: 630, impactLevel: "HIGH", blockMinutes: 30 },
 ];
 
-export function isNewsEventTime(timeUTC: number = Date.now()): { blocked: boolean; event?: NewsEvent; remainingMinutes?: number; allowWithWarning?: boolean } {
+export function isNewsEventTime(timeUTC: number = Date.now()): { blocked: boolean; event?: NewsEvent; remainingMinutes?: number; allowWithWarning?: boolean; isPostEvent?: boolean } {
   const now = new Date(timeUTC);
   const minutesFromMidnight = now.getUTCHours() * 60 + now.getUTCMinutes();
 

@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NewsCountdown } from "@/App";
 
 const MarketTicker = lazy(() => import("@/components/market-ticker"));
 const SignalGenerator = lazy(() => import("@/components/signal-generator"));
@@ -182,6 +183,9 @@ export default function Home({ isAdmin }: { isAdmin?: boolean }) {
       </div>
 
       <main className="w-full px-2 sm:px-4 md:px-8 py-2 sm:py-4 relative z-10">
+        <div className="flex items-center justify-between mb-4">
+          <NewsCountdown />
+        </div>
         <header className="mb-4 sm:mb-8 md:mb-12">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 pb-4 sm:pb-6 md:pb-8 lg:pb-10 border-b border-white/10 relative">
             <div className="flex items-start sm:items-center gap-2 sm:gap-3 md:gap-4 lg:gap-6 w-full">
