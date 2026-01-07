@@ -485,11 +485,23 @@ function detectMeanReversion(technicals: TechnicalAnalysis, currentPrice: number
   return { isReversion: false, direction: null };
 }
 
+function isTradingHours(): { allowed: boolean; reason?: string } {
+  // Kenya Time is UTC+3. 8:00 AM - 9:00 PM EAT
+  const hour = getKenyaHour();
+  if (hour < 8 || hour >= 21) {
+    return { allowed: false, reason: "🕒 OUTSIDE TRADING HOURS (8:00 AM - 9:00 PM EAT)" };
+  }
+  return { allowed: true };
+}
+
 export async function generateSignalAnalysis(pair: string, timeframe: string, apiKey?: string): Promise<SignalAnalysis> {
   const { isOpen, nextAction } = isMarketOpen();
+  const tradingHours = isTradingHours();
   const ruleChecklist: RuleChecklist = { htfAlignment: false, candleConfirmation: false, momentumSafety: false, volatilityFilter: false, sessionFilter: true, marketRegime: false, trendExhaustion: true };
   const reasoning: string[] = [];
+
   if (!isOpen) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`🛑 MARKET CLOSED: ${nextAction}`], ruleChecklist };
+  if (!tradingHours.allowed) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [tradingHours.reason!], ruleChecklist };
   if (isPairInCooldown(pair)) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`⏳ COOL-DOWN`], ruleChecklist };
   if (sessionTracker.hasReachedDailyGoal() || sessionTracker.hasExceededMaxDrawdown()) return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: [`🛑 HALTED`], ruleChecklist };
   
@@ -500,11 +512,18 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const m5Trend = technicals.supertrend.direction, m15Trend = technicalsM15.supertrend.direction, h1Trend = technicalsH1.supertrend.direction;
   const signalTypeVal: "CALL" | "PUT" = m5Trend === "BULLISH" ? "CALL" : "PUT";
   const currentPrice = candles[candles.length - 1].close;
+  const prevPrice = candles[candles.length - 2].close;
+  const priceChange = ((currentPrice - prevPrice) / prevPrice) * 100;
+  
   // Dynamic frequency scaling: slightly more relaxed during high-quality market conditions
   const htfAligned = m5Trend === h1Trend && m5Trend === m15Trend && technicals.adx > 20 && technicalsH1.adx > 15;
   
+  // Volume and Price Change Filters
+  const hasVolume = technicals.atr > 0;
+  const isMoving = Math.abs(priceChange) > 0.001; // Minimum price movement filter
+  
   // High-Accuracy Filter: Only allow trades if H1 and M15 both confirm the direction
-  const isInstitutionalSetup = htfAligned && technicals.adx > 18 && technicalsH1.adx > 12;
+  const isInstitutionalSetup = htfAligned && technicals.adx > 18 && technicalsH1.adx > 12 && hasVolume && isMoving;
   
   ruleChecklist.htfAlignment = htfAligned;
   ruleChecklist.momentumSafety = technicals.adx > 18 && Math.abs(technicals.rsi - 50) > 3;
@@ -514,6 +533,7 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   if (htfAligned) baseConfidence += 25; // Balanced weight
   if (technicals.supertrend.direction === (signalTypeVal === "CALL" ? "BULLISH" : "BEARISH")) baseConfidence += 10;
   if (Math.abs(mlScore) > 10) baseConfidence += 15;
+  if (isMoving) baseConfidence += 5;
   
   // Adaptive overextension penalty (less aggressive to allow more signals)
   if (signalTypeVal === "CALL" && (technicals.rsi > 85 || technicals.stochastic.k > 90)) baseConfidence -= 25;
@@ -531,16 +551,27 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const isPassable = isInstitutionalSetup && finalConfidence >= 80;
   
   if (!isPassable) {
-    const reason = !isInstitutionalSetup ? "❌ NO HTF ALIGNMENT" : `🚫 LOW ACCURACY (Conf: ${finalConfidence}%)`;
+    let reason = "❌ NO CONSENSUS";
+    if (!isInstitutionalSetup) {
+      if (!htfAligned) reason = "❌ NO HTF ALIGNMENT";
+      else if (!isMoving) reason = "💤 LOW VOLATILITY";
+      else reason = "❌ INSTITUTIONAL REJECTION";
+    } else if (finalConfidence < 80) {
+      reason = `🚫 LOW ACCURACY (${finalConfidence}%)`;
+    }
     return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: [reason], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
   }
 
   updateSignalHistory(pair);
   logTrade({ pair, signalType: signalTypeVal, entry, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: "ALIGNED", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
 
+  const reasoningDetails = ["💎 Institutional Grade A+", "🎯 High-Accuracy M5 Setup"];
+  if (htfAligned) reasoningDetails.push("📈 Multi-Timeframe Alignment");
+  if (isMoving) reasoningDetails.push("🚀 Strong Price Momentum");
+
   return {
     pair, currentPrice, signalType: signalTypeVal, confidence: finalConfidence, signalGrade: finalGrade,
-    entry, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, technicals, reasoning: ["💎 Institutional Grade A+", "🎯 High-Accuracy M5 Setup"],
+    entry, stopLoss: calculatedStopLoss, takeProfit: calculatedTakeProfit, technicals, reasoning: reasoningDetails,
     ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost,
     stakeAdvice: getStakeAdvice(finalConfidence, finalGrade, pair)
   };
