@@ -550,6 +550,13 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
     }
   }
 
+  // Prevent over-trading: Max 3 active signals at once across all pairs
+  const activeSignals = await storage.getSignals();
+  const openSignals = activeSignals.filter(s => s.status === "ACTIVE");
+  if (openSignals.length >= 3) {
+    return { pair, currentPrice: 0, signalType: "CALL", confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals: {} as any, reasoning: ["🛑 MAX ACTIVE SIGNALS (3) REACHED"], ruleChecklist };
+  }
+
   // Accurate SL/TP based on volatility
   const entry = currentPrice;
   const atrPips = technicals.atr || (currentPrice * 0.001);
