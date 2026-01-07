@@ -536,17 +536,15 @@ export async function generateSignalAnalysis(pair: string, timeframe: string, ap
   const finalConfidence = Math.min(98, Math.max(0, confidence + Math.round(mlScore / 10)));
   if (finalConfidence < getAdaptiveThreshold(technicals)) return { pair, currentPrice, signalType: signalTypeVal, confidence: 0, signalGrade: "SKIPPED", entry: 0, stopLoss: 0, takeProfit: 0, technicals, reasoning: ["🚫 LOW CONFIDENCE"], ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost };
 
-  const atrVal = technicals.atr, isJpyPair = pair.includes("JPY"), pip = isJpyPair ? 0.01 : 0.0001;
-  const slPips = Math.max((atrVal / pip) * 1.5, 10);
-  const stopLoss = signalTypeVal === "CALL" ? currentPrice - (slPips * pip) : currentPrice + (slPips * pip);
-  const takeProfit = signalTypeVal === "CALL" ? currentPrice + (slPips * 1.5 * pip) : currentPrice - (slPips * 1.5 * pip);
+  const finalStopLoss = stopLoss;
+  const finalTakeProfit = takeProfit;
 
   updateSignalHistory(pair);
-  logTrade({ pair, signalType: signalTypeVal, entry: currentPrice, stopLoss, takeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
+  logTrade({ pair, signalType: signalTypeVal, entry: currentPrice, stopLoss: finalStopLoss, takeProfit: finalTakeProfit, confidence: finalConfidence, rsi: technicals.rsi, stochastic: technicals.stochastic, candlePattern: technicals.candlePattern, htfAlignment: htfAligned ? "ALIGNED" : "DIVERGENT", session: getCurrentSessionTime(), pairAccuracy: getPairAccuracy(pair), isGhost: false });
 
   return {
     pair, currentPrice, signalType: signalTypeVal, confidence: finalConfidence, signalGrade: finalGrade,
-    entry: currentPrice, stopLoss, takeProfit, technicals, reasoning: [meetsAplusCriteria ? "🚀 Institutional A+" : "⚡ Tactical"],
+    entry: currentPrice, stopLoss: finalStopLoss, takeProfit: finalTakeProfit, technicals, reasoning: [meetsAplusCriteria ? "🚀 Institutional A+" : "⚡ Tactical"],
     ruleChecklist, mlPatternScore, sentimentScore, mlConfidenceBoost,
     stakeAdvice: getStakeAdvice(finalConfidence, finalGrade, pair)
   };
